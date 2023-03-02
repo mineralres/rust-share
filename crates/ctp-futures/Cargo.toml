@@ -1,0 +1,28 @@
+[package]
+name = "ctp-futures"
+version = "0.1.0"
+authors = ["xiaobing <pangxiaobing@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.11"
+env_logger = "0.8.1"
+chrono = "0.4.19"
+encoding = "0.2.33"
+memchr = "2.3.3"
+simple-error = "0.2.1"
+time = "0.1.43"
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0.117"
+futures = "0.3.5"
+
+[build-dependencies]
+clang-sys = { version = "1", features = ["clang_6_0", "runtime"] }
+clang = "2.0.0"
+bindgen = "0.63"
+regex = "1.4.1"
+encoding = "0.2.33"
+Inflector = "*"
+libc = { version = "0.2.39", default-features = false }
