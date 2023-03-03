@@ -3,7 +3,13 @@ extern crate bindgen;
 
 use inflector::Inflector;
 
-use std::{env, fs::File, io::Write, path::PathBuf};
+use std::env::var;
+use std::{
+    env,
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use clang::*;
 fn get_full_name_of_entity(e: &Entity) -> String {
@@ -483,6 +489,12 @@ fn main() {
     f.write(code.as_bytes()).unwrap();
 
     println!("cargo:rustc-link-search=./crates/ctp-futures/v_current");
+    let dir = var("CARGO_MANIFEST_DIR").unwrap();
+    println!(
+        "cargo:rustc-link-search=native={}",
+        Path::new(&dir).join("v_current").display()
+    );
+
     println!("cargo:rustc-link-lib=thosttraderapi_se");
     println!("cargo:rustc-link-lib=thostmduserapi_se");
 
