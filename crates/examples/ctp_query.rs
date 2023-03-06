@@ -22,7 +22,7 @@ async fn query() {
     let account = "143650";
     let fens_trade_front = "";
     let trade_front = "tcp://180.168.146.187:10201";
-    let trade_front = "tcp://180.168.146.187:10130";
+    let trade_front = "tcp://180.168.146.187:10130"; // 7*24
     let auth_code = "0000000000000000";
     let user_product_info = "";
     let app_id = "simnow_client_test";
