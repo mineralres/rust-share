@@ -4,6 +4,7 @@
 #![allow(improper_ctypes)]
 #![allow(unused_variables, unused_mut)]
 
+use bincode::{Decode, Encode};
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 pub mod md_api {

@@ -469,6 +469,25 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
     )
 }
 
+use bindgen::callbacks::{DeriveInfo, ParseCallbacks};
+
+#[derive(Debug)]
+struct MyCallback {}
+
+impl ParseCallbacks for MyCallback {
+    // Test the "custom derives" capability by adding `PartialEq` to the `Test` struct.
+    fn add_derives(&self, info: &DeriveInfo<'_>) -> Vec<String> {
+        if info.name.starts_with("CThost")
+            && !info.name.contains("Api")
+            && !info.name.contains("Spi")
+        {
+            vec!["Decode".into(), "Encode".into()]
+        } else {
+            vec![]
+        }
+    }
+}
+
 fn main() {
     clang_sys::load().expect("");
     let clang = Clang::new().unwrap();
@@ -510,6 +529,7 @@ fn main() {
         .generate_comments(false) //不需注释,默认true
         .derive_copy(true)
         .derive_hash(false) //不要实现hash
+        .parse_callbacks(Box::new(MyCallback {}))
         .generate()
         .expect("Unable to generate bindings");
 
