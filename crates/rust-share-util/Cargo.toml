@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 encoding = "0.2.33"
+simple-error = "0.2.1"
+memchr = "2.3.3"

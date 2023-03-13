@@ -33,3 +33,16 @@ pub mod trader_api {
         }
     }
 }
+
+/// 典型的账户配置
+pub struct CtpAccountConfig {
+    pub broker_id: String,
+    pub account: String,
+    pub name_server: String,
+    pub trade_front: String,
+    pub md_front: String,
+    pub auth_code: String,
+    pub user_product_info: String,
+    pub app_id: String,
+    pub password: String,
+}

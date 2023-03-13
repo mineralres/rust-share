@@ -509,10 +509,20 @@ fn main() {
 
     println!("cargo:rustc-link-search=./crates/ctp-futures/v_current");
     let dir = var("CARGO_MANIFEST_DIR").unwrap();
-    println!(
-        "cargo:rustc-link-search=native={}",
-        Path::new(&dir).join("v_current").display()
-    );
+    let library_path = Path::new(&dir).join("v_current");
+    println!("cargo:rustc-link-search=native={}", library_path.display());
+    if cfg!(windows) {
+        let key = "PATH";
+        match env::var(key) {
+            Ok(val) => {
+                let path = format!("{val};{}", library_path.display());
+                println!("cargo:rustc-env=PATH={path}");
+            }
+            Err(e) => println!("couldn't interpret {key}: {e}"),
+        }
+    } else {
+        println!("cargo:rustc-env=LD_LIBRARY_PATH={}", library_path.display());
+    }
 
     println!("cargo:rustc-link-lib=thosttraderapi_se");
     println!("cargo:rustc-link-lib=thostmduserapi_se");

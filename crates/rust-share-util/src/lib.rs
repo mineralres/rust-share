@@ -1,6 +1,47 @@
 use encoding::all::GB18030;
 use encoding::{DecoderTrap, Encoding};
+use simple_error::SimpleError;
 use std::borrow::Cow;
+
+pub fn ascii_cstr_to_str_i8(v: &[i8]) -> Result<&str, SimpleError> {
+    let mut s = unsafe { std::slice::from_raw_parts(v.as_ptr() as *mut u8, v.len()) };
+    ascii_cstr_to_str(&mut s)
+}
+
+pub fn ascii_cstr_to_str(s: &[u8]) -> Result<&str, SimpleError> {
+    match s.last() {
+        Some(&0u8) => {
+            let len = memchr::memchr(0, s).unwrap();
+            let ascii_s = &s[0..len];
+            if ascii_s.is_ascii() {
+                unsafe { Ok(std::str::from_utf8_unchecked(ascii_s)) }
+            } else {
+                Err(SimpleError::new("cstr is not ascii"))
+            }
+        }
+        Some(&c) => Err(SimpleError::new(format!(
+            "cstr should terminate with null instead of {:#x}",
+            c
+        ))),
+        None => Err(SimpleError::new("cstr cannot have 0 length")),
+    }
+}
+
+pub fn trading_day_from_ctp_trading_day(i: &[i8]) -> i32 {
+    let d = ascii_cstr_to_str_i8(i);
+    if d.is_err() {
+        return 0;
+    }
+    let d = d.unwrap().trim();
+    if d.len() == 0 {
+        return 0;
+    }
+    let o = d.parse();
+    match o {
+        Ok(v) => v,
+        Err(e) => panic!("{} {}", e, d),
+    }
+}
 
 pub fn set_cstr_from_str_truncate_i8(buffer: &mut [i8], text: &str) {
     let v = unsafe { std::slice::from_raw_parts_mut(buffer.as_ptr() as *mut u8, buffer.len()) };
