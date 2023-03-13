@@ -512,14 +512,45 @@ fn main() {
     let library_path = Path::new(&dir).join("v_current");
     println!("cargo:rustc-link-search=native={}", library_path.display());
     if cfg!(windows) {
-        let key = "PATH";
-        match env::var(key) {
-            Ok(val) => {
-                let path = format!("{val};{}", library_path.display());
-                println!("cargo:rustc-env=PATH={path}");
-            }
-            Err(e) => println!("couldn't interpret {key}: {e}"),
-        }
+        let output = var("OUT_DIR").unwrap();
+        std::fs::copy(
+            library_path.join("thostmduserapi_se.dll"),
+            Path::new(&output)
+                .join("..")
+                .join("..")
+                .join("..")
+                .join("thostmduserapi_se.dll"),
+        )
+        .unwrap();
+        std::fs::copy(
+            library_path.join("thosttraderapi_se.dll"),
+            Path::new(&output)
+                .join("..")
+                .join("..")
+                .join("..")
+                .join("thosttraderapi_se.dll"),
+        )
+        .unwrap();
+    } else if cfg!(unix) {
+        let output = var("OUT_DIR").unwrap();
+        std::fs::copy(
+            library_path.join("thostmduserapi_se.so"),
+            Path::new(&output)
+                .join("..")
+                .join("..")
+                .join("..")
+                .join("thostmduserapi_se.so"),
+        )
+        .unwrap();
+        std::fs::copy(
+            library_path.join("thosttraderapi_se.so"),
+            Path::new(&output)
+                .join("..")
+                .join("..")
+                .join("..")
+                .join("thosttraderapi_se.so"),
+        )
+        .unwrap();
     } else {
         println!("cargo:rustc-env=LD_LIBRARY_PATH={}", library_path.display());
     }
