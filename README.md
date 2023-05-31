@@ -5,7 +5,7 @@
 * crates/spider 抓取一些财经网站的数据
 
 ### 说明
-* 编译过程中会用到clang, 需要手动下载安装对应的依赖, [下载](https://github.com/llvm/llvm-project/releases)
+* 编译过程中会用到clang(15.0.7), 需要手动下载安装对应的依赖, [下载](https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7)
 
 ### 编译
 ```
