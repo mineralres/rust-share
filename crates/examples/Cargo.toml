@@ -18,3 +18,7 @@ chrono = "0.4"
 [[example]]
 name = "ctp_query"
 path = "ctp_query.rs"
+
+[[example]]
+name = "ctp_md"
+path = "ctp_md.rs"
