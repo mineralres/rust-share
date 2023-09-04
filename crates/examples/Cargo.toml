@@ -26,3 +26,7 @@ path = "ctp_query.rs"
 [[example]]
 name = "spider"
 path = "spider.rs"
+
+[[example]]
+name = "ctp_md"
+path = "ctp_md.rs"

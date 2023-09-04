@@ -286,6 +286,8 @@ async fn query(ca: &CtpAccountConfig) {
     api.release();
     api.join();
     Box::leak(api);
+    // Box::leak(api);
 
+    tokio::time::sleep(std::time::Duration::from_secs(100)).await;
     info!("完成保存查询结果");
 }

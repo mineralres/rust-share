@@ -10,6 +10,20 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 pub mod md_api {
     use crate::*;
     include!("md_impl.rs");
+    pub fn create_api(
+        flow_path: &str,
+        b_is_using_udp: bool,
+        b_is_multicast: bool,
+    ) -> Box<CThostFtdcMdApi> {
+        let md_flow_path = std::ffi::CString::new(flow_path).unwrap();
+        unsafe {
+            Box::from_raw(CThostFtdcMdApi_CreateFtdcMdApi(
+                md_flow_path.as_ptr(),
+                b_is_using_udp,
+                b_is_multicast,
+            ))
+        }
+    }
 }
 
 pub mod trader_api {
