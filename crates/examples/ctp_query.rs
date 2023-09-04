@@ -284,6 +284,7 @@ async fn query(ca: &CtpAccountConfig) {
         decoded.broker_id, decoded.account, decoded.trading_day
     );
     api.release();
+    api.join();
     Box::leak(api);
 
     info!("完成保存查询结果");

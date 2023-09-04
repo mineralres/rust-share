@@ -534,21 +534,21 @@ fn main() {
     } else if cfg!(unix) {
         let output = var("OUT_DIR").unwrap();
         std::fs::copy(
-            library_path.join("thostmduserapi_se.so"),
+            library_path.join("libthostmduserapi_se.so"),
             Path::new(&output)
                 .join("..")
                 .join("..")
                 .join("..")
-                .join("thostmduserapi_se.so"),
+                .join("libthostmduserapi_se.so"),
         )
         .unwrap();
         std::fs::copy(
-            library_path.join("thosttraderapi_se.so"),
+            library_path.join("libthosttraderapi_se.so"),
             Path::new(&output)
                 .join("..")
                 .join("..")
                 .join("..")
-                .join("thosttraderapi_se.so"),
+                .join("libthosttraderapi_se.so"),
         )
         .unwrap();
     } else {
