@@ -46,6 +46,10 @@ pub mod trader_api {
             (Box::from_raw(p), Box::from_raw(p2))
         }
     }
+
+    pub fn get_api_version() -> *const std::os::raw::c_char {
+        unsafe { CThostFtdcTraderApi_GetApiVersion() }
+    }
 }
 
 /// 典型的账户配置

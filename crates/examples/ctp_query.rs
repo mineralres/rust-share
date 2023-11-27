@@ -5,6 +5,7 @@ use ctp_futures::*;
 use futures::StreamExt;
 use log::info;
 use rust_share_util::*;
+use std::ffi::{CStr, CString};
 
 pub fn init_logger() {
     if std::env::var("RUST_LOG").is_err() {
@@ -71,7 +72,6 @@ async fn query(ca: &CtpAccountConfig) {
         api.register_spi(pp);
         stream
     };
-    use std::ffi::CString;
     if name_server.len() > 0 {
         api.register_name_server(CString::new(name_server).unwrap());
     } else {
@@ -162,7 +162,6 @@ async fn query(ca: &CtpAccountConfig) {
             }
             OnRspQryInvestorPositionDetail(ref detail) => {
                 if let Some(d) = detail.p_investor_position_detail {
-                    info!("d={:?}", d);
                     result.position_detail_list.push(d);
                 }
                 if detail.b_is_last {
@@ -266,7 +265,6 @@ async fn query(ca: &CtpAccountConfig) {
     result.timestamp = chrono::Local::now().timestamp();
     let config = config::standard();
     let encoded: Vec<u8> = bincode::encode_to_vec(&result, config).unwrap();
-    use std::path::PathBuf;
     let save_path = std::path::Path::new(".cache")
         .join("ctp_futures_query_result")
         .join(format!("{}_{}", broker_id, account));
@@ -277,17 +275,17 @@ async fn query(ca: &CtpAccountConfig) {
     let mut f = std::fs::File::create(&save_path).unwrap();
     f.write_all(&encoded).unwrap();
     info!("{} 初始化查询完成. bin.len={}", account, encoded.len());
-    let (decoded, len): (CtpQueryResult, usize) =
+    let (decoded, _len): (CtpQueryResult, usize) =
         bincode::decode_from_slice(&encoded[..], config).unwrap();
     info!(
         "decoded {} {} {}",
         decoded.broker_id, decoded.account, decoded.trading_day
     );
+    let ver = unsafe { CStr::from_ptr(get_api_version()) }
+        .to_str()
+        .unwrap();
+    info!("version={ver}");
     api.release();
-    api.join();
     Box::leak(api);
-    // Box::leak(api);
-
-    tokio::time::sleep(std::time::Duration::from_secs(100)).await;
     info!("完成保存查询结果");
 }

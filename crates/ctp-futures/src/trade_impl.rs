@@ -173,10 +173,10 @@ impl CThostFtdcTraderApi {
                                              n_request_id)
                                         }
                             }
-                            pub fn req_query_max_order_volume(&mut self, p_query_max_order_volume: &mut CThostFtdcQueryMaxOrderVolumeField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                            pub fn req_qry_max_order_volume(&mut self, p_qry_max_order_volume: &mut CThostFtdcQryMaxOrderVolumeField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
                                     unsafe {
-                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQueryMaxOrderVolume)(self as *mut CThostFtdcTraderApi,
-                                             p_query_max_order_volume as * mut CThostFtdcQueryMaxOrderVolumeField,
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryMaxOrderVolume)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_max_order_volume as * mut CThostFtdcQryMaxOrderVolumeField,
                                              n_request_id)
                                         }
                             }
@@ -345,6 +345,13 @@ impl CThostFtdcTraderApi {
                                     unsafe {
                                            ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryDepthMarketData)(self as *mut CThostFtdcTraderApi,
                                              p_qry_depth_market_data as * mut CThostFtdcQryDepthMarketDataField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_trader_offer(&mut self, p_qry_trader_offer: &mut CThostFtdcQryTraderOfferField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryTraderOffer)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_trader_offer as * mut CThostFtdcQryTraderOfferField,
                                              n_request_id)
                                         }
                             }
@@ -641,6 +648,202 @@ impl CThostFtdcTraderApi {
                                              p_req_query_account as * mut CThostFtdcReqQueryAccountField,
                                              n_request_id)
                                         }
+                            }
+                            pub fn req_qry_classified_instrument(&mut self, p_qry_classified_instrument: &mut CThostFtdcQryClassifiedInstrumentField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryClassifiedInstrument)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_classified_instrument as * mut CThostFtdcQryClassifiedInstrumentField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_comb_promotion_param(&mut self, p_qry_comb_promotion_param: &mut CThostFtdcQryCombPromotionParamField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryCombPromotionParam)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_comb_promotion_param as * mut CThostFtdcQryCombPromotionParamField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_risk_settle_invst_position(&mut self, p_qry_risk_settle_invst_position: &mut CThostFtdcQryRiskSettleInvstPositionField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRiskSettleInvstPosition)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_risk_settle_invst_position as * mut CThostFtdcQryRiskSettleInvstPositionField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_risk_settle_product_status(&mut self, p_qry_risk_settle_product_status: &mut CThostFtdcQryRiskSettleProductStatusField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRiskSettleProductStatus)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_risk_settle_product_status as * mut CThostFtdcQryRiskSettleProductStatusField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_future_parameter(&mut self, p_qry_spbm_future_parameter: &mut CThostFtdcQrySPBMFutureParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMFutureParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_future_parameter as * mut CThostFtdcQrySPBMFutureParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_option_parameter(&mut self, p_qry_spbm_option_parameter: &mut CThostFtdcQrySPBMOptionParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMOptionParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_option_parameter as * mut CThostFtdcQrySPBMOptionParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_intra_parameter(&mut self, p_qry_spbm_intra_parameter: &mut CThostFtdcQrySPBMIntraParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMIntraParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_intra_parameter as * mut CThostFtdcQrySPBMIntraParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_inter_parameter(&mut self, p_qry_spbm_inter_parameter: &mut CThostFtdcQrySPBMInterParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMInterParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_inter_parameter as * mut CThostFtdcQrySPBMInterParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_portf_definition(&mut self, p_qry_spbm_portf_definition: &mut CThostFtdcQrySPBMPortfDefinitionField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMPortfDefinition)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_portf_definition as * mut CThostFtdcQrySPBMPortfDefinitionField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_investor_portf_def(&mut self, p_qry_spbm_investor_portf_def: &mut CThostFtdcQrySPBMInvestorPortfDefField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMInvestorPortfDef)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_investor_portf_def as * mut CThostFtdcQrySPBMInvestorPortfDefField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_investor_portf_margin_ratio(&mut self, p_qry_investor_portf_margin_ratio: &mut CThostFtdcQryInvestorPortfMarginRatioField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryInvestorPortfMarginRatio)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_investor_portf_margin_ratio as * mut CThostFtdcQryInvestorPortfMarginRatioField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_investor_prod_spbm_detail(&mut self, p_qry_investor_prod_spbm_detail: &mut CThostFtdcQryInvestorProdSPBMDetailField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryInvestorProdSPBMDetail)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_investor_prod_spbm_detail as * mut CThostFtdcQryInvestorProdSPBMDetailField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_investor_commodity_spmm_margin(&mut self, p_qry_investor_commodity_spmm_margin: &mut CThostFtdcQryInvestorCommoditySPMMMarginField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryInvestorCommoditySPMMMargin)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_investor_commodity_spmm_margin as * mut CThostFtdcQryInvestorCommoditySPMMMarginField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_investor_commodity_group_spmm_margin(&mut self, p_qry_investor_commodity_group_spmm_margin: &mut CThostFtdcQryInvestorCommodityGroupSPMMMarginField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryInvestorCommodityGroupSPMMMargin)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_investor_commodity_group_spmm_margin as * mut CThostFtdcQryInvestorCommodityGroupSPMMMarginField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spmm_inst_param(&mut self, p_qry_spmm_inst_param: &mut CThostFtdcQrySPMMInstParamField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPMMInstParam)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spmm_inst_param as * mut CThostFtdcQrySPMMInstParamField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spmm_product_param(&mut self, p_qry_spmm_product_param: &mut CThostFtdcQrySPMMProductParamField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPMMProductParam)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spmm_product_param as * mut CThostFtdcQrySPMMProductParamField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_spbm_add_on_inter_parameter(&mut self, p_qry_spbm_add_on_inter_parameter: &mut CThostFtdcQrySPBMAddOnInterParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQrySPBMAddOnInterParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_spbm_add_on_inter_parameter as * mut CThostFtdcQrySPBMAddOnInterParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rcams_comb_product_info(&mut self, p_qry_rcams_comb_product_info: &mut CThostFtdcQryRCAMSCombProductInfoField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRCAMSCombProductInfo)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rcams_comb_product_info as * mut CThostFtdcQryRCAMSCombProductInfoField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rcams_instr_parameter(&mut self, p_qry_rcams_instr_parameter: &mut CThostFtdcQryRCAMSInstrParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRCAMSInstrParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rcams_instr_parameter as * mut CThostFtdcQryRCAMSInstrParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rcams_intra_parameter(&mut self, p_qry_rcams_intra_parameter: &mut CThostFtdcQryRCAMSIntraParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRCAMSIntraParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rcams_intra_parameter as * mut CThostFtdcQryRCAMSIntraParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rcams_inter_parameter(&mut self, p_qry_rcams_inter_parameter: &mut CThostFtdcQryRCAMSInterParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRCAMSInterParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rcams_inter_parameter as * mut CThostFtdcQryRCAMSInterParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rcams_short_opt_adjust_param(&mut self, p_qry_rcams_short_opt_adjust_param: &mut CThostFtdcQryRCAMSShortOptAdjustParamField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRCAMSShortOptAdjustParam)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rcams_short_opt_adjust_param as * mut CThostFtdcQryRCAMSShortOptAdjustParamField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rcams_investor_comb_position(&mut self, p_qry_rcams_investor_comb_position: &mut CThostFtdcQryRCAMSInvestorCombPositionField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRCAMSInvestorCombPosition)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rcams_investor_comb_position as * mut CThostFtdcQryRCAMSInvestorCombPositionField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_investor_prod_rcams_margin(&mut self, p_qry_investor_prod_rcams_margin: &mut CThostFtdcQryInvestorProdRCAMSMarginField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryInvestorProdRCAMSMargin)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_investor_prod_rcams_margin as * mut CThostFtdcQryInvestorProdRCAMSMarginField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rule_instr_parameter(&mut self, p_qry_rule_instr_parameter: &mut CThostFtdcQryRULEInstrParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRULEInstrParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rule_instr_parameter as * mut CThostFtdcQryRULEInstrParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rule_intra_parameter(&mut self, p_qry_rule_intra_parameter: &mut CThostFtdcQryRULEIntraParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRULEIntraParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rule_intra_parameter as * mut CThostFtdcQryRULEIntraParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_rule_inter_parameter(&mut self, p_qry_rule_inter_parameter: &mut CThostFtdcQryRULEInterParameterField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryRULEInterParameter)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_rule_inter_parameter as * mut CThostFtdcQryRULEInterParameterField,
+                                             n_request_id)
+                                        }
+                            }
+                            pub fn req_qry_investor_prod_rule_margin(&mut self, p_qry_investor_prod_rule_margin: &mut CThostFtdcQryInvestorProdRULEMarginField, n_request_id: std::os::raw::c_int) -> std::os::raw::c_int {
+                                    unsafe {
+                                           ((*(*self).vtable_).CThostFtdcTraderApi_ReqQryInvestorProdRULEMargin)(self as *mut CThostFtdcTraderApi,
+                                             p_qry_investor_prod_rule_margin as * mut CThostFtdcQryInvestorProdRULEMarginField,
+                                             n_request_id)
+                                        }
                             }} 
                 unsafe impl Send for CThostFtdcTraderApi {}pub trait CThostFtdcTraderSpi_trait: Send {fn on_front_connected(&mut self, ) {}
 fn on_front_disconnected(&mut self, n_reason : std::os::raw::c_int) {}
@@ -657,7 +860,7 @@ fn on_rsp_order_insert(&mut self, p_input_order : Option<&CThostFtdcInputOrderFi
 fn on_rsp_parked_order_insert(&mut self, p_parked_order : Option<&CThostFtdcParkedOrderField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_parked_order_action(&mut self, p_parked_order_action : Option<&CThostFtdcParkedOrderActionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_order_action(&mut self, p_input_order_action : Option<&CThostFtdcInputOrderActionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
-fn on_rsp_query_max_order_volume(&mut self, p_query_max_order_volume : Option<&CThostFtdcQueryMaxOrderVolumeField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_max_order_volume(&mut self, p_qry_max_order_volume : Option<&CThostFtdcQryMaxOrderVolumeField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_settlement_info_confirm(&mut self, p_settlement_info_confirm : Option<&CThostFtdcSettlementInfoConfirmField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_remove_parked_order(&mut self, p_remove_parked_order : Option<&CThostFtdcRemoveParkedOrderField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_remove_parked_order_action(&mut self, p_remove_parked_order_action : Option<&CThostFtdcRemoveParkedOrderActionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
@@ -682,6 +885,7 @@ fn on_rsp_qry_exchange(&mut self, p_exchange : Option<&CThostFtdcExchangeField>,
 fn on_rsp_qry_product(&mut self, p_product : Option<&CThostFtdcProductField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_qry_instrument(&mut self, p_instrument : Option<&CThostFtdcInstrumentField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_qry_depth_market_data(&mut self, p_depth_market_data : Option<&CThostFtdcDepthMarketDataField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_trader_offer(&mut self, p_trader_offer : Option<&CThostFtdcTraderOfferField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_qry_settlement_info(&mut self, p_settlement_info : Option<&CThostFtdcSettlementInfoField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_qry_transfer_bank(&mut self, p_transfer_bank : Option<&CThostFtdcTransferBankField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
 fn on_rsp_qry_investor_position_detail(&mut self, p_investor_position_detail : Option<&CThostFtdcInvestorPositionDetailField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
@@ -767,6 +971,34 @@ fn on_rsp_query_bank_account_money_by_future(&mut self, p_req_query_account : Op
 fn on_rtn_open_account_by_bank(&mut self, p_open_account : Option<&CThostFtdcOpenAccountField>) {}
 fn on_rtn_cancel_account_by_bank(&mut self, p_cancel_account : Option<&CThostFtdcCancelAccountField>) {}
 fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtdcChangeAccountField>) {}
+fn on_rsp_qry_classified_instrument(&mut self, p_instrument : Option<&CThostFtdcInstrumentField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_comb_promotion_param(&mut self, p_comb_promotion_param : Option<&CThostFtdcCombPromotionParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_risk_settle_invst_position(&mut self, p_risk_settle_invst_position : Option<&CThostFtdcRiskSettleInvstPositionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_risk_settle_product_status(&mut self, p_risk_settle_product_status : Option<&CThostFtdcRiskSettleProductStatusField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_future_parameter(&mut self, p_spbm_future_parameter : Option<&CThostFtdcSPBMFutureParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_option_parameter(&mut self, p_spbm_option_parameter : Option<&CThostFtdcSPBMOptionParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_intra_parameter(&mut self, p_spbm_intra_parameter : Option<&CThostFtdcSPBMIntraParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_inter_parameter(&mut self, p_spbm_inter_parameter : Option<&CThostFtdcSPBMInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_portf_definition(&mut self, p_spbm_portf_definition : Option<&CThostFtdcSPBMPortfDefinitionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_investor_portf_def(&mut self, p_spbm_investor_portf_def : Option<&CThostFtdcSPBMInvestorPortfDefField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_investor_portf_margin_ratio(&mut self, p_investor_portf_margin_ratio : Option<&CThostFtdcInvestorPortfMarginRatioField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_investor_prod_spbm_detail(&mut self, p_investor_prod_spbm_detail : Option<&CThostFtdcInvestorProdSPBMDetailField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_investor_commodity_spmm_margin(&mut self, p_investor_commodity_spmm_margin : Option<&CThostFtdcInvestorCommoditySPMMMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_investor_commodity_group_spmm_margin(&mut self, p_investor_commodity_group_spmm_margin : Option<&CThostFtdcInvestorCommodityGroupSPMMMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spmm_inst_param(&mut self, p_spmm_inst_param : Option<&CThostFtdcSPMMInstParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spmm_product_param(&mut self, p_spmm_product_param : Option<&CThostFtdcSPMMProductParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_spbm_add_on_inter_parameter(&mut self, p_spbm_add_on_inter_parameter : Option<&CThostFtdcSPBMAddOnInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rcams_comb_product_info(&mut self, p_rcams_comb_product_info : Option<&CThostFtdcRCAMSCombProductInfoField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rcams_instr_parameter(&mut self, p_rcams_instr_parameter : Option<&CThostFtdcRCAMSInstrParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rcams_intra_parameter(&mut self, p_rcams_intra_parameter : Option<&CThostFtdcRCAMSIntraParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rcams_inter_parameter(&mut self, p_rcams_inter_parameter : Option<&CThostFtdcRCAMSInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rcams_short_opt_adjust_param(&mut self, p_rcams_short_opt_adjust_param : Option<&CThostFtdcRCAMSShortOptAdjustParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rcams_investor_comb_position(&mut self, p_rcams_investor_comb_position : Option<&CThostFtdcRCAMSInvestorCombPositionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_investor_prod_rcams_margin(&mut self, p_investor_prod_rcams_margin : Option<&CThostFtdcInvestorProdRCAMSMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rule_instr_parameter(&mut self, p_rule_instr_parameter : Option<&CThostFtdcRULEInstrParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rule_intra_parameter(&mut self, p_rule_intra_parameter : Option<&CThostFtdcRULEIntraParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_rule_inter_parameter(&mut self, p_rule_inter_parameter : Option<&CThostFtdcRULEInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
+fn on_rsp_qry_investor_prod_rule_margin(&mut self, p_investor_prod_rule_margin : Option<&CThostFtdcInvestorProdRULEMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) {}
  }
 
         #[repr(C)]
@@ -787,7 +1019,7 @@ fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtd
                 on_rsp_parked_order_insert: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_parked_order : * const CThostFtdcParkedOrderField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_parked_order_action: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_parked_order_action : * const CThostFtdcParkedOrderActionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_order_action: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_input_order_action : * const CThostFtdcInputOrderActionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
-                on_rsp_query_max_order_volume: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_query_max_order_volume : * const CThostFtdcQueryMaxOrderVolumeField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_max_order_volume: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_qry_max_order_volume : * const CThostFtdcQryMaxOrderVolumeField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_settlement_info_confirm: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_settlement_info_confirm : * const CThostFtdcSettlementInfoConfirmField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_remove_parked_order: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_remove_parked_order : * const CThostFtdcRemoveParkedOrderField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_remove_parked_order_action: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_remove_parked_order_action : * const CThostFtdcRemoveParkedOrderActionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
@@ -812,6 +1044,7 @@ fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtd
                 on_rsp_qry_product: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_product : * const CThostFtdcProductField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_qry_instrument: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_instrument : * const CThostFtdcInstrumentField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_qry_depth_market_data: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_depth_market_data : * const CThostFtdcDepthMarketDataField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_trader_offer: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_trader_offer : * const CThostFtdcTraderOfferField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_qry_settlement_info: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_settlement_info : * const CThostFtdcSettlementInfoField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_qry_transfer_bank: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_transfer_bank : * const CThostFtdcTransferBankField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                 on_rsp_qry_investor_position_detail: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_position_detail : * const CThostFtdcInvestorPositionDetailField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
@@ -897,10 +1130,38 @@ fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtd
                 on_rtn_open_account_by_bank: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_open_account : * const CThostFtdcOpenAccountField ),
                 on_rtn_cancel_account_by_bank: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_cancel_account : * const CThostFtdcCancelAccountField ),
                 on_rtn_change_account_by_bank: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_change_account : * const CThostFtdcChangeAccountField ),
+                on_rsp_qry_classified_instrument: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_instrument : * const CThostFtdcInstrumentField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_comb_promotion_param: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_comb_promotion_param : * const CThostFtdcCombPromotionParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_risk_settle_invst_position: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_risk_settle_invst_position : * const CThostFtdcRiskSettleInvstPositionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_risk_settle_product_status: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_risk_settle_product_status : * const CThostFtdcRiskSettleProductStatusField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_future_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_future_parameter : * const CThostFtdcSPBMFutureParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_option_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_option_parameter : * const CThostFtdcSPBMOptionParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_intra_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_intra_parameter : * const CThostFtdcSPBMIntraParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_inter_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_inter_parameter : * const CThostFtdcSPBMInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_portf_definition: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_portf_definition : * const CThostFtdcSPBMPortfDefinitionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_investor_portf_def: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_investor_portf_def : * const CThostFtdcSPBMInvestorPortfDefField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_investor_portf_margin_ratio: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_portf_margin_ratio : * const CThostFtdcInvestorPortfMarginRatioField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_investor_prod_spbm_detail: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_spbm_detail : * const CThostFtdcInvestorProdSPBMDetailField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_investor_commodity_spmm_margin: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_commodity_spmm_margin : * const CThostFtdcInvestorCommoditySPMMMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_investor_commodity_group_spmm_margin: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_commodity_group_spmm_margin : * const CThostFtdcInvestorCommodityGroupSPMMMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spmm_inst_param: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spmm_inst_param : * const CThostFtdcSPMMInstParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spmm_product_param: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spmm_product_param : * const CThostFtdcSPMMProductParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_spbm_add_on_inter_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_spbm_add_on_inter_parameter : * const CThostFtdcSPBMAddOnInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rcams_comb_product_info: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rcams_comb_product_info : * const CThostFtdcRCAMSCombProductInfoField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rcams_instr_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rcams_instr_parameter : * const CThostFtdcRCAMSInstrParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rcams_intra_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rcams_intra_parameter : * const CThostFtdcRCAMSIntraParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rcams_inter_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rcams_inter_parameter : * const CThostFtdcRCAMSInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rcams_short_opt_adjust_param: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rcams_short_opt_adjust_param : * const CThostFtdcRCAMSShortOptAdjustParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rcams_investor_comb_position: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rcams_investor_comb_position : * const CThostFtdcRCAMSInvestorCombPositionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_investor_prod_rcams_margin: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_rcams_margin : * const CThostFtdcInvestorProdRCAMSMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rule_instr_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rule_instr_parameter : * const CThostFtdcRULEInstrParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rule_intra_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rule_intra_parameter : * const CThostFtdcRULEIntraParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_rule_inter_parameter: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_rule_inter_parameter : * const CThostFtdcRULEInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
+                on_rsp_qry_investor_prod_rule_margin: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_rule_margin : * const CThostFtdcInvestorProdRULEMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                  } 
 
         #[derive(Clone, Debug)]
-        pub enum CThostFtdcTraderSpiOutput {OnFrontConnected(CThostFtdcTraderSpiOnFrontConnectedPacket),OnFrontDisconnected(CThostFtdcTraderSpiOnFrontDisconnectedPacket),OnHeartBeatWarning(CThostFtdcTraderSpiOnHeartBeatWarningPacket),OnRspAuthenticate(CThostFtdcTraderSpiOnRspAuthenticatePacket),OnRspUserLogin(CThostFtdcTraderSpiOnRspUserLoginPacket),OnRspUserLogout(CThostFtdcTraderSpiOnRspUserLogoutPacket),OnRspUserPasswordUpdate(CThostFtdcTraderSpiOnRspUserPasswordUpdatePacket),OnRspTradingAccountPasswordUpdate(CThostFtdcTraderSpiOnRspTradingAccountPasswordUpdatePacket),OnRspUserAuthMethod(CThostFtdcTraderSpiOnRspUserAuthMethodPacket),OnRspGenUserCaptcha(CThostFtdcTraderSpiOnRspGenUserCaptchaPacket),OnRspGenUserText(CThostFtdcTraderSpiOnRspGenUserTextPacket),OnRspOrderInsert(CThostFtdcTraderSpiOnRspOrderInsertPacket),OnRspParkedOrderInsert(CThostFtdcTraderSpiOnRspParkedOrderInsertPacket),OnRspParkedOrderAction(CThostFtdcTraderSpiOnRspParkedOrderActionPacket),OnRspOrderAction(CThostFtdcTraderSpiOnRspOrderActionPacket),OnRspQueryMaxOrderVolume(CThostFtdcTraderSpiOnRspQueryMaxOrderVolumePacket),OnRspSettlementInfoConfirm(CThostFtdcTraderSpiOnRspSettlementInfoConfirmPacket),OnRspRemoveParkedOrder(CThostFtdcTraderSpiOnRspRemoveParkedOrderPacket),OnRspRemoveParkedOrderAction(CThostFtdcTraderSpiOnRspRemoveParkedOrderActionPacket),OnRspExecOrderInsert(CThostFtdcTraderSpiOnRspExecOrderInsertPacket),OnRspExecOrderAction(CThostFtdcTraderSpiOnRspExecOrderActionPacket),OnRspForQuoteInsert(CThostFtdcTraderSpiOnRspForQuoteInsertPacket),OnRspQuoteInsert(CThostFtdcTraderSpiOnRspQuoteInsertPacket),OnRspQuoteAction(CThostFtdcTraderSpiOnRspQuoteActionPacket),OnRspBatchOrderAction(CThostFtdcTraderSpiOnRspBatchOrderActionPacket),OnRspOptionSelfCloseInsert(CThostFtdcTraderSpiOnRspOptionSelfCloseInsertPacket),OnRspOptionSelfCloseAction(CThostFtdcTraderSpiOnRspOptionSelfCloseActionPacket),OnRspCombActionInsert(CThostFtdcTraderSpiOnRspCombActionInsertPacket),OnRspQryOrder(CThostFtdcTraderSpiOnRspQryOrderPacket),OnRspQryTrade(CThostFtdcTraderSpiOnRspQryTradePacket),OnRspQryInvestorPosition(CThostFtdcTraderSpiOnRspQryInvestorPositionPacket),OnRspQryTradingAccount(CThostFtdcTraderSpiOnRspQryTradingAccountPacket),OnRspQryInvestor(CThostFtdcTraderSpiOnRspQryInvestorPacket),OnRspQryTradingCode(CThostFtdcTraderSpiOnRspQryTradingCodePacket),OnRspQryInstrumentMarginRate(CThostFtdcTraderSpiOnRspQryInstrumentMarginRatePacket),OnRspQryInstrumentCommissionRate(CThostFtdcTraderSpiOnRspQryInstrumentCommissionRatePacket),OnRspQryExchange(CThostFtdcTraderSpiOnRspQryExchangePacket),OnRspQryProduct(CThostFtdcTraderSpiOnRspQryProductPacket),OnRspQryInstrument(CThostFtdcTraderSpiOnRspQryInstrumentPacket),OnRspQryDepthMarketData(CThostFtdcTraderSpiOnRspQryDepthMarketDataPacket),OnRspQrySettlementInfo(CThostFtdcTraderSpiOnRspQrySettlementInfoPacket),OnRspQryTransferBank(CThostFtdcTraderSpiOnRspQryTransferBankPacket),OnRspQryInvestorPositionDetail(CThostFtdcTraderSpiOnRspQryInvestorPositionDetailPacket),OnRspQryNotice(CThostFtdcTraderSpiOnRspQryNoticePacket),OnRspQrySettlementInfoConfirm(CThostFtdcTraderSpiOnRspQrySettlementInfoConfirmPacket),OnRspQryInvestorPositionCombineDetail(CThostFtdcTraderSpiOnRspQryInvestorPositionCombineDetailPacket),OnRspQryCFMMCTradingAccountKey(CThostFtdcTraderSpiOnRspQryCFMMCTradingAccountKeyPacket),OnRspQryEWarrantOffset(CThostFtdcTraderSpiOnRspQryEWarrantOffsetPacket),OnRspQryInvestorProductGroupMargin(CThostFtdcTraderSpiOnRspQryInvestorProductGroupMarginPacket),OnRspQryExchangeMarginRate(CThostFtdcTraderSpiOnRspQryExchangeMarginRatePacket),OnRspQryExchangeMarginRateAdjust(CThostFtdcTraderSpiOnRspQryExchangeMarginRateAdjustPacket),OnRspQryExchangeRate(CThostFtdcTraderSpiOnRspQryExchangeRatePacket),OnRspQrySecAgentACIDMap(CThostFtdcTraderSpiOnRspQrySecAgentACIDMapPacket),OnRspQryProductExchRate(CThostFtdcTraderSpiOnRspQryProductExchRatePacket),OnRspQryProductGroup(CThostFtdcTraderSpiOnRspQryProductGroupPacket),OnRspQryMMInstrumentCommissionRate(CThostFtdcTraderSpiOnRspQryMMInstrumentCommissionRatePacket),OnRspQryMMOptionInstrCommRate(CThostFtdcTraderSpiOnRspQryMMOptionInstrCommRatePacket),OnRspQryInstrumentOrderCommRate(CThostFtdcTraderSpiOnRspQryInstrumentOrderCommRatePacket),OnRspQrySecAgentTradingAccount(CThostFtdcTraderSpiOnRspQrySecAgentTradingAccountPacket),OnRspQrySecAgentCheckMode(CThostFtdcTraderSpiOnRspQrySecAgentCheckModePacket),OnRspQrySecAgentTradeInfo(CThostFtdcTraderSpiOnRspQrySecAgentTradeInfoPacket),OnRspQryOptionInstrTradeCost(CThostFtdcTraderSpiOnRspQryOptionInstrTradeCostPacket),OnRspQryOptionInstrCommRate(CThostFtdcTraderSpiOnRspQryOptionInstrCommRatePacket),OnRspQryExecOrder(CThostFtdcTraderSpiOnRspQryExecOrderPacket),OnRspQryForQuote(CThostFtdcTraderSpiOnRspQryForQuotePacket),OnRspQryQuote(CThostFtdcTraderSpiOnRspQryQuotePacket),OnRspQryOptionSelfClose(CThostFtdcTraderSpiOnRspQryOptionSelfClosePacket),OnRspQryInvestUnit(CThostFtdcTraderSpiOnRspQryInvestUnitPacket),OnRspQryCombInstrumentGuard(CThostFtdcTraderSpiOnRspQryCombInstrumentGuardPacket),OnRspQryCombAction(CThostFtdcTraderSpiOnRspQryCombActionPacket),OnRspQryTransferSerial(CThostFtdcTraderSpiOnRspQryTransferSerialPacket),OnRspQryAccountregister(CThostFtdcTraderSpiOnRspQryAccountregisterPacket),OnRspError(CThostFtdcTraderSpiOnRspErrorPacket),OnRtnOrder(CThostFtdcTraderSpiOnRtnOrderPacket),OnRtnTrade(CThostFtdcTraderSpiOnRtnTradePacket),OnErrRtnOrderInsert(CThostFtdcTraderSpiOnErrRtnOrderInsertPacket),OnErrRtnOrderAction(CThostFtdcTraderSpiOnErrRtnOrderActionPacket),OnRtnInstrumentStatus(CThostFtdcTraderSpiOnRtnInstrumentStatusPacket),OnRtnBulletin(CThostFtdcTraderSpiOnRtnBulletinPacket),OnRtnTradingNotice(CThostFtdcTraderSpiOnRtnTradingNoticePacket),OnRtnErrorConditionalOrder(CThostFtdcTraderSpiOnRtnErrorConditionalOrderPacket),OnRtnExecOrder(CThostFtdcTraderSpiOnRtnExecOrderPacket),OnErrRtnExecOrderInsert(CThostFtdcTraderSpiOnErrRtnExecOrderInsertPacket),OnErrRtnExecOrderAction(CThostFtdcTraderSpiOnErrRtnExecOrderActionPacket),OnErrRtnForQuoteInsert(CThostFtdcTraderSpiOnErrRtnForQuoteInsertPacket),OnRtnQuote(CThostFtdcTraderSpiOnRtnQuotePacket),OnErrRtnQuoteInsert(CThostFtdcTraderSpiOnErrRtnQuoteInsertPacket),OnErrRtnQuoteAction(CThostFtdcTraderSpiOnErrRtnQuoteActionPacket),OnRtnForQuoteRsp(CThostFtdcTraderSpiOnRtnForQuoteRspPacket),OnRtnCFMMCTradingAccountToken(CThostFtdcTraderSpiOnRtnCFMMCTradingAccountTokenPacket),OnErrRtnBatchOrderAction(CThostFtdcTraderSpiOnErrRtnBatchOrderActionPacket),OnRtnOptionSelfClose(CThostFtdcTraderSpiOnRtnOptionSelfClosePacket),OnErrRtnOptionSelfCloseInsert(CThostFtdcTraderSpiOnErrRtnOptionSelfCloseInsertPacket),OnErrRtnOptionSelfCloseAction(CThostFtdcTraderSpiOnErrRtnOptionSelfCloseActionPacket),OnRtnCombAction(CThostFtdcTraderSpiOnRtnCombActionPacket),OnErrRtnCombActionInsert(CThostFtdcTraderSpiOnErrRtnCombActionInsertPacket),OnRspQryContractBank(CThostFtdcTraderSpiOnRspQryContractBankPacket),OnRspQryParkedOrder(CThostFtdcTraderSpiOnRspQryParkedOrderPacket),OnRspQryParkedOrderAction(CThostFtdcTraderSpiOnRspQryParkedOrderActionPacket),OnRspQryTradingNotice(CThostFtdcTraderSpiOnRspQryTradingNoticePacket),OnRspQryBrokerTradingParams(CThostFtdcTraderSpiOnRspQryBrokerTradingParamsPacket),OnRspQryBrokerTradingAlgos(CThostFtdcTraderSpiOnRspQryBrokerTradingAlgosPacket),OnRspQueryCFMMCTradingAccountToken(CThostFtdcTraderSpiOnRspQueryCFMMCTradingAccountTokenPacket),OnRtnFromBankToFutureByBank(CThostFtdcTraderSpiOnRtnFromBankToFutureByBankPacket),OnRtnFromFutureToBankByBank(CThostFtdcTraderSpiOnRtnFromFutureToBankByBankPacket),OnRtnRepealFromBankToFutureByBank(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByBankPacket),OnRtnRepealFromFutureToBankByBank(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByBankPacket),OnRtnFromBankToFutureByFuture(CThostFtdcTraderSpiOnRtnFromBankToFutureByFuturePacket),OnRtnFromFutureToBankByFuture(CThostFtdcTraderSpiOnRtnFromFutureToBankByFuturePacket),OnRtnRepealFromBankToFutureByFutureManual(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFutureManualPacket),OnRtnRepealFromFutureToBankByFutureManual(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFutureManualPacket),OnRtnQueryBankBalanceByFuture(CThostFtdcTraderSpiOnRtnQueryBankBalanceByFuturePacket),OnErrRtnBankToFutureByFuture(CThostFtdcTraderSpiOnErrRtnBankToFutureByFuturePacket),OnErrRtnFutureToBankByFuture(CThostFtdcTraderSpiOnErrRtnFutureToBankByFuturePacket),OnErrRtnRepealBankToFutureByFutureManual(CThostFtdcTraderSpiOnErrRtnRepealBankToFutureByFutureManualPacket),OnErrRtnRepealFutureToBankByFutureManual(CThostFtdcTraderSpiOnErrRtnRepealFutureToBankByFutureManualPacket),OnErrRtnQueryBankBalanceByFuture(CThostFtdcTraderSpiOnErrRtnQueryBankBalanceByFuturePacket),OnRtnRepealFromBankToFutureByFuture(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFuturePacket),OnRtnRepealFromFutureToBankByFuture(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFuturePacket),OnRspFromBankToFutureByFuture(CThostFtdcTraderSpiOnRspFromBankToFutureByFuturePacket),OnRspFromFutureToBankByFuture(CThostFtdcTraderSpiOnRspFromFutureToBankByFuturePacket),OnRspQueryBankAccountMoneyByFuture(CThostFtdcTraderSpiOnRspQueryBankAccountMoneyByFuturePacket),OnRtnOpenAccountByBank(CThostFtdcTraderSpiOnRtnOpenAccountByBankPacket),OnRtnCancelAccountByBank(CThostFtdcTraderSpiOnRtnCancelAccountByBankPacket),OnRtnChangeAccountByBank(CThostFtdcTraderSpiOnRtnChangeAccountByBankPacket), } 
+        pub enum CThostFtdcTraderSpiOutput {OnFrontConnected(CThostFtdcTraderSpiOnFrontConnectedPacket),OnFrontDisconnected(CThostFtdcTraderSpiOnFrontDisconnectedPacket),OnHeartBeatWarning(CThostFtdcTraderSpiOnHeartBeatWarningPacket),OnRspAuthenticate(CThostFtdcTraderSpiOnRspAuthenticatePacket),OnRspUserLogin(CThostFtdcTraderSpiOnRspUserLoginPacket),OnRspUserLogout(CThostFtdcTraderSpiOnRspUserLogoutPacket),OnRspUserPasswordUpdate(CThostFtdcTraderSpiOnRspUserPasswordUpdatePacket),OnRspTradingAccountPasswordUpdate(CThostFtdcTraderSpiOnRspTradingAccountPasswordUpdatePacket),OnRspUserAuthMethod(CThostFtdcTraderSpiOnRspUserAuthMethodPacket),OnRspGenUserCaptcha(CThostFtdcTraderSpiOnRspGenUserCaptchaPacket),OnRspGenUserText(CThostFtdcTraderSpiOnRspGenUserTextPacket),OnRspOrderInsert(CThostFtdcTraderSpiOnRspOrderInsertPacket),OnRspParkedOrderInsert(CThostFtdcTraderSpiOnRspParkedOrderInsertPacket),OnRspParkedOrderAction(CThostFtdcTraderSpiOnRspParkedOrderActionPacket),OnRspOrderAction(CThostFtdcTraderSpiOnRspOrderActionPacket),OnRspQryMaxOrderVolume(CThostFtdcTraderSpiOnRspQryMaxOrderVolumePacket),OnRspSettlementInfoConfirm(CThostFtdcTraderSpiOnRspSettlementInfoConfirmPacket),OnRspRemoveParkedOrder(CThostFtdcTraderSpiOnRspRemoveParkedOrderPacket),OnRspRemoveParkedOrderAction(CThostFtdcTraderSpiOnRspRemoveParkedOrderActionPacket),OnRspExecOrderInsert(CThostFtdcTraderSpiOnRspExecOrderInsertPacket),OnRspExecOrderAction(CThostFtdcTraderSpiOnRspExecOrderActionPacket),OnRspForQuoteInsert(CThostFtdcTraderSpiOnRspForQuoteInsertPacket),OnRspQuoteInsert(CThostFtdcTraderSpiOnRspQuoteInsertPacket),OnRspQuoteAction(CThostFtdcTraderSpiOnRspQuoteActionPacket),OnRspBatchOrderAction(CThostFtdcTraderSpiOnRspBatchOrderActionPacket),OnRspOptionSelfCloseInsert(CThostFtdcTraderSpiOnRspOptionSelfCloseInsertPacket),OnRspOptionSelfCloseAction(CThostFtdcTraderSpiOnRspOptionSelfCloseActionPacket),OnRspCombActionInsert(CThostFtdcTraderSpiOnRspCombActionInsertPacket),OnRspQryOrder(CThostFtdcTraderSpiOnRspQryOrderPacket),OnRspQryTrade(CThostFtdcTraderSpiOnRspQryTradePacket),OnRspQryInvestorPosition(CThostFtdcTraderSpiOnRspQryInvestorPositionPacket),OnRspQryTradingAccount(CThostFtdcTraderSpiOnRspQryTradingAccountPacket),OnRspQryInvestor(CThostFtdcTraderSpiOnRspQryInvestorPacket),OnRspQryTradingCode(CThostFtdcTraderSpiOnRspQryTradingCodePacket),OnRspQryInstrumentMarginRate(CThostFtdcTraderSpiOnRspQryInstrumentMarginRatePacket),OnRspQryInstrumentCommissionRate(CThostFtdcTraderSpiOnRspQryInstrumentCommissionRatePacket),OnRspQryExchange(CThostFtdcTraderSpiOnRspQryExchangePacket),OnRspQryProduct(CThostFtdcTraderSpiOnRspQryProductPacket),OnRspQryInstrument(CThostFtdcTraderSpiOnRspQryInstrumentPacket),OnRspQryDepthMarketData(CThostFtdcTraderSpiOnRspQryDepthMarketDataPacket),OnRspQryTraderOffer(CThostFtdcTraderSpiOnRspQryTraderOfferPacket),OnRspQrySettlementInfo(CThostFtdcTraderSpiOnRspQrySettlementInfoPacket),OnRspQryTransferBank(CThostFtdcTraderSpiOnRspQryTransferBankPacket),OnRspQryInvestorPositionDetail(CThostFtdcTraderSpiOnRspQryInvestorPositionDetailPacket),OnRspQryNotice(CThostFtdcTraderSpiOnRspQryNoticePacket),OnRspQrySettlementInfoConfirm(CThostFtdcTraderSpiOnRspQrySettlementInfoConfirmPacket),OnRspQryInvestorPositionCombineDetail(CThostFtdcTraderSpiOnRspQryInvestorPositionCombineDetailPacket),OnRspQryCFMMCTradingAccountKey(CThostFtdcTraderSpiOnRspQryCFMMCTradingAccountKeyPacket),OnRspQryEWarrantOffset(CThostFtdcTraderSpiOnRspQryEWarrantOffsetPacket),OnRspQryInvestorProductGroupMargin(CThostFtdcTraderSpiOnRspQryInvestorProductGroupMarginPacket),OnRspQryExchangeMarginRate(CThostFtdcTraderSpiOnRspQryExchangeMarginRatePacket),OnRspQryExchangeMarginRateAdjust(CThostFtdcTraderSpiOnRspQryExchangeMarginRateAdjustPacket),OnRspQryExchangeRate(CThostFtdcTraderSpiOnRspQryExchangeRatePacket),OnRspQrySecAgentACIDMap(CThostFtdcTraderSpiOnRspQrySecAgentACIDMapPacket),OnRspQryProductExchRate(CThostFtdcTraderSpiOnRspQryProductExchRatePacket),OnRspQryProductGroup(CThostFtdcTraderSpiOnRspQryProductGroupPacket),OnRspQryMMInstrumentCommissionRate(CThostFtdcTraderSpiOnRspQryMMInstrumentCommissionRatePacket),OnRspQryMMOptionInstrCommRate(CThostFtdcTraderSpiOnRspQryMMOptionInstrCommRatePacket),OnRspQryInstrumentOrderCommRate(CThostFtdcTraderSpiOnRspQryInstrumentOrderCommRatePacket),OnRspQrySecAgentTradingAccount(CThostFtdcTraderSpiOnRspQrySecAgentTradingAccountPacket),OnRspQrySecAgentCheckMode(CThostFtdcTraderSpiOnRspQrySecAgentCheckModePacket),OnRspQrySecAgentTradeInfo(CThostFtdcTraderSpiOnRspQrySecAgentTradeInfoPacket),OnRspQryOptionInstrTradeCost(CThostFtdcTraderSpiOnRspQryOptionInstrTradeCostPacket),OnRspQryOptionInstrCommRate(CThostFtdcTraderSpiOnRspQryOptionInstrCommRatePacket),OnRspQryExecOrder(CThostFtdcTraderSpiOnRspQryExecOrderPacket),OnRspQryForQuote(CThostFtdcTraderSpiOnRspQryForQuotePacket),OnRspQryQuote(CThostFtdcTraderSpiOnRspQryQuotePacket),OnRspQryOptionSelfClose(CThostFtdcTraderSpiOnRspQryOptionSelfClosePacket),OnRspQryInvestUnit(CThostFtdcTraderSpiOnRspQryInvestUnitPacket),OnRspQryCombInstrumentGuard(CThostFtdcTraderSpiOnRspQryCombInstrumentGuardPacket),OnRspQryCombAction(CThostFtdcTraderSpiOnRspQryCombActionPacket),OnRspQryTransferSerial(CThostFtdcTraderSpiOnRspQryTransferSerialPacket),OnRspQryAccountregister(CThostFtdcTraderSpiOnRspQryAccountregisterPacket),OnRspError(CThostFtdcTraderSpiOnRspErrorPacket),OnRtnOrder(CThostFtdcTraderSpiOnRtnOrderPacket),OnRtnTrade(CThostFtdcTraderSpiOnRtnTradePacket),OnErrRtnOrderInsert(CThostFtdcTraderSpiOnErrRtnOrderInsertPacket),OnErrRtnOrderAction(CThostFtdcTraderSpiOnErrRtnOrderActionPacket),OnRtnInstrumentStatus(CThostFtdcTraderSpiOnRtnInstrumentStatusPacket),OnRtnBulletin(CThostFtdcTraderSpiOnRtnBulletinPacket),OnRtnTradingNotice(CThostFtdcTraderSpiOnRtnTradingNoticePacket),OnRtnErrorConditionalOrder(CThostFtdcTraderSpiOnRtnErrorConditionalOrderPacket),OnRtnExecOrder(CThostFtdcTraderSpiOnRtnExecOrderPacket),OnErrRtnExecOrderInsert(CThostFtdcTraderSpiOnErrRtnExecOrderInsertPacket),OnErrRtnExecOrderAction(CThostFtdcTraderSpiOnErrRtnExecOrderActionPacket),OnErrRtnForQuoteInsert(CThostFtdcTraderSpiOnErrRtnForQuoteInsertPacket),OnRtnQuote(CThostFtdcTraderSpiOnRtnQuotePacket),OnErrRtnQuoteInsert(CThostFtdcTraderSpiOnErrRtnQuoteInsertPacket),OnErrRtnQuoteAction(CThostFtdcTraderSpiOnErrRtnQuoteActionPacket),OnRtnForQuoteRsp(CThostFtdcTraderSpiOnRtnForQuoteRspPacket),OnRtnCFMMCTradingAccountToken(CThostFtdcTraderSpiOnRtnCFMMCTradingAccountTokenPacket),OnErrRtnBatchOrderAction(CThostFtdcTraderSpiOnErrRtnBatchOrderActionPacket),OnRtnOptionSelfClose(CThostFtdcTraderSpiOnRtnOptionSelfClosePacket),OnErrRtnOptionSelfCloseInsert(CThostFtdcTraderSpiOnErrRtnOptionSelfCloseInsertPacket),OnErrRtnOptionSelfCloseAction(CThostFtdcTraderSpiOnErrRtnOptionSelfCloseActionPacket),OnRtnCombAction(CThostFtdcTraderSpiOnRtnCombActionPacket),OnErrRtnCombActionInsert(CThostFtdcTraderSpiOnErrRtnCombActionInsertPacket),OnRspQryContractBank(CThostFtdcTraderSpiOnRspQryContractBankPacket),OnRspQryParkedOrder(CThostFtdcTraderSpiOnRspQryParkedOrderPacket),OnRspQryParkedOrderAction(CThostFtdcTraderSpiOnRspQryParkedOrderActionPacket),OnRspQryTradingNotice(CThostFtdcTraderSpiOnRspQryTradingNoticePacket),OnRspQryBrokerTradingParams(CThostFtdcTraderSpiOnRspQryBrokerTradingParamsPacket),OnRspQryBrokerTradingAlgos(CThostFtdcTraderSpiOnRspQryBrokerTradingAlgosPacket),OnRspQueryCFMMCTradingAccountToken(CThostFtdcTraderSpiOnRspQueryCFMMCTradingAccountTokenPacket),OnRtnFromBankToFutureByBank(CThostFtdcTraderSpiOnRtnFromBankToFutureByBankPacket),OnRtnFromFutureToBankByBank(CThostFtdcTraderSpiOnRtnFromFutureToBankByBankPacket),OnRtnRepealFromBankToFutureByBank(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByBankPacket),OnRtnRepealFromFutureToBankByBank(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByBankPacket),OnRtnFromBankToFutureByFuture(CThostFtdcTraderSpiOnRtnFromBankToFutureByFuturePacket),OnRtnFromFutureToBankByFuture(CThostFtdcTraderSpiOnRtnFromFutureToBankByFuturePacket),OnRtnRepealFromBankToFutureByFutureManual(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFutureManualPacket),OnRtnRepealFromFutureToBankByFutureManual(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFutureManualPacket),OnRtnQueryBankBalanceByFuture(CThostFtdcTraderSpiOnRtnQueryBankBalanceByFuturePacket),OnErrRtnBankToFutureByFuture(CThostFtdcTraderSpiOnErrRtnBankToFutureByFuturePacket),OnErrRtnFutureToBankByFuture(CThostFtdcTraderSpiOnErrRtnFutureToBankByFuturePacket),OnErrRtnRepealBankToFutureByFutureManual(CThostFtdcTraderSpiOnErrRtnRepealBankToFutureByFutureManualPacket),OnErrRtnRepealFutureToBankByFutureManual(CThostFtdcTraderSpiOnErrRtnRepealFutureToBankByFutureManualPacket),OnErrRtnQueryBankBalanceByFuture(CThostFtdcTraderSpiOnErrRtnQueryBankBalanceByFuturePacket),OnRtnRepealFromBankToFutureByFuture(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFuturePacket),OnRtnRepealFromFutureToBankByFuture(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFuturePacket),OnRspFromBankToFutureByFuture(CThostFtdcTraderSpiOnRspFromBankToFutureByFuturePacket),OnRspFromFutureToBankByFuture(CThostFtdcTraderSpiOnRspFromFutureToBankByFuturePacket),OnRspQueryBankAccountMoneyByFuture(CThostFtdcTraderSpiOnRspQueryBankAccountMoneyByFuturePacket),OnRtnOpenAccountByBank(CThostFtdcTraderSpiOnRtnOpenAccountByBankPacket),OnRtnCancelAccountByBank(CThostFtdcTraderSpiOnRtnCancelAccountByBankPacket),OnRtnChangeAccountByBank(CThostFtdcTraderSpiOnRtnChangeAccountByBankPacket),OnRspQryClassifiedInstrument(CThostFtdcTraderSpiOnRspQryClassifiedInstrumentPacket),OnRspQryCombPromotionParam(CThostFtdcTraderSpiOnRspQryCombPromotionParamPacket),OnRspQryRiskSettleInvstPosition(CThostFtdcTraderSpiOnRspQryRiskSettleInvstPositionPacket),OnRspQryRiskSettleProductStatus(CThostFtdcTraderSpiOnRspQryRiskSettleProductStatusPacket),OnRspQrySPBMFutureParameter(CThostFtdcTraderSpiOnRspQrySPBMFutureParameterPacket),OnRspQrySPBMOptionParameter(CThostFtdcTraderSpiOnRspQrySPBMOptionParameterPacket),OnRspQrySPBMIntraParameter(CThostFtdcTraderSpiOnRspQrySPBMIntraParameterPacket),OnRspQrySPBMInterParameter(CThostFtdcTraderSpiOnRspQrySPBMInterParameterPacket),OnRspQrySPBMPortfDefinition(CThostFtdcTraderSpiOnRspQrySPBMPortfDefinitionPacket),OnRspQrySPBMInvestorPortfDef(CThostFtdcTraderSpiOnRspQrySPBMInvestorPortfDefPacket),OnRspQryInvestorPortfMarginRatio(CThostFtdcTraderSpiOnRspQryInvestorPortfMarginRatioPacket),OnRspQryInvestorProdSPBMDetail(CThostFtdcTraderSpiOnRspQryInvestorProdSPBMDetailPacket),OnRspQryInvestorCommoditySPMMMargin(CThostFtdcTraderSpiOnRspQryInvestorCommoditySPMMMarginPacket),OnRspQryInvestorCommodityGroupSPMMMargin(CThostFtdcTraderSpiOnRspQryInvestorCommodityGroupSPMMMarginPacket),OnRspQrySPMMInstParam(CThostFtdcTraderSpiOnRspQrySPMMInstParamPacket),OnRspQrySPMMProductParam(CThostFtdcTraderSpiOnRspQrySPMMProductParamPacket),OnRspQrySPBMAddOnInterParameter(CThostFtdcTraderSpiOnRspQrySPBMAddOnInterParameterPacket),OnRspQryRCAMSCombProductInfo(CThostFtdcTraderSpiOnRspQryRCAMSCombProductInfoPacket),OnRspQryRCAMSInstrParameter(CThostFtdcTraderSpiOnRspQryRCAMSInstrParameterPacket),OnRspQryRCAMSIntraParameter(CThostFtdcTraderSpiOnRspQryRCAMSIntraParameterPacket),OnRspQryRCAMSInterParameter(CThostFtdcTraderSpiOnRspQryRCAMSInterParameterPacket),OnRspQryRCAMSShortOptAdjustParam(CThostFtdcTraderSpiOnRspQryRCAMSShortOptAdjustParamPacket),OnRspQryRCAMSInvestorCombPosition(CThostFtdcTraderSpiOnRspQryRCAMSInvestorCombPositionPacket),OnRspQryInvestorProdRCAMSMargin(CThostFtdcTraderSpiOnRspQryInvestorProdRCAMSMarginPacket),OnRspQryRULEInstrParameter(CThostFtdcTraderSpiOnRspQryRULEInstrParameterPacket),OnRspQryRULEIntraParameter(CThostFtdcTraderSpiOnRspQryRULEIntraParameterPacket),OnRspQryRULEInterParameter(CThostFtdcTraderSpiOnRspQryRULEInterParameterPacket),OnRspQryInvestorProdRULEMargin(CThostFtdcTraderSpiOnRspQryInvestorProdRULEMarginPacket), } 
 
             #[derive(Clone, Debug)]
             pub struct CThostFtdcTraderSpiOnFrontConnectedPacket {
@@ -963,8 +1224,8 @@ fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtd
                 pub p_input_order_action : Option<CThostFtdcInputOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
             #[derive(Clone, Debug)]
-            pub struct CThostFtdcTraderSpiOnRspQueryMaxOrderVolumePacket {
-                pub p_query_max_order_volume : Option<CThostFtdcQueryMaxOrderVolumeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            pub struct CThostFtdcTraderSpiOnRspQryMaxOrderVolumePacket {
+                pub p_qry_max_order_volume : Option<CThostFtdcQryMaxOrderVolumeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
             #[derive(Clone, Debug)]
             pub struct CThostFtdcTraderSpiOnRspSettlementInfoConfirmPacket {
@@ -1061,6 +1322,10 @@ fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtd
             #[derive(Clone, Debug)]
             pub struct CThostFtdcTraderSpiOnRspQryDepthMarketDataPacket {
                 pub p_depth_market_data : Option<CThostFtdcDepthMarketDataField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryTraderOfferPacket {
+                pub p_trader_offer : Option<CThostFtdcTraderOfferField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
             #[derive(Clone, Debug)]
             pub struct CThostFtdcTraderSpiOnRspQrySettlementInfoPacket {
@@ -1401,6 +1666,118 @@ fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtd
             #[derive(Clone, Debug)]
             pub struct CThostFtdcTraderSpiOnRtnChangeAccountByBankPacket {
                 pub p_change_account : Option<CThostFtdcChangeAccountField>,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryClassifiedInstrumentPacket {
+                pub p_instrument : Option<CThostFtdcInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryCombPromotionParamPacket {
+                pub p_comb_promotion_param : Option<CThostFtdcCombPromotionParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRiskSettleInvstPositionPacket {
+                pub p_risk_settle_invst_position : Option<CThostFtdcRiskSettleInvstPositionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRiskSettleProductStatusPacket {
+                pub p_risk_settle_product_status : Option<CThostFtdcRiskSettleProductStatusField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMFutureParameterPacket {
+                pub p_spbm_future_parameter : Option<CThostFtdcSPBMFutureParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMOptionParameterPacket {
+                pub p_spbm_option_parameter : Option<CThostFtdcSPBMOptionParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMIntraParameterPacket {
+                pub p_spbm_intra_parameter : Option<CThostFtdcSPBMIntraParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMInterParameterPacket {
+                pub p_spbm_inter_parameter : Option<CThostFtdcSPBMInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMPortfDefinitionPacket {
+                pub p_spbm_portf_definition : Option<CThostFtdcSPBMPortfDefinitionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMInvestorPortfDefPacket {
+                pub p_spbm_investor_portf_def : Option<CThostFtdcSPBMInvestorPortfDefField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryInvestorPortfMarginRatioPacket {
+                pub p_investor_portf_margin_ratio : Option<CThostFtdcInvestorPortfMarginRatioField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryInvestorProdSPBMDetailPacket {
+                pub p_investor_prod_spbm_detail : Option<CThostFtdcInvestorProdSPBMDetailField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryInvestorCommoditySPMMMarginPacket {
+                pub p_investor_commodity_spmm_margin : Option<CThostFtdcInvestorCommoditySPMMMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryInvestorCommodityGroupSPMMMarginPacket {
+                pub p_investor_commodity_group_spmm_margin : Option<CThostFtdcInvestorCommodityGroupSPMMMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPMMInstParamPacket {
+                pub p_spmm_inst_param : Option<CThostFtdcSPMMInstParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPMMProductParamPacket {
+                pub p_spmm_product_param : Option<CThostFtdcSPMMProductParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQrySPBMAddOnInterParameterPacket {
+                pub p_spbm_add_on_inter_parameter : Option<CThostFtdcSPBMAddOnInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRCAMSCombProductInfoPacket {
+                pub p_rcams_comb_product_info : Option<CThostFtdcRCAMSCombProductInfoField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRCAMSInstrParameterPacket {
+                pub p_rcams_instr_parameter : Option<CThostFtdcRCAMSInstrParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRCAMSIntraParameterPacket {
+                pub p_rcams_intra_parameter : Option<CThostFtdcRCAMSIntraParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRCAMSInterParameterPacket {
+                pub p_rcams_inter_parameter : Option<CThostFtdcRCAMSInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRCAMSShortOptAdjustParamPacket {
+                pub p_rcams_short_opt_adjust_param : Option<CThostFtdcRCAMSShortOptAdjustParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRCAMSInvestorCombPositionPacket {
+                pub p_rcams_investor_comb_position : Option<CThostFtdcRCAMSInvestorCombPositionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryInvestorProdRCAMSMarginPacket {
+                pub p_investor_prod_rcams_margin : Option<CThostFtdcInvestorProdRCAMSMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRULEInstrParameterPacket {
+                pub p_rule_instr_parameter : Option<CThostFtdcRULEInstrParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRULEIntraParameterPacket {
+                pub p_rule_intra_parameter : Option<CThostFtdcRULEIntraParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryRULEInterParameterPacket {
+                pub p_rule_inter_parameter : Option<CThostFtdcRULEInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
+            }
+            #[derive(Clone, Debug)]
+            pub struct CThostFtdcTraderSpiOnRspQryInvestorProdRULEMarginPacket {
+                pub p_investor_prod_rule_margin : Option<CThostFtdcInvestorProdRULEMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }  
 static C_THOST_FTDC_TRADER_SPI_VTABLE: CThostFtdcTraderSpiVTable = CThostFtdcTraderSpiVTable {
                 on_front_connected: spi_on_front_connected,
@@ -1418,7 +1795,7 @@ static C_THOST_FTDC_TRADER_SPI_VTABLE: CThostFtdcTraderSpiVTable = CThostFtdcTra
             on_rsp_parked_order_insert: spi_on_rsp_parked_order_insert,
             on_rsp_parked_order_action: spi_on_rsp_parked_order_action,
             on_rsp_order_action: spi_on_rsp_order_action,
-            on_rsp_query_max_order_volume: spi_on_rsp_query_max_order_volume,
+            on_rsp_qry_max_order_volume: spi_on_rsp_qry_max_order_volume,
             on_rsp_settlement_info_confirm: spi_on_rsp_settlement_info_confirm,
             on_rsp_remove_parked_order: spi_on_rsp_remove_parked_order,
             on_rsp_remove_parked_order_action: spi_on_rsp_remove_parked_order_action,
@@ -1443,6 +1820,7 @@ static C_THOST_FTDC_TRADER_SPI_VTABLE: CThostFtdcTraderSpiVTable = CThostFtdcTra
             on_rsp_qry_product: spi_on_rsp_qry_product,
             on_rsp_qry_instrument: spi_on_rsp_qry_instrument,
             on_rsp_qry_depth_market_data: spi_on_rsp_qry_depth_market_data,
+            on_rsp_qry_trader_offer: spi_on_rsp_qry_trader_offer,
             on_rsp_qry_settlement_info: spi_on_rsp_qry_settlement_info,
             on_rsp_qry_transfer_bank: spi_on_rsp_qry_transfer_bank,
             on_rsp_qry_investor_position_detail: spi_on_rsp_qry_investor_position_detail,
@@ -1528,6 +1906,34 @@ static C_THOST_FTDC_TRADER_SPI_VTABLE: CThostFtdcTraderSpiVTable = CThostFtdcTra
             on_rtn_open_account_by_bank: spi_on_rtn_open_account_by_bank,
             on_rtn_cancel_account_by_bank: spi_on_rtn_cancel_account_by_bank,
             on_rtn_change_account_by_bank: spi_on_rtn_change_account_by_bank,
+            on_rsp_qry_classified_instrument: spi_on_rsp_qry_classified_instrument,
+            on_rsp_qry_comb_promotion_param: spi_on_rsp_qry_comb_promotion_param,
+            on_rsp_qry_risk_settle_invst_position: spi_on_rsp_qry_risk_settle_invst_position,
+            on_rsp_qry_risk_settle_product_status: spi_on_rsp_qry_risk_settle_product_status,
+            on_rsp_qry_spbm_future_parameter: spi_on_rsp_qry_spbm_future_parameter,
+            on_rsp_qry_spbm_option_parameter: spi_on_rsp_qry_spbm_option_parameter,
+            on_rsp_qry_spbm_intra_parameter: spi_on_rsp_qry_spbm_intra_parameter,
+            on_rsp_qry_spbm_inter_parameter: spi_on_rsp_qry_spbm_inter_parameter,
+            on_rsp_qry_spbm_portf_definition: spi_on_rsp_qry_spbm_portf_definition,
+            on_rsp_qry_spbm_investor_portf_def: spi_on_rsp_qry_spbm_investor_portf_def,
+            on_rsp_qry_investor_portf_margin_ratio: spi_on_rsp_qry_investor_portf_margin_ratio,
+            on_rsp_qry_investor_prod_spbm_detail: spi_on_rsp_qry_investor_prod_spbm_detail,
+            on_rsp_qry_investor_commodity_spmm_margin: spi_on_rsp_qry_investor_commodity_spmm_margin,
+            on_rsp_qry_investor_commodity_group_spmm_margin: spi_on_rsp_qry_investor_commodity_group_spmm_margin,
+            on_rsp_qry_spmm_inst_param: spi_on_rsp_qry_spmm_inst_param,
+            on_rsp_qry_spmm_product_param: spi_on_rsp_qry_spmm_product_param,
+            on_rsp_qry_spbm_add_on_inter_parameter: spi_on_rsp_qry_spbm_add_on_inter_parameter,
+            on_rsp_qry_rcams_comb_product_info: spi_on_rsp_qry_rcams_comb_product_info,
+            on_rsp_qry_rcams_instr_parameter: spi_on_rsp_qry_rcams_instr_parameter,
+            on_rsp_qry_rcams_intra_parameter: spi_on_rsp_qry_rcams_intra_parameter,
+            on_rsp_qry_rcams_inter_parameter: spi_on_rsp_qry_rcams_inter_parameter,
+            on_rsp_qry_rcams_short_opt_adjust_param: spi_on_rsp_qry_rcams_short_opt_adjust_param,
+            on_rsp_qry_rcams_investor_comb_position: spi_on_rsp_qry_rcams_investor_comb_position,
+            on_rsp_qry_investor_prod_rcams_margin: spi_on_rsp_qry_investor_prod_rcams_margin,
+            on_rsp_qry_rule_instr_parameter: spi_on_rsp_qry_rule_instr_parameter,
+            on_rsp_qry_rule_intra_parameter: spi_on_rsp_qry_rule_intra_parameter,
+            on_rsp_qry_rule_inter_parameter: spi_on_rsp_qry_rule_inter_parameter,
+            on_rsp_qry_investor_prod_rule_margin: spi_on_rsp_qry_investor_prod_rule_margin,
              };
 extern "C" fn spi_on_front_connected(spi: *mut CThostFtdcTraderSpiFat, ) {
                     unsafe {
@@ -1589,9 +1995,9 @@ extern "C" fn spi_on_front_connected(spi: *mut CThostFtdcTraderSpiFat, ) {
                     unsafe {
                         (*(*spi).md_spi_ptr).on_rsp_order_action(p_input_order_action.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
                     }
-                }extern "C" fn spi_on_rsp_query_max_order_volume(spi: *mut CThostFtdcTraderSpiFat, p_query_max_order_volume : * const CThostFtdcQueryMaxOrderVolumeField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                }extern "C" fn spi_on_rsp_qry_max_order_volume(spi: *mut CThostFtdcTraderSpiFat, p_qry_max_order_volume : * const CThostFtdcQryMaxOrderVolumeField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
                     unsafe {
-                        (*(*spi).md_spi_ptr).on_rsp_query_max_order_volume(p_query_max_order_volume.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                        (*(*spi).md_spi_ptr).on_rsp_qry_max_order_volume(p_qry_max_order_volume.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
                     }
                 }extern "C" fn spi_on_rsp_settlement_info_confirm(spi: *mut CThostFtdcTraderSpiFat, p_settlement_info_confirm : * const CThostFtdcSettlementInfoConfirmField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
                     unsafe {
@@ -1688,6 +2094,10 @@ extern "C" fn spi_on_front_connected(spi: *mut CThostFtdcTraderSpiFat, ) {
                 }extern "C" fn spi_on_rsp_qry_depth_market_data(spi: *mut CThostFtdcTraderSpiFat, p_depth_market_data : * const CThostFtdcDepthMarketDataField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
                     unsafe {
                         (*(*spi).md_spi_ptr).on_rsp_qry_depth_market_data(p_depth_market_data.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_trader_offer(spi: *mut CThostFtdcTraderSpiFat, p_trader_offer : * const CThostFtdcTraderOfferField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_trader_offer(p_trader_offer.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
                     }
                 }extern "C" fn spi_on_rsp_qry_settlement_info(spi: *mut CThostFtdcTraderSpiFat, p_settlement_info : * const CThostFtdcSettlementInfoField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
                     unsafe {
@@ -2029,6 +2439,118 @@ extern "C" fn spi_on_front_connected(spi: *mut CThostFtdcTraderSpiFat, ) {
                     unsafe {
                         (*(*spi).md_spi_ptr).on_rtn_change_account_by_bank(p_change_account.as_ref())
                     }
+                }extern "C" fn spi_on_rsp_qry_classified_instrument(spi: *mut CThostFtdcTraderSpiFat, p_instrument : * const CThostFtdcInstrumentField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_classified_instrument(p_instrument.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_comb_promotion_param(spi: *mut CThostFtdcTraderSpiFat, p_comb_promotion_param : * const CThostFtdcCombPromotionParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_comb_promotion_param(p_comb_promotion_param.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_risk_settle_invst_position(spi: *mut CThostFtdcTraderSpiFat, p_risk_settle_invst_position : * const CThostFtdcRiskSettleInvstPositionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_risk_settle_invst_position(p_risk_settle_invst_position.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_risk_settle_product_status(spi: *mut CThostFtdcTraderSpiFat, p_risk_settle_product_status : * const CThostFtdcRiskSettleProductStatusField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_risk_settle_product_status(p_risk_settle_product_status.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_future_parameter(spi: *mut CThostFtdcTraderSpiFat, p_spbm_future_parameter : * const CThostFtdcSPBMFutureParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_future_parameter(p_spbm_future_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_option_parameter(spi: *mut CThostFtdcTraderSpiFat, p_spbm_option_parameter : * const CThostFtdcSPBMOptionParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_option_parameter(p_spbm_option_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_intra_parameter(spi: *mut CThostFtdcTraderSpiFat, p_spbm_intra_parameter : * const CThostFtdcSPBMIntraParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_intra_parameter(p_spbm_intra_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_inter_parameter(spi: *mut CThostFtdcTraderSpiFat, p_spbm_inter_parameter : * const CThostFtdcSPBMInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_inter_parameter(p_spbm_inter_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_portf_definition(spi: *mut CThostFtdcTraderSpiFat, p_spbm_portf_definition : * const CThostFtdcSPBMPortfDefinitionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_portf_definition(p_spbm_portf_definition.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_investor_portf_def(spi: *mut CThostFtdcTraderSpiFat, p_spbm_investor_portf_def : * const CThostFtdcSPBMInvestorPortfDefField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_investor_portf_def(p_spbm_investor_portf_def.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_investor_portf_margin_ratio(spi: *mut CThostFtdcTraderSpiFat, p_investor_portf_margin_ratio : * const CThostFtdcInvestorPortfMarginRatioField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_investor_portf_margin_ratio(p_investor_portf_margin_ratio.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_investor_prod_spbm_detail(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_spbm_detail : * const CThostFtdcInvestorProdSPBMDetailField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_investor_prod_spbm_detail(p_investor_prod_spbm_detail.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_investor_commodity_spmm_margin(spi: *mut CThostFtdcTraderSpiFat, p_investor_commodity_spmm_margin : * const CThostFtdcInvestorCommoditySPMMMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_investor_commodity_spmm_margin(p_investor_commodity_spmm_margin.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_investor_commodity_group_spmm_margin(spi: *mut CThostFtdcTraderSpiFat, p_investor_commodity_group_spmm_margin : * const CThostFtdcInvestorCommodityGroupSPMMMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_investor_commodity_group_spmm_margin(p_investor_commodity_group_spmm_margin.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spmm_inst_param(spi: *mut CThostFtdcTraderSpiFat, p_spmm_inst_param : * const CThostFtdcSPMMInstParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spmm_inst_param(p_spmm_inst_param.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spmm_product_param(spi: *mut CThostFtdcTraderSpiFat, p_spmm_product_param : * const CThostFtdcSPMMProductParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spmm_product_param(p_spmm_product_param.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_spbm_add_on_inter_parameter(spi: *mut CThostFtdcTraderSpiFat, p_spbm_add_on_inter_parameter : * const CThostFtdcSPBMAddOnInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_spbm_add_on_inter_parameter(p_spbm_add_on_inter_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rcams_comb_product_info(spi: *mut CThostFtdcTraderSpiFat, p_rcams_comb_product_info : * const CThostFtdcRCAMSCombProductInfoField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rcams_comb_product_info(p_rcams_comb_product_info.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rcams_instr_parameter(spi: *mut CThostFtdcTraderSpiFat, p_rcams_instr_parameter : * const CThostFtdcRCAMSInstrParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rcams_instr_parameter(p_rcams_instr_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rcams_intra_parameter(spi: *mut CThostFtdcTraderSpiFat, p_rcams_intra_parameter : * const CThostFtdcRCAMSIntraParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rcams_intra_parameter(p_rcams_intra_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rcams_inter_parameter(spi: *mut CThostFtdcTraderSpiFat, p_rcams_inter_parameter : * const CThostFtdcRCAMSInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rcams_inter_parameter(p_rcams_inter_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rcams_short_opt_adjust_param(spi: *mut CThostFtdcTraderSpiFat, p_rcams_short_opt_adjust_param : * const CThostFtdcRCAMSShortOptAdjustParamField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rcams_short_opt_adjust_param(p_rcams_short_opt_adjust_param.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rcams_investor_comb_position(spi: *mut CThostFtdcTraderSpiFat, p_rcams_investor_comb_position : * const CThostFtdcRCAMSInvestorCombPositionField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rcams_investor_comb_position(p_rcams_investor_comb_position.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_investor_prod_rcams_margin(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_rcams_margin : * const CThostFtdcInvestorProdRCAMSMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_investor_prod_rcams_margin(p_investor_prod_rcams_margin.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rule_instr_parameter(spi: *mut CThostFtdcTraderSpiFat, p_rule_instr_parameter : * const CThostFtdcRULEInstrParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rule_instr_parameter(p_rule_instr_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rule_intra_parameter(spi: *mut CThostFtdcTraderSpiFat, p_rule_intra_parameter : * const CThostFtdcRULEIntraParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rule_intra_parameter(p_rule_intra_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_rule_inter_parameter(spi: *mut CThostFtdcTraderSpiFat, p_rule_inter_parameter : * const CThostFtdcRULEInterParameterField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_rule_inter_parameter(p_rule_inter_parameter.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
+                }extern "C" fn spi_on_rsp_qry_investor_prod_rule_margin(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_rule_margin : * const CThostFtdcInvestorProdRULEMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool) {
+                    unsafe {
+                        (*(*spi).md_spi_ptr).on_rsp_qry_investor_prod_rule_margin(p_investor_prod_rule_margin.as_ref(),p_rsp_info.as_ref(),n_request_id,b_is_last)
+                    }
                 }
 
         #[repr(C)]
@@ -2159,9 +2681,9 @@ impl CThostFtdcTraderSpi_trait for CThostFtdcTraderSpiStream {fn on_front_connec
  {
             self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspOrderAction( CThostFtdcTraderSpiOnRspOrderActionPacket { p_input_order_action:p_input_order_action.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
                 }
-            fn on_rsp_query_max_order_volume(&mut self, p_query_max_order_volume : Option<&CThostFtdcQueryMaxOrderVolumeField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+            fn on_rsp_qry_max_order_volume(&mut self, p_qry_max_order_volume : Option<&CThostFtdcQryMaxOrderVolumeField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
  {
-            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQueryMaxOrderVolume( CThostFtdcTraderSpiOnRspQueryMaxOrderVolumePacket { p_query_max_order_volume:p_query_max_order_volume.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryMaxOrderVolume( CThostFtdcTraderSpiOnRspQryMaxOrderVolumePacket { p_qry_max_order_volume:p_qry_max_order_volume.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
                 }
             fn on_rsp_settlement_info_confirm(&mut self, p_settlement_info_confirm : Option<&CThostFtdcSettlementInfoConfirmField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
  {
@@ -2258,6 +2780,10 @@ impl CThostFtdcTraderSpi_trait for CThostFtdcTraderSpiStream {fn on_front_connec
             fn on_rsp_qry_depth_market_data(&mut self, p_depth_market_data : Option<&CThostFtdcDepthMarketDataField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
  {
             self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryDepthMarketData( CThostFtdcTraderSpiOnRspQryDepthMarketDataPacket { p_depth_market_data:p_depth_market_data.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_trader_offer(&mut self, p_trader_offer : Option<&CThostFtdcTraderOfferField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryTraderOffer( CThostFtdcTraderSpiOnRspQryTraderOfferPacket { p_trader_offer:p_trader_offer.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
                 }
             fn on_rsp_qry_settlement_info(&mut self, p_settlement_info : Option<&CThostFtdcSettlementInfoField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
  {
@@ -2598,5 +3124,117 @@ impl CThostFtdcTraderSpi_trait for CThostFtdcTraderSpiStream {fn on_front_connec
             fn on_rtn_change_account_by_bank(&mut self, p_change_account : Option<&CThostFtdcChangeAccountField>) 
  {
             self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRtnChangeAccountByBank( CThostFtdcTraderSpiOnRtnChangeAccountByBankPacket { p_change_account:p_change_account.cloned() } ))
+                }
+            fn on_rsp_qry_classified_instrument(&mut self, p_instrument : Option<&CThostFtdcInstrumentField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryClassifiedInstrument( CThostFtdcTraderSpiOnRspQryClassifiedInstrumentPacket { p_instrument:p_instrument.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_comb_promotion_param(&mut self, p_comb_promotion_param : Option<&CThostFtdcCombPromotionParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryCombPromotionParam( CThostFtdcTraderSpiOnRspQryCombPromotionParamPacket { p_comb_promotion_param:p_comb_promotion_param.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_risk_settle_invst_position(&mut self, p_risk_settle_invst_position : Option<&CThostFtdcRiskSettleInvstPositionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRiskSettleInvstPosition( CThostFtdcTraderSpiOnRspQryRiskSettleInvstPositionPacket { p_risk_settle_invst_position:p_risk_settle_invst_position.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_risk_settle_product_status(&mut self, p_risk_settle_product_status : Option<&CThostFtdcRiskSettleProductStatusField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRiskSettleProductStatus( CThostFtdcTraderSpiOnRspQryRiskSettleProductStatusPacket { p_risk_settle_product_status:p_risk_settle_product_status.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_future_parameter(&mut self, p_spbm_future_parameter : Option<&CThostFtdcSPBMFutureParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMFutureParameter( CThostFtdcTraderSpiOnRspQrySPBMFutureParameterPacket { p_spbm_future_parameter:p_spbm_future_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_option_parameter(&mut self, p_spbm_option_parameter : Option<&CThostFtdcSPBMOptionParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMOptionParameter( CThostFtdcTraderSpiOnRspQrySPBMOptionParameterPacket { p_spbm_option_parameter:p_spbm_option_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_intra_parameter(&mut self, p_spbm_intra_parameter : Option<&CThostFtdcSPBMIntraParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMIntraParameter( CThostFtdcTraderSpiOnRspQrySPBMIntraParameterPacket { p_spbm_intra_parameter:p_spbm_intra_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_inter_parameter(&mut self, p_spbm_inter_parameter : Option<&CThostFtdcSPBMInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMInterParameter( CThostFtdcTraderSpiOnRspQrySPBMInterParameterPacket { p_spbm_inter_parameter:p_spbm_inter_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_portf_definition(&mut self, p_spbm_portf_definition : Option<&CThostFtdcSPBMPortfDefinitionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMPortfDefinition( CThostFtdcTraderSpiOnRspQrySPBMPortfDefinitionPacket { p_spbm_portf_definition:p_spbm_portf_definition.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_investor_portf_def(&mut self, p_spbm_investor_portf_def : Option<&CThostFtdcSPBMInvestorPortfDefField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMInvestorPortfDef( CThostFtdcTraderSpiOnRspQrySPBMInvestorPortfDefPacket { p_spbm_investor_portf_def:p_spbm_investor_portf_def.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_investor_portf_margin_ratio(&mut self, p_investor_portf_margin_ratio : Option<&CThostFtdcInvestorPortfMarginRatioField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryInvestorPortfMarginRatio( CThostFtdcTraderSpiOnRspQryInvestorPortfMarginRatioPacket { p_investor_portf_margin_ratio:p_investor_portf_margin_ratio.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_investor_prod_spbm_detail(&mut self, p_investor_prod_spbm_detail : Option<&CThostFtdcInvestorProdSPBMDetailField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryInvestorProdSPBMDetail( CThostFtdcTraderSpiOnRspQryInvestorProdSPBMDetailPacket { p_investor_prod_spbm_detail:p_investor_prod_spbm_detail.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_investor_commodity_spmm_margin(&mut self, p_investor_commodity_spmm_margin : Option<&CThostFtdcInvestorCommoditySPMMMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryInvestorCommoditySPMMMargin( CThostFtdcTraderSpiOnRspQryInvestorCommoditySPMMMarginPacket { p_investor_commodity_spmm_margin:p_investor_commodity_spmm_margin.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_investor_commodity_group_spmm_margin(&mut self, p_investor_commodity_group_spmm_margin : Option<&CThostFtdcInvestorCommodityGroupSPMMMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryInvestorCommodityGroupSPMMMargin( CThostFtdcTraderSpiOnRspQryInvestorCommodityGroupSPMMMarginPacket { p_investor_commodity_group_spmm_margin:p_investor_commodity_group_spmm_margin.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spmm_inst_param(&mut self, p_spmm_inst_param : Option<&CThostFtdcSPMMInstParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPMMInstParam( CThostFtdcTraderSpiOnRspQrySPMMInstParamPacket { p_spmm_inst_param:p_spmm_inst_param.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spmm_product_param(&mut self, p_spmm_product_param : Option<&CThostFtdcSPMMProductParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPMMProductParam( CThostFtdcTraderSpiOnRspQrySPMMProductParamPacket { p_spmm_product_param:p_spmm_product_param.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_spbm_add_on_inter_parameter(&mut self, p_spbm_add_on_inter_parameter : Option<&CThostFtdcSPBMAddOnInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQrySPBMAddOnInterParameter( CThostFtdcTraderSpiOnRspQrySPBMAddOnInterParameterPacket { p_spbm_add_on_inter_parameter:p_spbm_add_on_inter_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rcams_comb_product_info(&mut self, p_rcams_comb_product_info : Option<&CThostFtdcRCAMSCombProductInfoField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRCAMSCombProductInfo( CThostFtdcTraderSpiOnRspQryRCAMSCombProductInfoPacket { p_rcams_comb_product_info:p_rcams_comb_product_info.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rcams_instr_parameter(&mut self, p_rcams_instr_parameter : Option<&CThostFtdcRCAMSInstrParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRCAMSInstrParameter( CThostFtdcTraderSpiOnRspQryRCAMSInstrParameterPacket { p_rcams_instr_parameter:p_rcams_instr_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rcams_intra_parameter(&mut self, p_rcams_intra_parameter : Option<&CThostFtdcRCAMSIntraParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRCAMSIntraParameter( CThostFtdcTraderSpiOnRspQryRCAMSIntraParameterPacket { p_rcams_intra_parameter:p_rcams_intra_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rcams_inter_parameter(&mut self, p_rcams_inter_parameter : Option<&CThostFtdcRCAMSInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRCAMSInterParameter( CThostFtdcTraderSpiOnRspQryRCAMSInterParameterPacket { p_rcams_inter_parameter:p_rcams_inter_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rcams_short_opt_adjust_param(&mut self, p_rcams_short_opt_adjust_param : Option<&CThostFtdcRCAMSShortOptAdjustParamField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRCAMSShortOptAdjustParam( CThostFtdcTraderSpiOnRspQryRCAMSShortOptAdjustParamPacket { p_rcams_short_opt_adjust_param:p_rcams_short_opt_adjust_param.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rcams_investor_comb_position(&mut self, p_rcams_investor_comb_position : Option<&CThostFtdcRCAMSInvestorCombPositionField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRCAMSInvestorCombPosition( CThostFtdcTraderSpiOnRspQryRCAMSInvestorCombPositionPacket { p_rcams_investor_comb_position:p_rcams_investor_comb_position.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_investor_prod_rcams_margin(&mut self, p_investor_prod_rcams_margin : Option<&CThostFtdcInvestorProdRCAMSMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryInvestorProdRCAMSMargin( CThostFtdcTraderSpiOnRspQryInvestorProdRCAMSMarginPacket { p_investor_prod_rcams_margin:p_investor_prod_rcams_margin.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rule_instr_parameter(&mut self, p_rule_instr_parameter : Option<&CThostFtdcRULEInstrParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRULEInstrParameter( CThostFtdcTraderSpiOnRspQryRULEInstrParameterPacket { p_rule_instr_parameter:p_rule_instr_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rule_intra_parameter(&mut self, p_rule_intra_parameter : Option<&CThostFtdcRULEIntraParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRULEIntraParameter( CThostFtdcTraderSpiOnRspQryRULEIntraParameterPacket { p_rule_intra_parameter:p_rule_intra_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_rule_inter_parameter(&mut self, p_rule_inter_parameter : Option<&CThostFtdcRULEInterParameterField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryRULEInterParameter( CThostFtdcTraderSpiOnRspQryRULEInterParameterPacket { p_rule_inter_parameter:p_rule_inter_parameter.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
+                }
+            fn on_rsp_qry_investor_prod_rule_margin(&mut self, p_investor_prod_rule_margin : Option<&CThostFtdcInvestorProdRULEMarginField>,p_rsp_info : Option<&CThostFtdcRspInfoField>,n_request_id : std::os::raw::c_int,b_is_last : bool) 
+ {
+            self.inner.lock().unwrap().push(CThostFtdcTraderSpiOutput::OnRspQryInvestorProdRULEMargin( CThostFtdcTraderSpiOnRspQryInvestorProdRULEMarginPacket { p_investor_prod_rule_margin:p_investor_prod_rule_margin.cloned(),p_rsp_info:p_rsp_info.cloned(),n_request_id:n_request_id,b_is_last:b_is_last } ))
                 }
              }
