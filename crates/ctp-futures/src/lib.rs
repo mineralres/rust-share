@@ -53,14 +53,63 @@ pub mod trader_api {
 }
 
 /// 典型的账户配置
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct CtpAccountConfig {
     pub broker_id: String,
     pub account: String,
-    pub name_server: String,
-    pub trade_front: String,
-    pub md_front: String,
+    pub name_servers: Vec<String>,
+    pub trade_fronts: Vec<String>,
+    pub md_fronts: Vec<String>,
     pub auth_code: String,
     pub user_product_info: String,
     pub app_id: String,
     pub password: String,
+    pub remark: String,
+}
+
+/// 查询结果
+#[derive(Clone, Debug, Default, Encode, Decode)]
+pub struct CtpQueryResult {
+    pub broker_id: String,
+    pub account: String,
+    pub trading_day: i32,
+    pub timestamp: i64,
+    pub dmd_list: Vec<CThostFtdcDepthMarketDataField>,
+    pub icr_list: Vec<CThostFtdcInstrumentCommissionRateField>,
+    pub instruments: Vec<CThostFtdcInstrumentField>,
+    pub positions: Vec<CThostFtdcInvestorPositionField>,
+    pub position_detail_list: Vec<CThostFtdcInvestorPositionDetailField>,
+    pub trading_account: CThostFtdcTradingAccountField,
+    pub products: Vec<CThostFtdcProductField>,
+    pub orders: Vec<CThostFtdcOrderField>,
+    pub trades: Vec<CThostFtdcTradeField>,
+}
+
+/// 判断CTP委托是否已撤单
+pub fn is_order_canceled(o: &CThostFtdcOrderField) -> bool {
+    /*
+    ///全部成交
+    #define THOST_FTDC_OST_AllTraded '0'
+    ///部分成交还在队列中
+    #define THOST_FTDC_OST_PartTradedQueueing '1'
+    ///部分成交不在队列中
+    #define THOST_FTDC_OST_PartTradedNotQueueing '2'
+    ///未成交还在队列中
+    #define THOST_FTDC_OST_NoTradeQueueing '3'
+    ///未成交不在队列中
+    #define THOST_FTDC_OST_NoTradeNotQueueing '4'
+    ///撤单
+    #define THOST_FTDC_OST_Canceled '5'
+    ///未知
+    #define THOST_FTDC_OST_Unknown 'a'
+    ///尚未触发
+    #define THOST_FTDC_OST_NotTouched 'b'
+    ///已触发
+    #define THOST_FTDC_OST_Touched 'c'
+
+    */
+    match o.OrderStatus as u8 {
+        THOST_FTDC_OST_PartTradedNotQueueing | THOST_FTDC_OST_Canceled => true,
+        _ => false,
+    }
 }

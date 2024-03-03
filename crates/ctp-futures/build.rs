@@ -395,8 +395,8 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
         impl {full_spi_name}Inner {{
             fn push(&mut self, msg: {full_spi_output_enum_name}) {{
                 self.buf.push_back(msg);
-                if let Some(ref waker) = &self.waker {{
-                    waker.clone().wake()
+                if let Some(waker) = self.waker.take() {{
+                    waker.wake()
                 }}
             }}
         }}
@@ -489,12 +489,13 @@ impl ParseCallbacks for MyCallback {
 }
 
 fn main() {
+    println!("cargo:rerun-if-changed=./v_current");
+    println!("cargo:rerun-if-changed=./wrapper.hpp");
     clang_sys::load().expect("");
     let clang = Clang::new().unwrap();
     let index = Index::new(&clang, false, false);
     let tu = index.parser("wrapper.hpp").parse().unwrap();
 
-    // 开着这个的话会导致每次重新编译
     let mut f = File::create("./src/md_impl.rs").expect("unable to create file");
     let code = parse_api(&tu, "CThostFtdcMdApi");
     f.write(code.as_bytes()).unwrap();

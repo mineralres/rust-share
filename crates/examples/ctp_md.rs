@@ -20,14 +20,15 @@ async fn main() {
     let account = CtpAccountConfig {
         broker_id: "9999".to_string(),
         account: "143650".to_string(),
-        trade_front: "tcp://180.168.146.187:10201".to_string(),
-        // md_front: "tcp://180.168.146.187:10211".to_string(),
-        md_front: "tcp://180.168.146.187:10131".to_string(),
-        name_server: "".to_string(),
+        trade_fronts: vec!["tcp://180.168.146.187:10201".to_string()],
+        md_fronts: vec!["tcp://180.168.146.187:10211".to_string()],
+        // md_fronts: vec!["tcp://180.168.146.187:10131".to_string()],
+        name_servers: vec!["".to_string()],
         auth_code: "0000000000000000".to_string(),
         user_product_info: "".to_string(),
         app_id: "simnow_client_test".to_string(),
         password: "198612".to_string(),
+        remark: "".into(),
     };
     md(&account).await;
 }
@@ -36,7 +37,7 @@ async fn md(ca: &CtpAccountConfig) {
     use ctp_futures::md_api::*;
     let broker_id = ca.broker_id.as_str();
     let account = ca.account.as_str();
-    let md_front = ca.md_front.as_str();
+    let md_front = ca.md_fronts[0].as_str();
     let auth_code = ca.auth_code.as_str();
     let user_product_info = ca.user_product_info.as_str();
     let app_id = ca.app_id.as_str();

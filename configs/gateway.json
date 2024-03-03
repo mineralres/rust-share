@@ -1,0 +1,41 @@
+{
+	"http_port": 10111,
+	"https_port": 0,
+	"ctp_accounts": [
+		{
+			"broker_id": "9999",
+			"account": "143650",
+			"trade_fronts": [
+				"tcp://180.168.146.187:10130",
+				"tcp://180.168.146.187:10201"
+			],
+			"md_fronts": [
+				"tcp://180.168.146.187:10131",
+				"tcp://180.168.146.187:10211"
+			],
+			"name_servers": [],
+			"auth_code": "0000000000000000",
+			"user_product_info": "",
+			"app_id": "simnow_client_test",
+			"password": "198612",
+			"remark": "Simnow 测试账号"
+		}
+	],
+	"ctp_md_account": {
+		"broker_id": "9999",
+		"account": "143650",
+		"trade_fronts": [
+			"tcp://180.168.146.187:10201"
+		],
+		"md_fronts": [
+			"tcp://180.168.146.187:10131",
+			"tcp://180.168.146.187:10211"
+		],
+		"name_servers": [],
+		"auth_code": "0000000000000000",
+		"user_product_info": "",
+		"app_id": "simnow_client_test",
+		"password": "198612",
+		"remark": "Simnow 测试账号, 用于接收行情"
+	}
+}

@@ -1,0 +1,26 @@
+[package]
+name = "gateway"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.11"
+tracing-subscriber = "0.2"
+tokio = { version = "1", features = ["full"] }
+ctp-futures = { path = "../ctp-futures" }
+rust-share-util = { path = "../rust-share-util" }
+spider = { path = "../spider" }
+futures = "0.3.5"
+bincode = { version = "2.0.0-rc.2", features = ["derive"] }
+chrono = "0.4"
+clap = { version = "3.2.6", features = ["derive"] }
+serde_json = { version = "1" }
+serde = { version = "1" }
+axum-server = { git = "https://github.com/programatik29/axum-server.git", features = [
+	"tls-rustls",
+] }
+axum = { version = "0.7", features = ["macros"] }
+base = { path = "../base" }
+derive_more = "0.99.8"

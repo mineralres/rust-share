@@ -2575,8 +2575,8 @@ extern "C" fn spi_on_front_connected(spi: *mut CThostFtdcTraderSpiFat, ) {
         impl CThostFtdcTraderSpiInner {
             fn push(&mut self, msg: CThostFtdcTraderSpiOutput) {
                 self.buf.push_back(msg);
-                if let Some(ref waker) = &self.waker {
-                    waker.clone().wake()
+                if let Some(waker) = self.waker.take() {
+                    waker.wake()
                 }
             }
         }

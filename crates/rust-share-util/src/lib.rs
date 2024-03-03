@@ -3,6 +3,18 @@ use encoding::{DecoderTrap, Encoding};
 use simple_error::SimpleError;
 use std::borrow::Cow;
 
+pub fn ascii_cstr_i8_eq(c: &[i8], other: &str) -> bool {
+    for (ch, other_ch) in c.iter().zip(other.as_bytes().iter()) {
+        if *ch as u8 != *other_ch {
+            return false;
+        }
+        if *ch == 0i8 || *other_ch == 0u8 {
+            return true;
+        }
+    }
+    true
+}
+
 pub fn ascii_cstr_to_str_i8(v: &[i8]) -> Result<&str, SimpleError> {
     let mut s = unsafe { std::slice::from_raw_parts(v.as_ptr() as *mut u8, v.len()) };
     ascii_cstr_to_str(&mut s)
@@ -110,10 +122,16 @@ pub fn gb18030_cstr_to_str(v: &[u8]) -> Cow<str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use log::info;
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        base::init_logger();
+        let mut date1: [u8; 9] = [0; 9];
+        set_cstr_from_str_truncate(&mut date1, "20241019");
+        let mut date2: [u8; 9] = [0; 9];
+        set_cstr_from_str_truncate(&mut date2, "20240119");
+        info!("d1-d2 cmp:{:?}", 20240118.cmp(&20240119));
+        info!("date1-date2 eq:{} cmp:{:?}", date1.eq(&date2), date1.cmp(&date2));
     }
 }

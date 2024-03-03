@@ -27,3 +27,4 @@ regex = "1.4.1"
 encoding = "0.2.33"
 Inflector = "*"
 libc = { version = "0.2.39", default-features = false }
+cargo-emit = "0.2"
