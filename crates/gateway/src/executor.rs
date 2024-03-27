@@ -10,7 +10,6 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::atomic;
 use std::sync::Arc;
-use tokio::net::unix::pipe::Receiver;
 use tokio::sync::{mpsc, Mutex};
 
 #[derive(Debug, PartialEq)]
