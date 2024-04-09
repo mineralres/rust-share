@@ -957,12 +957,10 @@ pub async fn run_ctp_md_cache(
                                     e.ask1_volume1 = ctp_md.AskVolume1;
                                     e.bid1_volume = ctp_md.BidVolume1;
                                     e.timestamp = Local::now().timestamp();
-                                    info!("[{symbol1}] update md={:?}", e);
                                 })
                                 .or_insert_with(|| {
                                     let mut md = MarketDataSnapshot::from(ctp_md);
                                     md.timestamp = Local::now().timestamp();
-                                    info!("[{symbol1}] insert md={:?}", md);
                                     md
                                 });
                         }

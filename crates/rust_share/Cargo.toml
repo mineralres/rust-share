@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tracing-subscriber = "0.2"
+tracing-subscriber = "0.3.18"
 base = { path = "../base" }
 ctp_futures = { path = "../ctp_futures" }
 rust_share_util = { path = "../rust_share_util" }

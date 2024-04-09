@@ -29,7 +29,7 @@ pub mod http {
         }
     }
 
-    mod types {
+    pub mod types {
         use std::sync::Arc;
 
         use axum::{extract::Json, response::Response};
@@ -69,7 +69,7 @@ pub mod http {
             pub account: String,
         }
 
-        #[derive(Default, serde::Serialize, serde::Deserialize)]
+        #[derive(Default, serde::Serialize, serde::Deserialize, Debug)]
         pub struct ReqSetContractTarget {
             pub broker_id: String,
             pub account: String,
@@ -126,6 +126,7 @@ pub mod http {
         State(s): State<ShareState>,
         Json(req): Json<ReqSetContractTarget>,
     ) -> Result<(), Error> {
+        info!("set_contract_target = {:?}", req);
         if req.target.symbol == "" {
             return Err(Error::InvalidSymbol);
         }
