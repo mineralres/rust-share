@@ -9,9 +9,7 @@ edition = "2021"
 log = "0.4.11"
 tracing-subscriber = "0.2"
 tokio = { version = "1", features = ["full"] }
-ctp-futures = { path = "../ctp-futures" }
-rust-share-util = { path = "../rust-share-util" }
-spider = { path = "../spider" }
+rust_share = { path = "../rust_share" }
 futures = "0.3.5"
 bincode = { version = "2.0.0-rc.2", features = ["derive"] }
 chrono = "0.4"

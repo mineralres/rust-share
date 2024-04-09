@@ -1,0 +1,13 @@
+[package]
+name = "rust_share"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing-subscriber = "0.2"
+base = { path = "../base" }
+ctp_futures = { path = "../ctp_futures" }
+rust_share_util = { path = "../rust_share_util" }
+spider = { path = "../spider" }

@@ -14,8 +14,8 @@ mod error;
 pub struct Config {
     pub http_port: u16,
     pub https_port: u16,
-    pub ctp_accounts: Vec<ctp_futures::CtpAccountConfig>,
-    pub ctp_md_account: ctp_futures::CtpAccountConfig,
+    pub ctp_accounts: Vec<rust_share::ctp_futures::CtpAccountConfig>,
+    pub ctp_md_account: rust_share::ctp_futures::CtpAccountConfig,
 }
 
 impl Config {
