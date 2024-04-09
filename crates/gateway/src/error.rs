@@ -6,5 +6,9 @@ pub enum Error {
     FrontDisconnected,
     CtpAuthFailed,
     MpscSendErr,
-    InvalidCtpInstrumentId
+    InvalidCtpInstrumentId,
+    CtpLastQueryIsProceeding,
+    CtpQueryTimeout,
+    InvalidSymbol,
+    MdNotFound
 }

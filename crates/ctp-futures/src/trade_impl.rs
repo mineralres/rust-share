@@ -1160,622 +1160,622 @@ fn on_rsp_qry_investor_prod_rule_margin(&mut self, p_investor_prod_rule_margin :
                 on_rsp_qry_investor_prod_rule_margin: extern "C" fn(spi: *mut CThostFtdcTraderSpiFat, p_investor_prod_rule_margin : * const CThostFtdcInvestorProdRULEMarginField,p_rsp_info : * const CThostFtdcRspInfoField,n_request_id : std::os::raw::c_int,b_is_last : bool ),
                  } 
 
-        #[derive(Clone, Debug)]
+        #[derive(Clone, Debug, Decode, Encode)]
         pub enum CThostFtdcTraderSpiOutput {OnFrontConnected(CThostFtdcTraderSpiOnFrontConnectedPacket),OnFrontDisconnected(CThostFtdcTraderSpiOnFrontDisconnectedPacket),OnHeartBeatWarning(CThostFtdcTraderSpiOnHeartBeatWarningPacket),OnRspAuthenticate(CThostFtdcTraderSpiOnRspAuthenticatePacket),OnRspUserLogin(CThostFtdcTraderSpiOnRspUserLoginPacket),OnRspUserLogout(CThostFtdcTraderSpiOnRspUserLogoutPacket),OnRspUserPasswordUpdate(CThostFtdcTraderSpiOnRspUserPasswordUpdatePacket),OnRspTradingAccountPasswordUpdate(CThostFtdcTraderSpiOnRspTradingAccountPasswordUpdatePacket),OnRspUserAuthMethod(CThostFtdcTraderSpiOnRspUserAuthMethodPacket),OnRspGenUserCaptcha(CThostFtdcTraderSpiOnRspGenUserCaptchaPacket),OnRspGenUserText(CThostFtdcTraderSpiOnRspGenUserTextPacket),OnRspOrderInsert(CThostFtdcTraderSpiOnRspOrderInsertPacket),OnRspParkedOrderInsert(CThostFtdcTraderSpiOnRspParkedOrderInsertPacket),OnRspParkedOrderAction(CThostFtdcTraderSpiOnRspParkedOrderActionPacket),OnRspOrderAction(CThostFtdcTraderSpiOnRspOrderActionPacket),OnRspQryMaxOrderVolume(CThostFtdcTraderSpiOnRspQryMaxOrderVolumePacket),OnRspSettlementInfoConfirm(CThostFtdcTraderSpiOnRspSettlementInfoConfirmPacket),OnRspRemoveParkedOrder(CThostFtdcTraderSpiOnRspRemoveParkedOrderPacket),OnRspRemoveParkedOrderAction(CThostFtdcTraderSpiOnRspRemoveParkedOrderActionPacket),OnRspExecOrderInsert(CThostFtdcTraderSpiOnRspExecOrderInsertPacket),OnRspExecOrderAction(CThostFtdcTraderSpiOnRspExecOrderActionPacket),OnRspForQuoteInsert(CThostFtdcTraderSpiOnRspForQuoteInsertPacket),OnRspQuoteInsert(CThostFtdcTraderSpiOnRspQuoteInsertPacket),OnRspQuoteAction(CThostFtdcTraderSpiOnRspQuoteActionPacket),OnRspBatchOrderAction(CThostFtdcTraderSpiOnRspBatchOrderActionPacket),OnRspOptionSelfCloseInsert(CThostFtdcTraderSpiOnRspOptionSelfCloseInsertPacket),OnRspOptionSelfCloseAction(CThostFtdcTraderSpiOnRspOptionSelfCloseActionPacket),OnRspCombActionInsert(CThostFtdcTraderSpiOnRspCombActionInsertPacket),OnRspQryOrder(CThostFtdcTraderSpiOnRspQryOrderPacket),OnRspQryTrade(CThostFtdcTraderSpiOnRspQryTradePacket),OnRspQryInvestorPosition(CThostFtdcTraderSpiOnRspQryInvestorPositionPacket),OnRspQryTradingAccount(CThostFtdcTraderSpiOnRspQryTradingAccountPacket),OnRspQryInvestor(CThostFtdcTraderSpiOnRspQryInvestorPacket),OnRspQryTradingCode(CThostFtdcTraderSpiOnRspQryTradingCodePacket),OnRspQryInstrumentMarginRate(CThostFtdcTraderSpiOnRspQryInstrumentMarginRatePacket),OnRspQryInstrumentCommissionRate(CThostFtdcTraderSpiOnRspQryInstrumentCommissionRatePacket),OnRspQryExchange(CThostFtdcTraderSpiOnRspQryExchangePacket),OnRspQryProduct(CThostFtdcTraderSpiOnRspQryProductPacket),OnRspQryInstrument(CThostFtdcTraderSpiOnRspQryInstrumentPacket),OnRspQryDepthMarketData(CThostFtdcTraderSpiOnRspQryDepthMarketDataPacket),OnRspQryTraderOffer(CThostFtdcTraderSpiOnRspQryTraderOfferPacket),OnRspQrySettlementInfo(CThostFtdcTraderSpiOnRspQrySettlementInfoPacket),OnRspQryTransferBank(CThostFtdcTraderSpiOnRspQryTransferBankPacket),OnRspQryInvestorPositionDetail(CThostFtdcTraderSpiOnRspQryInvestorPositionDetailPacket),OnRspQryNotice(CThostFtdcTraderSpiOnRspQryNoticePacket),OnRspQrySettlementInfoConfirm(CThostFtdcTraderSpiOnRspQrySettlementInfoConfirmPacket),OnRspQryInvestorPositionCombineDetail(CThostFtdcTraderSpiOnRspQryInvestorPositionCombineDetailPacket),OnRspQryCFMMCTradingAccountKey(CThostFtdcTraderSpiOnRspQryCFMMCTradingAccountKeyPacket),OnRspQryEWarrantOffset(CThostFtdcTraderSpiOnRspQryEWarrantOffsetPacket),OnRspQryInvestorProductGroupMargin(CThostFtdcTraderSpiOnRspQryInvestorProductGroupMarginPacket),OnRspQryExchangeMarginRate(CThostFtdcTraderSpiOnRspQryExchangeMarginRatePacket),OnRspQryExchangeMarginRateAdjust(CThostFtdcTraderSpiOnRspQryExchangeMarginRateAdjustPacket),OnRspQryExchangeRate(CThostFtdcTraderSpiOnRspQryExchangeRatePacket),OnRspQrySecAgentACIDMap(CThostFtdcTraderSpiOnRspQrySecAgentACIDMapPacket),OnRspQryProductExchRate(CThostFtdcTraderSpiOnRspQryProductExchRatePacket),OnRspQryProductGroup(CThostFtdcTraderSpiOnRspQryProductGroupPacket),OnRspQryMMInstrumentCommissionRate(CThostFtdcTraderSpiOnRspQryMMInstrumentCommissionRatePacket),OnRspQryMMOptionInstrCommRate(CThostFtdcTraderSpiOnRspQryMMOptionInstrCommRatePacket),OnRspQryInstrumentOrderCommRate(CThostFtdcTraderSpiOnRspQryInstrumentOrderCommRatePacket),OnRspQrySecAgentTradingAccount(CThostFtdcTraderSpiOnRspQrySecAgentTradingAccountPacket),OnRspQrySecAgentCheckMode(CThostFtdcTraderSpiOnRspQrySecAgentCheckModePacket),OnRspQrySecAgentTradeInfo(CThostFtdcTraderSpiOnRspQrySecAgentTradeInfoPacket),OnRspQryOptionInstrTradeCost(CThostFtdcTraderSpiOnRspQryOptionInstrTradeCostPacket),OnRspQryOptionInstrCommRate(CThostFtdcTraderSpiOnRspQryOptionInstrCommRatePacket),OnRspQryExecOrder(CThostFtdcTraderSpiOnRspQryExecOrderPacket),OnRspQryForQuote(CThostFtdcTraderSpiOnRspQryForQuotePacket),OnRspQryQuote(CThostFtdcTraderSpiOnRspQryQuotePacket),OnRspQryOptionSelfClose(CThostFtdcTraderSpiOnRspQryOptionSelfClosePacket),OnRspQryInvestUnit(CThostFtdcTraderSpiOnRspQryInvestUnitPacket),OnRspQryCombInstrumentGuard(CThostFtdcTraderSpiOnRspQryCombInstrumentGuardPacket),OnRspQryCombAction(CThostFtdcTraderSpiOnRspQryCombActionPacket),OnRspQryTransferSerial(CThostFtdcTraderSpiOnRspQryTransferSerialPacket),OnRspQryAccountregister(CThostFtdcTraderSpiOnRspQryAccountregisterPacket),OnRspError(CThostFtdcTraderSpiOnRspErrorPacket),OnRtnOrder(CThostFtdcTraderSpiOnRtnOrderPacket),OnRtnTrade(CThostFtdcTraderSpiOnRtnTradePacket),OnErrRtnOrderInsert(CThostFtdcTraderSpiOnErrRtnOrderInsertPacket),OnErrRtnOrderAction(CThostFtdcTraderSpiOnErrRtnOrderActionPacket),OnRtnInstrumentStatus(CThostFtdcTraderSpiOnRtnInstrumentStatusPacket),OnRtnBulletin(CThostFtdcTraderSpiOnRtnBulletinPacket),OnRtnTradingNotice(CThostFtdcTraderSpiOnRtnTradingNoticePacket),OnRtnErrorConditionalOrder(CThostFtdcTraderSpiOnRtnErrorConditionalOrderPacket),OnRtnExecOrder(CThostFtdcTraderSpiOnRtnExecOrderPacket),OnErrRtnExecOrderInsert(CThostFtdcTraderSpiOnErrRtnExecOrderInsertPacket),OnErrRtnExecOrderAction(CThostFtdcTraderSpiOnErrRtnExecOrderActionPacket),OnErrRtnForQuoteInsert(CThostFtdcTraderSpiOnErrRtnForQuoteInsertPacket),OnRtnQuote(CThostFtdcTraderSpiOnRtnQuotePacket),OnErrRtnQuoteInsert(CThostFtdcTraderSpiOnErrRtnQuoteInsertPacket),OnErrRtnQuoteAction(CThostFtdcTraderSpiOnErrRtnQuoteActionPacket),OnRtnForQuoteRsp(CThostFtdcTraderSpiOnRtnForQuoteRspPacket),OnRtnCFMMCTradingAccountToken(CThostFtdcTraderSpiOnRtnCFMMCTradingAccountTokenPacket),OnErrRtnBatchOrderAction(CThostFtdcTraderSpiOnErrRtnBatchOrderActionPacket),OnRtnOptionSelfClose(CThostFtdcTraderSpiOnRtnOptionSelfClosePacket),OnErrRtnOptionSelfCloseInsert(CThostFtdcTraderSpiOnErrRtnOptionSelfCloseInsertPacket),OnErrRtnOptionSelfCloseAction(CThostFtdcTraderSpiOnErrRtnOptionSelfCloseActionPacket),OnRtnCombAction(CThostFtdcTraderSpiOnRtnCombActionPacket),OnErrRtnCombActionInsert(CThostFtdcTraderSpiOnErrRtnCombActionInsertPacket),OnRspQryContractBank(CThostFtdcTraderSpiOnRspQryContractBankPacket),OnRspQryParkedOrder(CThostFtdcTraderSpiOnRspQryParkedOrderPacket),OnRspQryParkedOrderAction(CThostFtdcTraderSpiOnRspQryParkedOrderActionPacket),OnRspQryTradingNotice(CThostFtdcTraderSpiOnRspQryTradingNoticePacket),OnRspQryBrokerTradingParams(CThostFtdcTraderSpiOnRspQryBrokerTradingParamsPacket),OnRspQryBrokerTradingAlgos(CThostFtdcTraderSpiOnRspQryBrokerTradingAlgosPacket),OnRspQueryCFMMCTradingAccountToken(CThostFtdcTraderSpiOnRspQueryCFMMCTradingAccountTokenPacket),OnRtnFromBankToFutureByBank(CThostFtdcTraderSpiOnRtnFromBankToFutureByBankPacket),OnRtnFromFutureToBankByBank(CThostFtdcTraderSpiOnRtnFromFutureToBankByBankPacket),OnRtnRepealFromBankToFutureByBank(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByBankPacket),OnRtnRepealFromFutureToBankByBank(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByBankPacket),OnRtnFromBankToFutureByFuture(CThostFtdcTraderSpiOnRtnFromBankToFutureByFuturePacket),OnRtnFromFutureToBankByFuture(CThostFtdcTraderSpiOnRtnFromFutureToBankByFuturePacket),OnRtnRepealFromBankToFutureByFutureManual(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFutureManualPacket),OnRtnRepealFromFutureToBankByFutureManual(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFutureManualPacket),OnRtnQueryBankBalanceByFuture(CThostFtdcTraderSpiOnRtnQueryBankBalanceByFuturePacket),OnErrRtnBankToFutureByFuture(CThostFtdcTraderSpiOnErrRtnBankToFutureByFuturePacket),OnErrRtnFutureToBankByFuture(CThostFtdcTraderSpiOnErrRtnFutureToBankByFuturePacket),OnErrRtnRepealBankToFutureByFutureManual(CThostFtdcTraderSpiOnErrRtnRepealBankToFutureByFutureManualPacket),OnErrRtnRepealFutureToBankByFutureManual(CThostFtdcTraderSpiOnErrRtnRepealFutureToBankByFutureManualPacket),OnErrRtnQueryBankBalanceByFuture(CThostFtdcTraderSpiOnErrRtnQueryBankBalanceByFuturePacket),OnRtnRepealFromBankToFutureByFuture(CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFuturePacket),OnRtnRepealFromFutureToBankByFuture(CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFuturePacket),OnRspFromBankToFutureByFuture(CThostFtdcTraderSpiOnRspFromBankToFutureByFuturePacket),OnRspFromFutureToBankByFuture(CThostFtdcTraderSpiOnRspFromFutureToBankByFuturePacket),OnRspQueryBankAccountMoneyByFuture(CThostFtdcTraderSpiOnRspQueryBankAccountMoneyByFuturePacket),OnRtnOpenAccountByBank(CThostFtdcTraderSpiOnRtnOpenAccountByBankPacket),OnRtnCancelAccountByBank(CThostFtdcTraderSpiOnRtnCancelAccountByBankPacket),OnRtnChangeAccountByBank(CThostFtdcTraderSpiOnRtnChangeAccountByBankPacket),OnRspQryClassifiedInstrument(CThostFtdcTraderSpiOnRspQryClassifiedInstrumentPacket),OnRspQryCombPromotionParam(CThostFtdcTraderSpiOnRspQryCombPromotionParamPacket),OnRspQryRiskSettleInvstPosition(CThostFtdcTraderSpiOnRspQryRiskSettleInvstPositionPacket),OnRspQryRiskSettleProductStatus(CThostFtdcTraderSpiOnRspQryRiskSettleProductStatusPacket),OnRspQrySPBMFutureParameter(CThostFtdcTraderSpiOnRspQrySPBMFutureParameterPacket),OnRspQrySPBMOptionParameter(CThostFtdcTraderSpiOnRspQrySPBMOptionParameterPacket),OnRspQrySPBMIntraParameter(CThostFtdcTraderSpiOnRspQrySPBMIntraParameterPacket),OnRspQrySPBMInterParameter(CThostFtdcTraderSpiOnRspQrySPBMInterParameterPacket),OnRspQrySPBMPortfDefinition(CThostFtdcTraderSpiOnRspQrySPBMPortfDefinitionPacket),OnRspQrySPBMInvestorPortfDef(CThostFtdcTraderSpiOnRspQrySPBMInvestorPortfDefPacket),OnRspQryInvestorPortfMarginRatio(CThostFtdcTraderSpiOnRspQryInvestorPortfMarginRatioPacket),OnRspQryInvestorProdSPBMDetail(CThostFtdcTraderSpiOnRspQryInvestorProdSPBMDetailPacket),OnRspQryInvestorCommoditySPMMMargin(CThostFtdcTraderSpiOnRspQryInvestorCommoditySPMMMarginPacket),OnRspQryInvestorCommodityGroupSPMMMargin(CThostFtdcTraderSpiOnRspQryInvestorCommodityGroupSPMMMarginPacket),OnRspQrySPMMInstParam(CThostFtdcTraderSpiOnRspQrySPMMInstParamPacket),OnRspQrySPMMProductParam(CThostFtdcTraderSpiOnRspQrySPMMProductParamPacket),OnRspQrySPBMAddOnInterParameter(CThostFtdcTraderSpiOnRspQrySPBMAddOnInterParameterPacket),OnRspQryRCAMSCombProductInfo(CThostFtdcTraderSpiOnRspQryRCAMSCombProductInfoPacket),OnRspQryRCAMSInstrParameter(CThostFtdcTraderSpiOnRspQryRCAMSInstrParameterPacket),OnRspQryRCAMSIntraParameter(CThostFtdcTraderSpiOnRspQryRCAMSIntraParameterPacket),OnRspQryRCAMSInterParameter(CThostFtdcTraderSpiOnRspQryRCAMSInterParameterPacket),OnRspQryRCAMSShortOptAdjustParam(CThostFtdcTraderSpiOnRspQryRCAMSShortOptAdjustParamPacket),OnRspQryRCAMSInvestorCombPosition(CThostFtdcTraderSpiOnRspQryRCAMSInvestorCombPositionPacket),OnRspQryInvestorProdRCAMSMargin(CThostFtdcTraderSpiOnRspQryInvestorProdRCAMSMarginPacket),OnRspQryRULEInstrParameter(CThostFtdcTraderSpiOnRspQryRULEInstrParameterPacket),OnRspQryRULEIntraParameter(CThostFtdcTraderSpiOnRspQryRULEIntraParameterPacket),OnRspQryRULEInterParameter(CThostFtdcTraderSpiOnRspQryRULEInterParameterPacket),OnRspQryInvestorProdRULEMargin(CThostFtdcTraderSpiOnRspQryInvestorProdRULEMarginPacket), } 
 
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnFrontConnectedPacket {
                 
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnFrontDisconnectedPacket {
                 pub n_reason : std::os::raw::c_int,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnHeartBeatWarningPacket {
                 pub n_time_lapse : std::os::raw::c_int,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspAuthenticatePacket {
                 pub p_rsp_authenticate_field : Option<CThostFtdcRspAuthenticateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspUserLoginPacket {
                 pub p_rsp_user_login : Option<CThostFtdcRspUserLoginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspUserLogoutPacket {
                 pub p_user_logout : Option<CThostFtdcUserLogoutField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspUserPasswordUpdatePacket {
                 pub p_user_password_update : Option<CThostFtdcUserPasswordUpdateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspTradingAccountPasswordUpdatePacket {
                 pub p_trading_account_password_update : Option<CThostFtdcTradingAccountPasswordUpdateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspUserAuthMethodPacket {
                 pub p_rsp_user_auth_method : Option<CThostFtdcRspUserAuthMethodField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspGenUserCaptchaPacket {
                 pub p_rsp_gen_user_captcha : Option<CThostFtdcRspGenUserCaptchaField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspGenUserTextPacket {
                 pub p_rsp_gen_user_text : Option<CThostFtdcRspGenUserTextField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspOrderInsertPacket {
                 pub p_input_order : Option<CThostFtdcInputOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspParkedOrderInsertPacket {
                 pub p_parked_order : Option<CThostFtdcParkedOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspParkedOrderActionPacket {
                 pub p_parked_order_action : Option<CThostFtdcParkedOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspOrderActionPacket {
                 pub p_input_order_action : Option<CThostFtdcInputOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryMaxOrderVolumePacket {
                 pub p_qry_max_order_volume : Option<CThostFtdcQryMaxOrderVolumeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspSettlementInfoConfirmPacket {
                 pub p_settlement_info_confirm : Option<CThostFtdcSettlementInfoConfirmField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspRemoveParkedOrderPacket {
                 pub p_remove_parked_order : Option<CThostFtdcRemoveParkedOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspRemoveParkedOrderActionPacket {
                 pub p_remove_parked_order_action : Option<CThostFtdcRemoveParkedOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspExecOrderInsertPacket {
                 pub p_input_exec_order : Option<CThostFtdcInputExecOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspExecOrderActionPacket {
                 pub p_input_exec_order_action : Option<CThostFtdcInputExecOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspForQuoteInsertPacket {
                 pub p_input_for_quote : Option<CThostFtdcInputForQuoteField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQuoteInsertPacket {
                 pub p_input_quote : Option<CThostFtdcInputQuoteField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQuoteActionPacket {
                 pub p_input_quote_action : Option<CThostFtdcInputQuoteActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspBatchOrderActionPacket {
                 pub p_input_batch_order_action : Option<CThostFtdcInputBatchOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspOptionSelfCloseInsertPacket {
                 pub p_input_option_self_close : Option<CThostFtdcInputOptionSelfCloseField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspOptionSelfCloseActionPacket {
                 pub p_input_option_self_close_action : Option<CThostFtdcInputOptionSelfCloseActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspCombActionInsertPacket {
                 pub p_input_comb_action : Option<CThostFtdcInputCombActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryOrderPacket {
                 pub p_order : Option<CThostFtdcOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTradePacket {
                 pub p_trade : Option<CThostFtdcTradeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorPositionPacket {
                 pub p_investor_position : Option<CThostFtdcInvestorPositionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTradingAccountPacket {
                 pub p_trading_account : Option<CThostFtdcTradingAccountField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorPacket {
                 pub p_investor : Option<CThostFtdcInvestorField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTradingCodePacket {
                 pub p_trading_code : Option<CThostFtdcTradingCodeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInstrumentMarginRatePacket {
                 pub p_instrument_margin_rate : Option<CThostFtdcInstrumentMarginRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInstrumentCommissionRatePacket {
                 pub p_instrument_commission_rate : Option<CThostFtdcInstrumentCommissionRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryExchangePacket {
                 pub p_exchange : Option<CThostFtdcExchangeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryProductPacket {
                 pub p_product : Option<CThostFtdcProductField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInstrumentPacket {
                 pub p_instrument : Option<CThostFtdcInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryDepthMarketDataPacket {
                 pub p_depth_market_data : Option<CThostFtdcDepthMarketDataField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTraderOfferPacket {
                 pub p_trader_offer : Option<CThostFtdcTraderOfferField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySettlementInfoPacket {
                 pub p_settlement_info : Option<CThostFtdcSettlementInfoField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTransferBankPacket {
                 pub p_transfer_bank : Option<CThostFtdcTransferBankField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorPositionDetailPacket {
                 pub p_investor_position_detail : Option<CThostFtdcInvestorPositionDetailField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryNoticePacket {
                 pub p_notice : Option<CThostFtdcNoticeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySettlementInfoConfirmPacket {
                 pub p_settlement_info_confirm : Option<CThostFtdcSettlementInfoConfirmField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorPositionCombineDetailPacket {
                 pub p_investor_position_combine_detail : Option<CThostFtdcInvestorPositionCombineDetailField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryCFMMCTradingAccountKeyPacket {
                 pub p_cfmmc_trading_account_key : Option<CThostFtdcCFMMCTradingAccountKeyField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryEWarrantOffsetPacket {
                 pub p_e_warrant_offset : Option<CThostFtdcEWarrantOffsetField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorProductGroupMarginPacket {
                 pub p_investor_product_group_margin : Option<CThostFtdcInvestorProductGroupMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryExchangeMarginRatePacket {
                 pub p_exchange_margin_rate : Option<CThostFtdcExchangeMarginRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryExchangeMarginRateAdjustPacket {
                 pub p_exchange_margin_rate_adjust : Option<CThostFtdcExchangeMarginRateAdjustField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryExchangeRatePacket {
                 pub p_exchange_rate : Option<CThostFtdcExchangeRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySecAgentACIDMapPacket {
                 pub p_sec_agent_acid_map : Option<CThostFtdcSecAgentACIDMapField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryProductExchRatePacket {
                 pub p_product_exch_rate : Option<CThostFtdcProductExchRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryProductGroupPacket {
                 pub p_product_group : Option<CThostFtdcProductGroupField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryMMInstrumentCommissionRatePacket {
                 pub p_mm_instrument_commission_rate : Option<CThostFtdcMMInstrumentCommissionRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryMMOptionInstrCommRatePacket {
                 pub p_mm_option_instr_comm_rate : Option<CThostFtdcMMOptionInstrCommRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInstrumentOrderCommRatePacket {
                 pub p_instrument_order_comm_rate : Option<CThostFtdcInstrumentOrderCommRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySecAgentTradingAccountPacket {
                 pub p_trading_account : Option<CThostFtdcTradingAccountField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySecAgentCheckModePacket {
                 pub p_sec_agent_check_mode : Option<CThostFtdcSecAgentCheckModeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySecAgentTradeInfoPacket {
                 pub p_sec_agent_trade_info : Option<CThostFtdcSecAgentTradeInfoField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryOptionInstrTradeCostPacket {
                 pub p_option_instr_trade_cost : Option<CThostFtdcOptionInstrTradeCostField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryOptionInstrCommRatePacket {
                 pub p_option_instr_comm_rate : Option<CThostFtdcOptionInstrCommRateField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryExecOrderPacket {
                 pub p_exec_order : Option<CThostFtdcExecOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryForQuotePacket {
                 pub p_for_quote : Option<CThostFtdcForQuoteField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryQuotePacket {
                 pub p_quote : Option<CThostFtdcQuoteField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryOptionSelfClosePacket {
                 pub p_option_self_close : Option<CThostFtdcOptionSelfCloseField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestUnitPacket {
                 pub p_invest_unit : Option<CThostFtdcInvestUnitField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryCombInstrumentGuardPacket {
                 pub p_comb_instrument_guard : Option<CThostFtdcCombInstrumentGuardField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryCombActionPacket {
                 pub p_comb_action : Option<CThostFtdcCombActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTransferSerialPacket {
                 pub p_transfer_serial : Option<CThostFtdcTransferSerialField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryAccountregisterPacket {
                 pub p_accountregister : Option<CThostFtdcAccountregisterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspErrorPacket {
                 pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnOrderPacket {
                 pub p_order : Option<CThostFtdcOrderField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnTradePacket {
                 pub p_trade : Option<CThostFtdcTradeField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnOrderInsertPacket {
                 pub p_input_order : Option<CThostFtdcInputOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnOrderActionPacket {
                 pub p_order_action : Option<CThostFtdcOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnInstrumentStatusPacket {
                 pub p_instrument_status : Option<CThostFtdcInstrumentStatusField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnBulletinPacket {
                 pub p_bulletin : Option<CThostFtdcBulletinField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnTradingNoticePacket {
                 pub p_trading_notice_info : Option<CThostFtdcTradingNoticeInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnErrorConditionalOrderPacket {
                 pub p_error_conditional_order : Option<CThostFtdcErrorConditionalOrderField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnExecOrderPacket {
                 pub p_exec_order : Option<CThostFtdcExecOrderField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnExecOrderInsertPacket {
                 pub p_input_exec_order : Option<CThostFtdcInputExecOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnExecOrderActionPacket {
                 pub p_exec_order_action : Option<CThostFtdcExecOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnForQuoteInsertPacket {
                 pub p_input_for_quote : Option<CThostFtdcInputForQuoteField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnQuotePacket {
                 pub p_quote : Option<CThostFtdcQuoteField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnQuoteInsertPacket {
                 pub p_input_quote : Option<CThostFtdcInputQuoteField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnQuoteActionPacket {
                 pub p_quote_action : Option<CThostFtdcQuoteActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnForQuoteRspPacket {
                 pub p_for_quote_rsp : Option<CThostFtdcForQuoteRspField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnCFMMCTradingAccountTokenPacket {
                 pub p_cfmmc_trading_account_token : Option<CThostFtdcCFMMCTradingAccountTokenField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnBatchOrderActionPacket {
                 pub p_batch_order_action : Option<CThostFtdcBatchOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnOptionSelfClosePacket {
                 pub p_option_self_close : Option<CThostFtdcOptionSelfCloseField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnOptionSelfCloseInsertPacket {
                 pub p_input_option_self_close : Option<CThostFtdcInputOptionSelfCloseField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnOptionSelfCloseActionPacket {
                 pub p_option_self_close_action : Option<CThostFtdcOptionSelfCloseActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnCombActionPacket {
                 pub p_comb_action : Option<CThostFtdcCombActionField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnCombActionInsertPacket {
                 pub p_input_comb_action : Option<CThostFtdcInputCombActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryContractBankPacket {
                 pub p_contract_bank : Option<CThostFtdcContractBankField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryParkedOrderPacket {
                 pub p_parked_order : Option<CThostFtdcParkedOrderField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryParkedOrderActionPacket {
                 pub p_parked_order_action : Option<CThostFtdcParkedOrderActionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryTradingNoticePacket {
                 pub p_trading_notice : Option<CThostFtdcTradingNoticeField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryBrokerTradingParamsPacket {
                 pub p_broker_trading_params : Option<CThostFtdcBrokerTradingParamsField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryBrokerTradingAlgosPacket {
                 pub p_broker_trading_algos : Option<CThostFtdcBrokerTradingAlgosField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQueryCFMMCTradingAccountTokenPacket {
                 pub p_query_cfmmc_trading_account_token : Option<CThostFtdcQueryCFMMCTradingAccountTokenField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnFromBankToFutureByBankPacket {
                 pub p_rsp_transfer : Option<CThostFtdcRspTransferField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnFromFutureToBankByBankPacket {
                 pub p_rsp_transfer : Option<CThostFtdcRspTransferField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByBankPacket {
                 pub p_rsp_repeal : Option<CThostFtdcRspRepealField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByBankPacket {
                 pub p_rsp_repeal : Option<CThostFtdcRspRepealField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnFromBankToFutureByFuturePacket {
                 pub p_rsp_transfer : Option<CThostFtdcRspTransferField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnFromFutureToBankByFuturePacket {
                 pub p_rsp_transfer : Option<CThostFtdcRspTransferField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFutureManualPacket {
                 pub p_rsp_repeal : Option<CThostFtdcRspRepealField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFutureManualPacket {
                 pub p_rsp_repeal : Option<CThostFtdcRspRepealField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnQueryBankBalanceByFuturePacket {
                 pub p_notify_query_account : Option<CThostFtdcNotifyQueryAccountField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnBankToFutureByFuturePacket {
                 pub p_req_transfer : Option<CThostFtdcReqTransferField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnFutureToBankByFuturePacket {
                 pub p_req_transfer : Option<CThostFtdcReqTransferField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnRepealBankToFutureByFutureManualPacket {
                 pub p_req_repeal : Option<CThostFtdcReqRepealField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnRepealFutureToBankByFutureManualPacket {
                 pub p_req_repeal : Option<CThostFtdcReqRepealField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnErrRtnQueryBankBalanceByFuturePacket {
                 pub p_req_query_account : Option<CThostFtdcReqQueryAccountField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnRepealFromBankToFutureByFuturePacket {
                 pub p_rsp_repeal : Option<CThostFtdcRspRepealField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnRepealFromFutureToBankByFuturePacket {
                 pub p_rsp_repeal : Option<CThostFtdcRspRepealField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspFromBankToFutureByFuturePacket {
                 pub p_req_transfer : Option<CThostFtdcReqTransferField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspFromFutureToBankByFuturePacket {
                 pub p_req_transfer : Option<CThostFtdcReqTransferField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQueryBankAccountMoneyByFuturePacket {
                 pub p_req_query_account : Option<CThostFtdcReqQueryAccountField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnOpenAccountByBankPacket {
                 pub p_open_account : Option<CThostFtdcOpenAccountField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnCancelAccountByBankPacket {
                 pub p_cancel_account : Option<CThostFtdcCancelAccountField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRtnChangeAccountByBankPacket {
                 pub p_change_account : Option<CThostFtdcChangeAccountField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryClassifiedInstrumentPacket {
                 pub p_instrument : Option<CThostFtdcInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryCombPromotionParamPacket {
                 pub p_comb_promotion_param : Option<CThostFtdcCombPromotionParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRiskSettleInvstPositionPacket {
                 pub p_risk_settle_invst_position : Option<CThostFtdcRiskSettleInvstPositionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRiskSettleProductStatusPacket {
                 pub p_risk_settle_product_status : Option<CThostFtdcRiskSettleProductStatusField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMFutureParameterPacket {
                 pub p_spbm_future_parameter : Option<CThostFtdcSPBMFutureParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMOptionParameterPacket {
                 pub p_spbm_option_parameter : Option<CThostFtdcSPBMOptionParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMIntraParameterPacket {
                 pub p_spbm_intra_parameter : Option<CThostFtdcSPBMIntraParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMInterParameterPacket {
                 pub p_spbm_inter_parameter : Option<CThostFtdcSPBMInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMPortfDefinitionPacket {
                 pub p_spbm_portf_definition : Option<CThostFtdcSPBMPortfDefinitionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMInvestorPortfDefPacket {
                 pub p_spbm_investor_portf_def : Option<CThostFtdcSPBMInvestorPortfDefField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorPortfMarginRatioPacket {
                 pub p_investor_portf_margin_ratio : Option<CThostFtdcInvestorPortfMarginRatioField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorProdSPBMDetailPacket {
                 pub p_investor_prod_spbm_detail : Option<CThostFtdcInvestorProdSPBMDetailField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorCommoditySPMMMarginPacket {
                 pub p_investor_commodity_spmm_margin : Option<CThostFtdcInvestorCommoditySPMMMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorCommodityGroupSPMMMarginPacket {
                 pub p_investor_commodity_group_spmm_margin : Option<CThostFtdcInvestorCommodityGroupSPMMMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPMMInstParamPacket {
                 pub p_spmm_inst_param : Option<CThostFtdcSPMMInstParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPMMProductParamPacket {
                 pub p_spmm_product_param : Option<CThostFtdcSPMMProductParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQrySPBMAddOnInterParameterPacket {
                 pub p_spbm_add_on_inter_parameter : Option<CThostFtdcSPBMAddOnInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRCAMSCombProductInfoPacket {
                 pub p_rcams_comb_product_info : Option<CThostFtdcRCAMSCombProductInfoField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRCAMSInstrParameterPacket {
                 pub p_rcams_instr_parameter : Option<CThostFtdcRCAMSInstrParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRCAMSIntraParameterPacket {
                 pub p_rcams_intra_parameter : Option<CThostFtdcRCAMSIntraParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRCAMSInterParameterPacket {
                 pub p_rcams_inter_parameter : Option<CThostFtdcRCAMSInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRCAMSShortOptAdjustParamPacket {
                 pub p_rcams_short_opt_adjust_param : Option<CThostFtdcRCAMSShortOptAdjustParamField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRCAMSInvestorCombPositionPacket {
                 pub p_rcams_investor_comb_position : Option<CThostFtdcRCAMSInvestorCombPositionField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorProdRCAMSMarginPacket {
                 pub p_investor_prod_rcams_margin : Option<CThostFtdcInvestorProdRCAMSMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRULEInstrParameterPacket {
                 pub p_rule_instr_parameter : Option<CThostFtdcRULEInstrParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRULEIntraParameterPacket {
                 pub p_rule_intra_parameter : Option<CThostFtdcRULEIntraParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryRULEInterParameterPacket {
                 pub p_rule_inter_parameter : Option<CThostFtdcRULEInterParameterField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcTraderSpiOnRspQryInvestorProdRULEMarginPacket {
                 pub p_investor_prod_rule_margin : Option<CThostFtdcInvestorProdRULEMarginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }  

@@ -24,3 +24,4 @@ axum-server = { git = "https://github.com/programatik29/axum-server.git", featur
 axum = { version = "0.7", features = ["macros"] }
 base = { path = "../base" }
 derive_more = "0.99.8"
+itertools = "0.12.0"

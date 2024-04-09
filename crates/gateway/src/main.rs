@@ -1,8 +1,7 @@
 use clap::Parser;
-use executor::start_ctp_md_cache;
+use log::info;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
-use log::info;
 
 mod executor;
 mod fronts;
@@ -40,14 +39,14 @@ async fn main() {
     let mut ex = executor::Executor::new();
     let opts: Opts = Opts::parse();
     let conf = Config::load(&opts.config).unwrap();
-    let cmc = start_ctp_md_cache(&conf.ctp_md_account)
-        .await
-        .expect("create ctp md receiver failed.");
-    info!("md receiver started");
+    let cmc = executor::CtpMdCache::new(&conf.ctp_md_account);
     for ca in conf.ctp_accounts.iter() {
         let cmc = Arc::clone(&cmc);
         let ca = ca.clone();
-        let (tx, rx) = mpsc::channel::<executor::ReqMessage>(1000);
+        let (tx, rx) = mpsc::channel::<(
+            executor::ReqMessage,
+            tokio::sync::oneshot::Sender<executor::RspMessage>,
+        )>(1000);
         ex.sorted_accounts.push(executor::TraderHandle {
             account: ca.account.clone(),
             tx,

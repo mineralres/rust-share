@@ -126,58 +126,58 @@ fn on_rtn_for_quote_rsp(&mut self, p_for_quote_rsp : Option<&CThostFtdcForQuoteR
                 on_rtn_for_quote_rsp: extern "C" fn(spi: *mut CThostFtdcMdSpiFat, p_for_quote_rsp : * const CThostFtdcForQuoteRspField ),
                  } 
 
-        #[derive(Clone, Debug)]
+        #[derive(Clone, Debug, Decode, Encode)]
         pub enum CThostFtdcMdSpiOutput {OnFrontConnected(CThostFtdcMdSpiOnFrontConnectedPacket),OnFrontDisconnected(CThostFtdcMdSpiOnFrontDisconnectedPacket),OnHeartBeatWarning(CThostFtdcMdSpiOnHeartBeatWarningPacket),OnRspUserLogin(CThostFtdcMdSpiOnRspUserLoginPacket),OnRspUserLogout(CThostFtdcMdSpiOnRspUserLogoutPacket),OnRspQryMulticastInstrument(CThostFtdcMdSpiOnRspQryMulticastInstrumentPacket),OnRspError(CThostFtdcMdSpiOnRspErrorPacket),OnRspSubMarketData(CThostFtdcMdSpiOnRspSubMarketDataPacket),OnRspUnSubMarketData(CThostFtdcMdSpiOnRspUnSubMarketDataPacket),OnRspSubForQuoteRsp(CThostFtdcMdSpiOnRspSubForQuoteRspPacket),OnRspUnSubForQuoteRsp(CThostFtdcMdSpiOnRspUnSubForQuoteRspPacket),OnRtnDepthMarketData(CThostFtdcMdSpiOnRtnDepthMarketDataPacket),OnRtnForQuoteRsp(CThostFtdcMdSpiOnRtnForQuoteRspPacket), } 
 
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnFrontConnectedPacket {
                 
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnFrontDisconnectedPacket {
                 pub n_reason : std::os::raw::c_int,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnHeartBeatWarningPacket {
                 pub n_time_lapse : std::os::raw::c_int,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspUserLoginPacket {
                 pub p_rsp_user_login : Option<CThostFtdcRspUserLoginField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspUserLogoutPacket {
                 pub p_user_logout : Option<CThostFtdcUserLogoutField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspQryMulticastInstrumentPacket {
                 pub p_multicast_instrument : Option<CThostFtdcMulticastInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspErrorPacket {
                 pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspSubMarketDataPacket {
                 pub p_specific_instrument : Option<CThostFtdcSpecificInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspUnSubMarketDataPacket {
                 pub p_specific_instrument : Option<CThostFtdcSpecificInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspSubForQuoteRspPacket {
                 pub p_specific_instrument : Option<CThostFtdcSpecificInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRspUnSubForQuoteRspPacket {
                 pub p_specific_instrument : Option<CThostFtdcSpecificInstrumentField>,pub p_rsp_info : Option<CThostFtdcRspInfoField>,pub n_request_id : std::os::raw::c_int,pub b_is_last : bool,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRtnDepthMarketDataPacket {
                 pub p_depth_market_data : Option<CThostFtdcDepthMarketDataField>,
             }
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct CThostFtdcMdSpiOnRtnForQuoteRspPacket {
                 pub p_for_quote_rsp : Option<CThostFtdcForQuoteRspField>,
             }  

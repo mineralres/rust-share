@@ -2,15 +2,18 @@
 
 use crate::error::Error;
 use chrono::Local;
+use clap::builder::NonEmptyStringValueParser;
 use ctp_futures::*;
 use futures::StreamExt;
+use itertools::Itertools;
 use log::{error, info};
 use rust_share_util::*;
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::atomic;
+use std::sync::mpsc::channel;
 use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::{mpsc, oneshot, Mutex};
 
 #[derive(Debug, PartialEq)]
 pub enum DirectionType {
@@ -62,13 +65,15 @@ impl PositionDateType {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub enum ClosePriorityType {
-    YesterdayFirst = 0,
-    TodayFirst = 1,
-    AnyFirst = 2,
+    #[default]
+    AnyFirst,
+    YesterdayFirst,
+    TodayFirst,
 }
 
+#[derive(Debug, Clone)]
 pub struct MarketDataSnapshot {
     pub ask1: f64,
     pub ask1_volume1: i32,
@@ -118,7 +123,7 @@ impl Operation {
 }
 
 /// 合约目标仓位
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ContractPositionTarget {
     pub exchange: String,
     pub symbol: String,
@@ -445,10 +450,10 @@ impl AccountState {
     /// 设置某合约的target 并返回对应的操作
     pub fn set_check_target(
         &mut self,
-        instrument_id: &String,
         target: ContractPositionTarget,
         md: &MarketDataSnapshot,
     ) -> Result<Operation, Error> {
+        let instrument_id = &target.symbol;
         let price_tick = self.get_price_tick(instrument_id)?;
         let mut op = match self.get_contract_detail(instrument_id) {
             Ok(i) => {
@@ -489,7 +494,7 @@ impl AccountState {
 }
 
 impl ContractDetail {
-    pub fn new(exchange: &str, symbol: &str, price_tick: f64) -> Self {
+    pub fn _new(exchange: &str, symbol: &str, price_tick: f64) -> Self {
         let mut cd = ContractDetail {
             exchange: exchange.into(),
             symbol: symbol.into(),
@@ -524,7 +529,7 @@ impl ContractDetail {
     }
 
     pub fn new_from_target(target: ContractPositionTarget, price_tick: f64) -> Self {
-        let mut cd = ContractDetail {
+        let cd = ContractDetail {
             exchange: target.exchange.clone(),
             symbol: target.symbol.clone(),
             price_tick,
@@ -821,59 +826,23 @@ fn get_counterparty_price(
     }
 }
 
-/*
-use std::{
-    future::Future,
-    pin::Pin,
-    task::{Context, Poll, Waker},
-    thread,
-    time::Duration,
-};
-
-pub struct CtpQueryFuture {
-    shared_state: Arc<Mutex<SharedState>>,
-}
-
-/// Shared state between the future and the waiting thread
-struct SharedState {
-    /// Whether or not the sleep time has elapsed
-    completed: bool,
-
-    /// The waker for the task that `TimerFuture` is running on.
-    /// The thread can use this after setting `completed = true` to tell
-    /// `TimerFuture`'s task to wake up, see that `completed = true`, and
-    /// move forward.
-    waker: Option<Waker>,
-}
-
-impl Future for CtpQueryFuture {
-    type Output = ();
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        // Look at the shared state to see if the timer has already completed.
-        let mut shared_state = self.shared_state.lock().unwrap();
-        if shared_state.completed {
-            Poll::Ready(())
-        } else {
-            shared_state.waker = Some(cx.waker().clone());
-            Poll::Pending
-        }
-    }
-}
-*/
-
 pub struct CtpMdCache {
-    pub api: Box<CThostFtdcMdApi>,
+    pub tx: mpsc::Sender<String>,
     pub hm_md: HashMap<String, MarketDataSnapshot>,
+    pub subscribed: Vec<String>,
 }
 
-pub async fn start_ctp_md_cache(ca: &CtpAccountConfig) -> Result<Arc<Mutex<CtpMdCache>>, Error> {
+pub async fn run_ctp_md_cache(
+    ca: CtpAccountConfig,
+    mut rx: mpsc::Receiver<String>,
+    cmc: Arc<Mutex<CtpMdCache>>,
+) {
     info!("[{}] market data receiver start", ca.account);
     if ca.md_fronts.len() == 0 {
         panic!("md front is not valid");
     }
     let flow_path = format!(".cache/ctp_md_flow_{}_{}//", ca.broker_id, ca.account);
     check_make_dir(&flow_path);
-    let front = &ca.md_fronts[0];
     let mut mdapi = unsafe {
         Box::from_raw(ctp_futures::CThostFtdcMdApi_CreateFtdcMdApi(
             flow_path.as_ptr() as *const i8,
@@ -881,7 +850,10 @@ pub async fn start_ctp_md_cache(ca: &CtpAccountConfig) -> Result<Arc<Mutex<CtpMd
             false,
         ))
     };
-    mdapi.register_front(CString::new(front.as_str()).unwrap());
+    for front in ca.md_fronts.iter() {
+        info!("Md RegisterFront {}", front);
+        mdapi.register_front(CString::new(front.as_str()).unwrap());
+    }
 
     let mut stream = {
         let (stream, pp) = ctp_futures::md_api::create_spi();
@@ -890,6 +862,7 @@ pub async fn start_ctp_md_cache(ca: &CtpAccountConfig) -> Result<Arc<Mutex<CtpMd
     };
     mdapi.init();
     let mut trading_day: [i8; 9] = [0; 9];
+    let mut initialized = false;
     while let Some(msg) = stream.next().await {
         use ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
         match msg {
@@ -905,7 +878,7 @@ pub async fn start_ctp_md_cache(ca: &CtpAccountConfig) -> Result<Arc<Mutex<CtpMd
                     p,
                     ascii_cstr_to_str_i8(&trading_day).unwrap()
                 );
-                std::process::exit(-1);
+                break;
             }
             OnRspUserLogin(ref p) => {
                 if p.p_rsp_info.is_some() {
@@ -915,14 +888,14 @@ pub async fn start_ctp_md_cache(ca: &CtpAccountConfig) -> Result<Arc<Mutex<CtpMd
                         "行情服务器登陆成功, trading_day=[{}]",
                         ascii_cstr_to_str_i8(&trading_day).unwrap()
                     );
-                    break;
+                    initialized = true;
                 } else {
                     info!(
                         "Quote Md RspUserLogin = {:?}",
                         print_rsp_info!(&p.p_rsp_info)
                     );
-                    std::process::exit(-1);
                 }
+                break;
             }
             OnRspError(ref p) => {
                 info!("Quote daemon OnRspError!");
@@ -939,65 +912,115 @@ pub async fn start_ctp_md_cache(ca: &CtpAccountConfig) -> Result<Arc<Mutex<CtpMd
             }
         }
     }
-    let cmc = Arc::new(Mutex::new(CtpMdCache {
-        api: mdapi,
-        hm_md: HashMap::new(),
-    }));
-    let cmc_res = Arc::clone(&cmc);
-    tokio::spawn(async move {
-        while let Some(msg) = stream.next().await {
-            use ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
-            match msg {
-                OnFrontDisconnected(ref p) => {
-                    info!(
-                        "on front disconnected {:?} 直接Exit trading_day={}",
-                        p,
-                        ascii_cstr_to_str_i8(&trading_day).unwrap()
-                    );
-                    std::process::exit(-1);
-                }
-                OnRtnDepthMarketData(ref ctp_md) => {
-                    if let Some(ctp_md) = ctp_md.p_depth_market_data.as_ref() {
-                        let symbol = ascii_cstr_to_str_i8(&ctp_md.InstrumentID)
-                            .unwrap()
-                            .to_string();
-                        cmc.lock()
-                            .await
-                            .hm_md
-                            .entry(symbol)
-                            .and_modify(|e| {
-                                e.ask1 = ctp_md.AskPrice1;
-                                e.bid1 = ctp_md.BidPrice1;
-                                e.ask1_volume1 = ctp_md.AskVolume1;
-                                e.bid1_volume = ctp_md.BidVolume1;
-                                e.timestamp = Local::now().timestamp();
-                            })
-                            .or_insert({
-                                let mut md = MarketDataSnapshot::from(ctp_md);
-                                md.timestamp = Local::now().timestamp();
-                                md
-                            });
+    if !initialized {
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+        error!("[{}] ctp md failed to initialize", ca.account);
+        info!("Restart md cache in 10 seconds");
+        test_spawn(ca, rx, cmc);
+        return;
+    }
+    let subscribed = { cmc.lock().await.subscribed.clone() };
+    let result = mdapi.subscribe_market_data(
+        subscribed
+            .iter()
+            .map(|e| CString::new(e.clone()).unwrap())
+            .collect_vec(),
+        subscribed.len() as i32,
+    );
+    if result != 0 {
+        error!("Subscribe result = {}", result);
+    }
+    loop {
+        tokio::select! {
+            Some(msg) = stream.next() => {
+                use ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
+                match msg {
+                    OnFrontDisconnected(ref p) => {
+                        info!(
+                            "on front disconnected {:?} 直接Exit trading_day={}",
+                            p,
+                            ascii_cstr_to_str_i8(&trading_day).unwrap()
+                        );
+                        break;
                     }
+                    OnRtnDepthMarketData(ref ctp_md) => {
+                        if let Some(ctp_md) = ctp_md.p_depth_market_data.as_ref() {
+                            let symbol = get_symbol(&ctp_md.InstrumentID).unwrap().to_string();
+                            let symbol1 = symbol.clone();
+                            let mut cmc = cmc.lock().await;
+                                cmc.hm_md
+                                .entry(symbol)
+                                .and_modify(|e| {
+                                    e.ask1 = ctp_md.AskPrice1;
+                                    e.bid1 = ctp_md.BidPrice1;
+                                    e.ask1_volume1 = ctp_md.AskVolume1;
+                                    e.bid1_volume = ctp_md.BidVolume1;
+                                    e.timestamp = Local::now().timestamp();
+                                    info!("[{symbol1}] update md={:?}", e);
+                                })
+                                .or_insert_with(|| {
+                                    let mut md = MarketDataSnapshot::from(ctp_md);
+                                    md.timestamp = Local::now().timestamp();
+                                    info!("[{symbol1}] insert md={:?}", md);
+                                    md
+                                });
+                        }
+                    }
+                    _ => (),
                 }
-                _ => (),
+            }
+            Some(symbol) = rx.recv() => {
+                let result = mdapi.subscribe_market_data(vec![CString::new(symbol).unwrap()], 1);
+                if result != 0 {
+                    error!("Subscribe result = {}", result);
+                }
             }
         }
-    });
-    Ok(cmc_res)
+    }
+    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    // tokio::spawn(Box::pin(run_ctp_md_cache(ca, rx, cmc)));
+    test_spawn(ca, rx, cmc);
+}
+
+fn test_spawn(ca: CtpAccountConfig, rx: mpsc::Receiver<String>, cmc: Arc<Mutex<CtpMdCache>>) {
+    tokio::spawn(async move { Box::pin(run_ctp_md_cache(ca, rx, cmc)).await });
 }
 
 impl CtpMdCache {
-    pub fn subscribe(&self, exchange: &[i8; 9], symbol: &[i8; 81]) {}
+    pub async fn subscribe(&mut self, exchange: &str, symbol: &str) {
+        let symbol = symbol.to_string();
+        if let None = self.subscribed.iter().find(|&e| *e == symbol) {
+            self.subscribed.push(symbol.clone());
+            if let Err(e) = self.tx.send(symbol).await {
+                error!(" send subscribe {e}");
+            }
+        }
+    }
+
     pub fn get_md(&self, k: &String) -> Option<&MarketDataSnapshot> {
         self.hm_md.get(k)
+    }
+
+    pub fn new(ca: &CtpAccountConfig) -> Arc<Mutex<Self>> {
+        let (tx, rx) = mpsc::channel::<String>(1000);
+        let cmc = Arc::new(Mutex::new(Self {
+            tx,
+            hm_md: HashMap::new(),
+            subscribed: vec![],
+        }));
+        tokio::spawn(run_ctp_md_cache(ca.clone(), rx, Arc::clone(&cmc)));
+        cmc
     }
 }
 
 #[derive(Debug)]
 pub enum ReqMessage {
-    SetSymbolTarget(ContractPositionTarget),
-    QueryPosition { account: String },
+    SetContractTarget(ContractPositionTarget),
+    QueryPositionDetail,
+    QueryTradingAccount,
 }
+
+pub type RspMessage = Result<Vec<ctp_futures::trader_api::CThostFtdcTraderSpiOutput>, Error>;
 
 /// executor for all account
 /// 行情存放在hm_md中, 按需取
@@ -1008,7 +1031,7 @@ pub struct Executor {
 
 pub struct TraderHandle {
     pub account: String,
-    pub tx: mpsc::Sender<ReqMessage>,
+    pub tx: mpsc::Sender<(ReqMessage, oneshot::Sender<RspMessage>)>,
 }
 
 impl Executor {
@@ -1018,18 +1041,31 @@ impl Executor {
         }
     }
 
-    pub async fn send_request_message(&self, account: &str, msg: ReqMessage) -> Result<(), Error> {
+    pub async fn query(&self, account: &str, msg: ReqMessage) -> Result<RspMessage, Error> {
         match self.sorted_accounts.iter().find(|t| t.account == account) {
             Some(th) => {
-                th.tx.send(msg).await.map_err(|_e| Error::MpscSendErr)?;
-                Ok(())
+                let (tx, rx) = oneshot::channel::<RspMessage>();
+                th.tx
+                    .send((msg, tx))
+                    .await
+                    .map_err(|_e| Error::MpscSendErr)?;
+                match tokio::time::timeout(tokio::time::Duration::from_secs(5), rx).await {
+                    Ok(res) => match res {
+                        Ok(v) => Ok(v),
+                        Err(_) => Err(Error::CtpQueryTimeout),
+                    },
+                    Err(_) => {
+                        error!("did not receive value within 5 seconds");
+                        Err(Error::CtpQueryTimeout)
+                    }
+                }
             }
             None => Err(Error::AccountNotFound),
         }
     }
 
     pub async fn handle_spi_msg(
-        spi_msg: ctp_futures::trader_api::CThostFtdcTraderSpiOutput,
+        spi_msg: &ctp_futures::trader_api::CThostFtdcTraderSpiOutput,
         state: &mut AccountState,
         ca: &CtpAccountConfig,
         cmc: &Arc<Mutex<CtpMdCache>>,
@@ -1133,6 +1169,10 @@ impl Executor {
                                 // state.set_check_target(instrument_id, target, md)
                             }
                         }
+                        cmc.lock()
+                            .await
+                            .subscribe("", ascii_cstr_to_str_i8(&o.InstrumentID).unwrap())
+                            .await;
                     }
                     None => error!("RtnOrder rtn=nil"),
                 }
@@ -1141,10 +1181,11 @@ impl Executor {
                 match rtn.p_trade.as_ref() {
                     Some(trade) => {
                         // rtn.TradingDay = state.trading_day_ctp.clone(); // 上海夜盘成交的交易日没有更新到第二天
+                        state.update_by_trade(trade).unwrap();
                         cmc.lock()
                             .await
-                            .subscribe(&trade.ExchangeID, &trade.InstrumentID);
-                        state.update_by_trade(trade).unwrap();
+                            .subscribe("", ascii_cstr_to_str_i8(&trade.InstrumentID).unwrap())
+                            .await;
                         // 只要有成交都重新触发
                         // info!(
                         //     "重新触发sync symbol target {}:{} position={}",
@@ -1154,7 +1195,7 @@ impl Executor {
                     None => error!("RtnTrade rtn=nil"),
                 }
             }
-            OnRspQryTradingAccount(ref p) => if p.p_trading_account.is_some() {},
+            OnRspQryTradingAccount(ref p) => {}
             OnRspQryInvestorPosition(ref p) => {
                 let _pos = match p.p_investor_position {
                     Some(ref _ip) => (),
@@ -1167,9 +1208,28 @@ impl Executor {
                     None => (),
                 };
             }
-            _ => (),
-        }
+            other => {
+                info!("Un handled spi msg = {:?}", other);
+            }
+        };
         Ok(())
+    }
+
+    pub async fn handle_set_contract_target(
+        target: ContractPositionTarget,
+        state: &mut AccountState,
+        ca: &CtpAccountConfig,
+        cmc: &Arc<Mutex<CtpMdCache>>,
+        api: &mut Box<CThostFtdcTraderApi>,
+    ) -> Result<(), Error> {
+        let md = { cmc.lock().await.get_md(&target.symbol).cloned() };
+        match md {
+            Some(md) => {
+                let op = state.set_check_target(target, &md);
+                Ok(())
+            }
+            None => Err(Error::MdNotFound),
+        }
     }
 
     pub async fn handle_request_msg(
@@ -1177,16 +1237,40 @@ impl Executor {
         state: &mut AccountState,
         ca: &CtpAccountConfig,
         cmc: &Arc<Mutex<CtpMdCache>>,
+        api: &mut Box<CThostFtdcTraderApi>,
     ) -> Result<(), Error> {
+        use ReqMessage::*;
+        match req_msg {
+            SetContractTarget(target) => {}
+            QueryPositionDetail => {
+                info!("req_msg={:?}", req_msg);
+                let mut req = CThostFtdcQryInvestorPositionDetailField::default();
+                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                let result = api.req_qry_investor_position_detail(&mut req, state.get_request_id());
+                if result != 0 {
+                    info!("ReqQueryInvestorPositionDetail={}", result);
+                }
+            }
+            QueryTradingAccount => {
+                let mut req = CThostFtdcQryTradingAccountField::default();
+                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                let result = api.req_qry_trading_account(&mut req, state.get_request_id());
+                if result != 0 {
+                    info!("ReqQueryTradingAccount={}", result);
+                }
+            }
+        }
         info!("handle_request_msg = {:?}", req_msg);
         Ok(())
     }
+
     pub async fn run_trader_daemon(
         ca: CtpAccountConfig,
         cmc: Arc<Mutex<CtpMdCache>>,
-        mut rx: mpsc::Receiver<ReqMessage>,
+        mut rx: mpsc::Receiver<(ReqMessage, oneshot::Sender<RspMessage>)>,
     ) -> Result<(), Error> {
-        // let (tx, mut rx) = mpsc::channel::<ReqMessage>(1000);
+        info!("run trader [{}]", ca.account);
         let mut state = AccountState::new(&ca.broker_id, &ca.account);
         let flow_path = format!(
             ".cache/ctp_trade_daemon_flow_{}_{}//",
@@ -1202,7 +1286,9 @@ impl Executor {
         if ca.name_servers.len() > 0 {
             api.register_name_server(CString::new(ca.name_servers[0].as_str()).unwrap());
         } else if ca.trade_fronts.len() > 0 {
-            api.register_front(CString::new(ca.trade_fronts[0].as_str()).unwrap());
+            for front in ca.trade_fronts.iter() {
+                api.register_front(CString::new(front.as_str()).unwrap());
+            }
         }
         api.subscribe_public_topic(ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
         api.subscribe_private_topic(ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
@@ -1341,13 +1427,52 @@ impl Executor {
         let (mut api, _api3) = ctp_futures::trader_api::unsafe_clone_api(api);
 
         info!("{}:{} Trader initialized.", ca.broker_id, ca.account);
+        {
+            let mut cmc = cmc.lock().await;
+            for cd in state.sorted_cds.iter() {
+                cmc.subscribe(&cd.exchange, &cd.symbol).await;
+            }
+        }
+
+        let mut query_req: Option<(
+            ReqMessage,
+            oneshot::Sender<RspMessage>,
+            Vec<ctp_futures::trader_api::CThostFtdcTraderSpiOutput>,
+        )> = None;
         loop {
             tokio::select! {
                 Some(spi_msg) = stream.next() => {
-                    Executor::handle_spi_msg(spi_msg, &mut state, &ca, &cmc).await?;
+                    let is_last = Executor::handle_spi_msg(&spi_msg, &mut state, &ca, &cmc).await?;
+                    use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
+                    use ReqMessage::*;
+                    if let Some((req_msg, rsp_tx, mut response_packets)) = query_req.take() {
+                        let (is_result, is_last) = match (req_msg, &spi_msg) {
+                            (SetContractTarget(_), _) => panic!("SetContractTarget do not have response"),
+                            (QueryPositionDetail, OnRspQryInvestorPositionDetail(p)) => (true, p.b_is_last),
+                            (QueryTradingAccount, OnRspQryTradingAccount(p)) => (true, p.b_is_last),
+                            (_, _) => (false, false),
+                        };
+                        if is_result {
+                            response_packets.push(spi_msg);
+                        }
+                        if is_last {
+                            let _ = rsp_tx.send(Ok(response_packets));
+                            query_req = None;
+                        }
+                    }
                 },
-                Some(req_msg) = rx.recv() => {
-                    Executor::handle_request_msg(&req_msg, &mut state, &ca, &cmc).await?;
+                Some((req_msg, rsp_tx)) = rx.recv() => {
+                    if let ReqMessage::SetContractTarget(target) = req_msg {
+                        let res = Executor::handle_set_contract_target(target, &mut state, &ca, &cmc, &mut api).await.map(|_|vec![]);
+                        let _ = rsp_tx.send(res);
+                    } else {
+                        if query_req.is_some() {
+                            let _ = rsp_tx.send(Err(Error::CtpLastQueryIsProceeding));
+                        } else {
+                            query_req = Some((req_msg, rsp_tx, vec![]));
+                            Executor::handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, &ca, &cmc, &mut api).await?;
+                        }
+                    }
                 },
                 else => break,
             }

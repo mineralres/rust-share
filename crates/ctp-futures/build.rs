@@ -221,7 +221,7 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
         ));
         spi_output_enum_lines.push(format!(
             r#"
-        #[derive(Clone, Debug)]
+        #[derive(Clone, Debug, Decode, Encode)]
         pub enum {full_spi_output_enum_name} {{"#
         ));
         impl_spi_fn_line.push(format!(
@@ -327,7 +327,7 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
             spi_output_enum_lines.push(format!(r#"{fn_name}({full_spi_name}{fn_name}Packet),"#,));
             spi_output_enum_struct_lines.push(format!(
                 r#"
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Debug, Encode, Decode)]
             pub struct {full_spi_name}{fn_name}Packet {{
                 {}
             }}"#,
