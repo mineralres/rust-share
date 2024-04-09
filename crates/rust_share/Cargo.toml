@@ -11,3 +11,4 @@ base = { path = "../base" }
 ctp_futures = { path = "../ctp_futures" }
 rust_share_util = { path = "../rust_share_util" }
 spider = { path = "../spider" }
+gateway = { path = "../gateway" }

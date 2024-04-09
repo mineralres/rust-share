@@ -9,8 +9,8 @@ pub mod http {
     };
     use futures::StreamExt;
     use log::info;
-    use rust_share::ctp_futures::*;
-    use rust_share::rust_share_util::*;
+    use ::ctp_futures::*;
+    use ::rust_share_util::*;
     use std::ffi::{CStr, CString};
     use std::io::Write;
     use std::net::SocketAddr;

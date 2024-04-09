@@ -9,7 +9,9 @@ edition = "2021"
 log = "0.4.11"
 tracing-subscriber = "0.2"
 tokio = { version = "1", features = ["full"] }
-rust_share = { path = "../rust_share" }
+ctp_futures = { path = "../ctp_futures" }
+base = { path = "../base" }
+rust_share_util = { path = "../rust_share_util" }
 futures = "0.3.5"
 bincode = { version = "2.0.0-rc.2", features = ["derive"] }
 chrono = "0.4"
@@ -20,6 +22,5 @@ axum-server = { git = "https://github.com/programatik29/axum-server.git", featur
 	"tls-rustls",
 ] }
 axum = { version = "0.7", features = ["macros"] }
-base = { path = "../base" }
 derive_more = "0.99.8"
 itertools = "0.12.0"

@@ -3,10 +3,12 @@
 use crate::error::Error;
 use chrono::Local;
 use clap::builder::NonEmptyStringValueParser;
+use ctp_futures;
+use ctp_futures::*;
 use futures::StreamExt;
 use itertools::Itertools;
 use log::{error, info};
-use rust_share::{ctp_futures, ctp_futures::*, rust_share_util::*};
+use rust_share_util::*;
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::atomic;
@@ -843,7 +845,7 @@ pub async fn run_ctp_md_cache(
     let flow_path = format!(".cache/ctp_md_flow_{}_{}//", ca.broker_id, ca.account);
     check_make_dir(&flow_path);
     let mut mdapi = unsafe {
-        Box::from_raw(rust_share::ctp_futures::CThostFtdcMdApi_CreateFtdcMdApi(
+        Box::from_raw(ctp_futures::CThostFtdcMdApi_CreateFtdcMdApi(
             flow_path.as_ptr() as *const i8,
             false,
             false,
@@ -863,7 +865,7 @@ pub async fn run_ctp_md_cache(
     let mut trading_day: [i8; 9] = [0; 9];
     let mut initialized = false;
     while let Some(msg) = stream.next().await {
-        use rust_share::ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
+        use ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
         match msg {
             OnFrontConnected(ref _p) => {
                 info!("[{}] 行情服务器FrontConnected", ca.account);
@@ -932,7 +934,7 @@ pub async fn run_ctp_md_cache(
     loop {
         tokio::select! {
             Some(msg) = stream.next() => {
-                use rust_share::ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
+                use ctp_futures::md_api::CThostFtdcMdSpiOutput::*;
                 match msg {
                     OnFrontDisconnected(ref p) => {
                         info!(
@@ -1069,7 +1071,7 @@ impl Executor {
         ca: &CtpAccountConfig,
         cmc: &Arc<Mutex<CtpMdCache>>,
     ) -> Result<(), Error> {
-        use rust_share::ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
+        use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
         match spi_msg {
             OnFrontDisconnected(p) => {
                 info!(
@@ -1276,9 +1278,9 @@ impl Executor {
             ca.broker_id, ca.account
         );
         check_make_dir(&flow_path);
-        let mut api = rust_share::ctp_futures::trader_api::create_api(&flow_path, false);
+        let mut api = ctp_futures::trader_api::create_api(&flow_path, false);
         let mut stream = {
-            let (stream, pp) = rust_share::ctp_futures::trader_api::create_spi();
+            let (stream, pp) = ctp_futures::trader_api::create_spi();
             api.register_spi(pp);
             stream
         };
@@ -1289,12 +1291,12 @@ impl Executor {
                 api.register_front(CString::new(front.as_str()).unwrap());
             }
         }
-        api.subscribe_public_topic(rust_share::ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
-        api.subscribe_private_topic(rust_share::ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
+        api.subscribe_public_topic(ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
+        api.subscribe_private_topic(ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
         api.init();
         // 处理登陆初始化查询
         while let Some(spi_msg) = stream.next().await {
-            use rust_share::ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
+            use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
             match spi_msg {
                 OnFrontConnected(_p) => {
                     let mut req = CThostFtdcReqAuthenticateField::default();
@@ -1422,8 +1424,8 @@ impl Executor {
             }
         }
         info!("{} 初始化查询完成.", ca.account);
-        let (api, _api2) = rust_share::ctp_futures::trader_api::unsafe_clone_api(api);
-        let (mut api, _api3) = rust_share::ctp_futures::trader_api::unsafe_clone_api(api);
+        let (api, _api2) = ctp_futures::trader_api::unsafe_clone_api(api);
+        let (mut api, _api3) = ctp_futures::trader_api::unsafe_clone_api(api);
 
         info!("{}:{} Trader initialized.", ca.broker_id, ca.account);
         {
@@ -1436,13 +1438,13 @@ impl Executor {
         let mut query_req: Option<(
             ReqMessage,
             oneshot::Sender<RspMessage>,
-            Vec<rust_share::ctp_futures::trader_api::CThostFtdcTraderSpiOutput>,
+            Vec<ctp_futures::trader_api::CThostFtdcTraderSpiOutput>,
         )> = None;
         loop {
             tokio::select! {
                 Some(spi_msg) = stream.next() => {
                     let _ = Executor::handle_spi_msg(&spi_msg, &mut state, &ca, &cmc).await?;
-                    use rust_share::ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
+                    use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
                     use ReqMessage::*;
                     if let Some((req_msg, rsp_tx, mut response_packets)) = query_req.take() {
                         let (is_result, is_last) = match (req_msg, &spi_msg) {
