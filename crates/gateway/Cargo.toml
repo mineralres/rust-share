@@ -15,7 +15,6 @@ rust_share_util = { path = "../rust_share_util" }
 futures = "0.3.5"
 bincode = { version = "2.0.0-rc.2", features = ["derive"] }
 chrono = "0.4"
-clap = { version = "3.2.6", features = ["derive"] }
 serde_json = { version = "1" }
 serde = { version = "1" }
 axum-server = { git = "https://github.com/programatik29/axum-server.git", features = [
@@ -24,3 +23,4 @@ axum-server = { git = "https://github.com/programatik29/axum-server.git", featur
 axum = { version = "0.7", features = ["macros"] }
 derive_more = "0.99.8"
 itertools = "0.12.0"
+simple-error = "0.2.1"

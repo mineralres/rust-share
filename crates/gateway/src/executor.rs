@@ -2,7 +2,6 @@
 
 use crate::error::Error;
 use chrono::Local;
-use clap::builder::NonEmptyStringValueParser;
 use ctp_futures;
 use ctp_futures::*;
 use futures::StreamExt;
@@ -12,7 +11,6 @@ use rust_share_util::*;
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::atomic;
-use std::sync::mpsc::channel;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
 
@@ -95,13 +93,24 @@ impl From<&CThostFtdcDepthMarketDataField> for MarketDataSnapshot {
     }
 }
 
+/// 追踪Order状态
+#[derive(Clone)]
+pub struct PendingOrder {
+    pub front_id: i32,
+    pub session_id: i32,
+    pub order_ref: [i8; 13],
+    pub order_sys_id: [i8; 21],
+    pub volume_total_original: i32,
+}
+
 /// 合约明细数据
 #[derive(Clone)]
 pub struct ContractDetail {
     pub exchange: String,
     pub symbol: String,
     pub pl: Vec<CThostFtdcInvestorPositionDetailField>, // 持仓明细
-    pub ol: Vec<CThostFtdcOrderField>,                  // 委托明细
+    pub pol: Vec<PendingOrder>,                         // 活跃委托
+    pub hol: Vec<CThostFtdcOrderField>,                 // 历史委托
     pub tl: Vec<CThostFtdcTradeField>,                  // 成交明细
     pub target: Option<ContractPositionTarget>,         // 目标仓位
     pub price_tick: f64,                                // 最小变动价位
@@ -143,9 +152,9 @@ impl ContractPositionTarget {
     }
     pub fn opposite_direction(&self) -> DirectionType {
         if self.position > 0 {
-            DirectionType::Long
-        } else {
             DirectionType::Short
+        } else {
+            DirectionType::Long
         }
     }
 }
@@ -228,164 +237,198 @@ impl AccountState {
         format!("{order_ref}")
     }
 
-    // get contract detail
-    fn get_contract_detail(&self, symbol: &str) -> Result<usize, usize> {
-        self.sorted_cds
-            .binary_search_by(|probe| probe.symbol.as_str().cmp(symbol))
-    }
-
-    // get instrument
-    fn get_instrument(&self, instrument_id: &String) -> Option<&CThostFtdcInstrumentField> {
-        self.hm_inst.get(instrument_id)
+    /// like hashmap entry
+    fn contract_detail_entry(&mut self, exchange: String, symbol: String) -> Result<usize, Error> {
+        let i = match self
+            .sorted_cds
+            .binary_search_by(|probe| probe.symbol.as_str().cmp(&symbol))
+        {
+            Ok(i) => i,
+            Err(i) => {
+                let price_tick = self.get_price_tick(&symbol)?;
+                self.sorted_cds
+                    .insert(i, ContractDetail::new(exchange, symbol, price_tick));
+                i
+            }
+        };
+        Ok(i)
     }
 
     // 初始化持仓明细
     pub fn insert_position_detail(
         &mut self,
-        pd: &CThostFtdcInvestorPositionDetailField,
+        pd: CThostFtdcInvestorPositionDetailField,
     ) -> Result<(), Error> {
         if pd.TradingDay[0] == 0 || pd.OpenDate[0] == 0 {
             info!("insert trading_day==0 pd={:?}", pd);
             panic!("without trading_day account state cann't get the summation of position by date type.");
         }
-        match self.get_contract_detail(get_symbol(&pd.InstrumentID).unwrap()) {
-            Ok(i) => {
-                self.sorted_cds[i].pl.push(pd.clone());
-            }
-            Err(i) => {
-                let mut cd = ContractDetail::new_from_instrument_id(
-                    &pd.ExchangeID,
-                    &pd.InstrumentID,
-                    self.hm_inst
-                        .get(get_symbol(&pd.InstrumentID).unwrap())
-                        .ok_or(Error::InstrumentNotFound)?
-                        .PriceTick,
-                );
-                cd.pl.push(pd.clone());
-                self.sorted_cds.insert(i, cd);
-            }
-        }
+        let exchange = ascii_cstr_to_str_i8(&pd.ExchangeID)?.to_string();
+        let symbol = ascii_cstr_to_str_i8(&pd.InstrumentID)?.to_string();
+        let i = self.contract_detail_entry(exchange, symbol)?;
+        self.sorted_cds[i].pl.push(pd);
         Ok(())
     }
 
-    // 通过OrderSysID查找order，并在成交返回时触发
-    pub fn find_order_by_order_sys_id(
-        &self,
-        instrument_id: &TThostFtdcInstrumentIDType,
-        order_sys_id: &[i8; 21],
-    ) -> Option<&CThostFtdcOrderField> {
-        match self.get_contract_detail(get_symbol(instrument_id).unwrap()) {
-            Ok(i) => {
-                let cd = &self.sorted_cds[i];
-                cd.ol.iter().find(|x| x.OrderSysID == *order_sys_id)
+    /// 初始化时更新委托
+    /// 初始化查询得到的最新 Order snapshot，但考虑到部分PendingOrder对应的Trade并不全面，需要对Order.VolumeTotalOriginal作调整
+    /// AccountState中初始化得到的PositionDetailList + OnRtnTrade 合并得到最新的 PositionSnapshot, 但并不查询全部的Trade
+    pub fn update_by_order_on_initialized(
+        &mut self,
+        vo: Vec<CThostFtdcOrderField>,
+    ) -> Result<(), Error> {
+        let mut v: Vec<CThostFtdcOrderField> = vec![];
+        for o in vo.into_iter() {
+            match v.iter_mut().find(|x| {
+                x.FrontID == o.FrontID
+                    && x.SessionID == o.SessionID
+                    && cstr_i8_eq(&x.OrderRef, &o.OrderRef)
+            }) {
+                Some(xo) => *xo = o,
+                None => v.push(o),
             }
-            Err(_i) => None,
         }
+        for mut o in v
+            .into_iter()
+            .filter(|x| !(is_order_canceled(x) || is_order_done(x)))
+        {
+            o.VolumeTotalOriginal = o.VolumeTotalOriginal - o.VolumeTraded;
+            let symbol = ascii_cstr_to_str_i8(&o.InstrumentID)?;
+            if let Ok(i) = self
+                .sorted_cds
+                .binary_search_by(|probe| probe.symbol.as_str().cmp(symbol))
+            {
+                let order_volume_traded = self.sorted_cds[i]
+                    .tl
+                    .iter()
+                    .filter(|&x| cstr_i8_eq(&x.OrderSysID, &o.OrderSysID))
+                    .map(|&x| x.Volume)
+                    .sum::<i32>();
+                o.VolumeTotalOriginal += order_volume_traded;
+            }
+            self.update_by_order(&o)?;
+        }
+
+        Ok(())
     }
 
-    // 委托更新
+    /// 委托更新
+    /// AccountState中只保留PendingOrder, 完成成交和已撤单的委托都会被清除
+    /// 追踪PendingOrder可以保证对齐持仓的过程中顺序操作，以免出现重复开平仓情形
     pub fn update_by_order(&mut self, o: &CThostFtdcOrderField) -> Result<(), Error> {
-        match self.get_contract_detail(get_symbol(&o.InstrumentID).unwrap()) {
-            Ok(i) => {
-                let cd = &mut self.sorted_cds[i];
-                let od = cd.ol.iter_mut().find(|x| {
-                    x.FrontID == o.FrontID && x.SessionID == o.SessionID && x.OrderRef == o.OrderRef
-                });
-                match od {
-                    Some(old) => {
-                        *old = o.clone();
+        let exchange = ascii_cstr_to_str_i8(&o.ExchangeID)?.to_string();
+        let symbol = ascii_cstr_to_str_i8(&o.InstrumentID)?.to_string();
+        let i = self.contract_detail_entry(exchange, symbol)?;
+        let cd = &mut self.sorted_cds[i];
+        match cd.pol.iter().position(|x| {
+            x.front_id == o.FrontID
+                && x.session_id == o.SessionID
+                && cstr_i8_eq(&x.order_ref, &o.OrderRef)
+        }) {
+            Some(index) => {
+                if is_order_canceled(&o) {
+                    cd.pol.swap_remove(index);
+                } else {
+                    let old = &mut cd.pol[index];
+                    if old.order_sys_id[0] == 0 {
+                        old.order_sys_id = o.OrderSysID.clone();
                     }
-                    None => cd.ol.push(o.clone()),
                 }
             }
-            Err(_i) => {
-                let mut cd = ContractDetail::new_from_instrument_id(
-                    &o.ExchangeID,
-                    &o.InstrumentID,
-                    self.hm_inst
-                        .get(get_symbol(&o.InstrumentID).unwrap())
-                        .ok_or(Error::InstrumentNotFound)?
-                        .PriceTick,
-                );
-                cd.ol.push(o.clone());
-                self.sorted_cds.push(cd);
-                self.sorted_cds.sort_by(|a, b| a.symbol.cmp(&b.symbol));
+            None => {
+                // 可能是其他终端下单
+                let po = PendingOrder {
+                    front_id: o.FrontID,
+                    session_id: o.SessionID,
+                    order_ref: o.OrderRef.clone(),
+                    order_sys_id: o.OrderSysID.clone(),
+                    volume_total_original: o.VolumeTotalOriginal,
+                };
+                cd.pol.push(po);
             }
         }
         Ok(())
     }
 
-    // set order status
-    pub fn set_order_status(
+    /// remove pending order when some error on order insert reponse
+    /// 例如当 ReqOrderInsert错误，并通过OnRspOrderInsert返回时，直接删除委托
+    pub fn remove_po(
         &mut self,
         symbol: &str,
         front_id: i32,
         session_id: i32,
         order_ref: &[i8; 13],
-        new_status: i8,
     ) {
-        match self.get_contract_detail(symbol) {
-            Ok(i) => {
-                let cd = &mut self.sorted_cds[i];
-                let od = cd.ol.iter_mut().find(|x| {
-                    x.FrontID == front_id && x.SessionID == session_id && x.OrderRef == *order_ref
-                });
-                match od {
-                    Some(old) => {
-                        old.OrderStatus = new_status;
-                    }
-                    None => (),
-                }
+        if let Ok(i) = self
+            .sorted_cds
+            .binary_search_by(|probe| probe.symbol.as_str().cmp(symbol))
+        {
+            let cd = &mut self.sorted_cds[i];
+            if let Some(index) = cd.pol.iter().position(|x| {
+                x.front_id == front_id
+                    && x.session_id == session_id
+                    && cstr_i8_eq(&x.order_ref, order_ref)
+            }) {
+                cd.pol.swap_remove(index);
             }
-            Err(_i) => (),
         }
     }
 
-    // 更新成交列表
-    // 同时更新本地持仓报表
-    pub fn update_by_trade(&mut self, t: &CThostFtdcTradeField) -> Result<(), Error> {
+    /// 更新成交列表
+    /// 更新本地持仓报表, 并删除已完全成交的PendingOrder
+    pub fn update_by_trade(&mut self, t: CThostFtdcTradeField) -> Result<(), Error> {
         let offset = t.OffsetFlag as u8;
-        let i = match self.get_contract_detail(get_symbol(&t.InstrumentID).unwrap()) {
-            Ok(i) => {
-                let cd = &mut self.sorted_cds[i];
-                if cd.tl.iter().any(|x| {
-                    x.ExchangeID == t.ExchangeID
-                        && x.InstrumentID == t.InstrumentID
-                        && x.TradeID == t.TradeID
-                }) {
-                    // 防止重复update
-                    return Err(Error::DumplicateTrade);
-                }
-                cd.tl.push(t.clone());
-                if offset == THOST_FTDC_OF_Open {
-                    cd.pl.push(from_trade_to_position_detail(t));
-                    return Ok(());
-                }
-                i
-            }
-            Err(i) => {
-                let mut cd = ContractDetail::new_from_instrument_id(
-                    &t.ExchangeID,
-                    &t.InstrumentID,
-                    self.hm_inst
-                        .get(get_symbol(&t.InstrumentID).unwrap())
-                        .ok_or(Error::InstrumentNotFound)?
-                        .PriceTick,
-                );
-                cd.tl.push(t.clone());
-                if offset == THOST_FTDC_OF_Open {
-                    cd.pl.push(from_trade_to_position_detail(t));
-                    return Ok(());
-                }
-                i
-            }
-        };
+        let exchange = ascii_cstr_to_str_i8(&t.ExchangeID)?.to_string();
+        let symbol = ascii_cstr_to_str_i8(&t.InstrumentID)?.to_string();
+        let i = self.contract_detail_entry(exchange, symbol)?;
         let cd = &mut self.sorted_cds[i];
+        if cd.tl.iter().any(|x| {
+            cstr_i8_eq(&x.ExchangeID, &t.ExchangeID)
+                && cstr_i8_eq(&x.InstrumentID, &t.InstrumentID)
+                && cstr_i8_eq(&x.TradeID, &t.TradeID)
+        }) {
+            // 防止重复update
+            return Err(Error::DumplicateTrade);
+        }
+        cd.tl.push(t.clone());
+        let order_volume_traded = cd
+            .tl
+            .iter()
+            .filter(|&x| cstr_i8_eq(&x.OrderSysID, &t.OrderSysID))
+            .map(|&x| x.Volume)
+            .sum::<i32>();
+        if let Some(index) = cd
+            .pol
+            .iter()
+            .position(|x| cstr_i8_eq(&x.order_sys_id, &t.OrderSysID))
+        {
+            let po = &cd.pol[index];
+            if order_volume_traded > po.volume_total_original {
+                panic!(
+                    "order_volume_traded={order_volume_traded} po.volume_total_original={}",
+                    po.volume_total_original
+                );
+            }
+            if order_volume_traded == po.volume_total_original {
+                cd.pol.swap_remove(index);
+            }
+        } else {
+            error!(
+                "Update by trade order not found, [{}:{}] t.OrderSysID={}",
+                cd.exchange,
+                cd.symbol,
+                ascii_cstr_to_str_i8(&t.OrderSysID).unwrap()
+            );
+        }
+        if offset == THOST_FTDC_OF_Open {
+            cd.pl.push(from_trade_to_position_detail(&t));
+            return Ok(());
+        }
         let mut left_volume = t.Volume;
         for pd in cd.pl.iter_mut().filter(|pd| {
             if pd.Volume > 0
-                && t.ExchangeID == pd.ExchangeID
-                && t.InstrumentID == pd.InstrumentID
+                && cstr_i8_eq(&t.ExchangeID, &pd.ExchangeID)
+                && cstr_i8_eq(&t.InstrumentID, &pd.InstrumentID)
                 && t.Direction != pd.Direction
             {
                 // 平今 SHFE INE区分
@@ -419,6 +462,7 @@ impl AccountState {
             }
         }
         if left_volume > 0 {
+            info!("pl={:?}", cd.pl);
             info!("trade={:?}", t);
             panic!("left_volume>0 无仓可平");
         }
@@ -434,8 +478,8 @@ impl AccountState {
             .PriceTick)
     }
 
-    /// 初始化Operation的order_ref, request_id等
-    pub fn fill_operation_parameter(&mut self, op: &mut Operation) {
+    /// 填写Operation的order_ref, request_id等
+    pub fn fill_operation_parameter(&self, op: &mut Operation) {
         match op {
             Operation::Input(input) => {
                 set_cstr_from_str_truncate_i8(&mut input.BrokerID, self.broker_id.as_str());
@@ -444,104 +488,102 @@ impl AccountState {
                 let order_ref = self.get_order_ref();
                 set_cstr_from_str_truncate_i8(&mut input.OrderRef, order_ref.as_str());
             }
+            Operation::Cancel(input) => {
+                set_cstr_from_str_truncate_i8(&mut input.BrokerID, self.broker_id.as_str());
+                set_cstr_from_str_truncate_i8(&mut input.InvestorID, self.account.as_str());
+            }
             _ => (),
         }
     }
 
     /// 设置某合约的target 并返回对应的操作
-    pub fn set_check_target(
+    /// 如果target = None, 则查看已经设置好的target并进行持仓对齐
+    pub async fn set_check_target(
         &mut self,
-        target: ContractPositionTarget,
-        md: &MarketDataSnapshot,
-    ) -> Result<Operation, Error> {
-        let instrument_id = &target.symbol;
-        let price_tick = self.get_price_tick(instrument_id)?;
-        let mut op = match self.get_contract_detail(instrument_id) {
-            Ok(i) => {
-                let cd = &mut self.sorted_cds[i];
-                cd.target = Some(target);
-                cd.check_target(md, price_tick, &self.trading_day_ctp)
-            }
-            Err(i) => {
-                self.sorted_cds
-                    .push(ContractDetail::new_from_target(target, price_tick));
-                self.sorted_cds[i].check_target(md, price_tick, &self.trading_day_ctp)
-            }
-        };
-        self.fill_operation_parameter(&mut op);
-        Ok(op)
-    }
-
-    /// 检查合约的target,并返回相应操作
-    pub fn check_target(
-        &mut self,
-        instrument_id: &String,
-        md: &MarketDataSnapshot,
-    ) -> Result<Operation, Error> {
-        let price_tick = self.get_price_tick(instrument_id)?;
-        let mut op = match self.get_contract_detail(instrument_id) {
-            Ok(i) => {
-                let cd = &mut self.sorted_cds[i];
-                match cd.target.as_ref() {
-                    Some(target) => cd.check_target(md, price_tick, &self.trading_day_ctp),
-                    None => Operation::NOP,
+        exchange: String,
+        symbol: String,
+        target: Option<ContractPositionTarget>,
+        cmc: &Arc<Mutex<CtpMdCache>>,
+        api: &mut Box<CThostFtdcTraderApi>,
+    ) -> Result<(), Error> {
+        let mut cmc = cmc.lock().await;
+        let md = cmc.get_md(&symbol);
+        match md {
+            Some(md) => {
+                let i = self.contract_detail_entry(exchange, symbol)?;
+                let op = {
+                    if target.is_some() {
+                        self.sorted_cds[i].target = target;
+                    }
+                    let mut op = self.sorted_cds[i].check_target(md, &self.trading_day_ctp);
+                    self.fill_operation_parameter(&mut op);
+                    op
+                };
+                match op {
+                    Operation::NOP => info!("NOP"),
+                    Operation::Input(mut input) => {
+                        info!(
+                            "Input {}:{} Direction={:?} Volume={} Price={}",
+                            get_symbol(&input.ExchangeID).unwrap(),
+                            get_symbol(&input.InstrumentID).unwrap(),
+                            DirectionType::from(input.Direction),
+                            input.VolumeTotalOriginal,
+                            input.LimitPrice
+                        );
+                        let ret = api.req_order_insert(&mut input, self.get_request_id());
+                        if ret != 0 {
+                            error!("ReqOrderInsert err = {ret}");
+                            return Err(Error::CtpApiErr(ret));
+                        }
+                        let po = PendingOrder {
+                            front_id: self.front_id,
+                            session_id: self.session_id,
+                            order_ref: input.OrderRef.clone(),
+                            volume_total_original: input.VolumeTotalOriginal,
+                            order_sys_id: [0; 21],
+                        };
+                        self.sorted_cds[i].pol.push(po);
+                    }
+                    Operation::Cancel(mut i) => {
+                        info!(
+                            "Cancel front_id={} session_id={} order_ref={}",
+                            i.FrontID,
+                            i.SessionID,
+                            ascii_cstr_to_str_i8(&i.OrderRef).unwrap()
+                        );
+                        let ret = api.req_order_action(&mut i, self.get_request_id());
+                        if ret != 0 {
+                            error!("ReqOrderAction err = {ret}");
+                            return Err(Error::CtpApiErr(ret));
+                        }
+                    }
                 }
+                Ok(())
             }
-            Err(_i) => Operation::NOP,
-        };
-        self.fill_operation_parameter(&mut op);
-        Ok(op)
+            None => {
+                cmc.subscribe(&exchange, &symbol).await;
+                Err(Error::MdNotFound)
+            }
+        }
     }
 }
 
 impl ContractDetail {
-    pub fn _new(exchange: &str, symbol: &str, price_tick: f64) -> Self {
+    pub fn new(exchange: String, symbol: String, price_tick: f64) -> Self {
         let cd = ContractDetail {
-            exchange: exchange.into(),
-            symbol: symbol.into(),
+            exchange,
+            symbol,
             price_tick,
             pl: vec![],
-            ol: vec![],
+            pol: vec![],
+            hol: vec![],
             tl: vec![],
             target: None,
         };
         cd
     }
 
-    pub fn new_from_instrument_id(
-        exchange_id: &TThostFtdcExchangeIDType,
-        instrument_id: &TThostFtdcInstrumentIDType,
-        price_tick: f64,
-    ) -> Self {
-        let cd = ContractDetail {
-            exchange: ascii_cstr_to_str_i8(exchange_id)
-                .expect("exchange_id should be ascii_str")
-                .into(),
-            symbol: ascii_cstr_to_str_i8(instrument_id)
-                .expect("instrument_id should be ascii_str")
-                .into(),
-            price_tick,
-            pl: vec![],
-            ol: vec![],
-            tl: vec![],
-            target: None,
-        };
-        cd
-    }
-
-    pub fn new_from_target(target: ContractPositionTarget, price_tick: f64) -> Self {
-        let cd = ContractDetail {
-            exchange: target.exchange.clone(),
-            symbol: target.symbol.clone(),
-            price_tick,
-            pl: vec![],
-            ol: vec![],
-            tl: vec![],
-            target: Some(target),
-        };
-        cd
-    }
-
+    /// 统计持仓
     pub fn summation(
         &self,
         d: &DirectionType,
@@ -582,6 +624,7 @@ impl ContractDetail {
             .sum()
     }
 
+    /// 平相反仓位
     fn close_opposite(
         &self,
         opposite_direction: &DirectionType,
@@ -600,6 +643,7 @@ impl ContractDetail {
         }
     }
 
+    /// 平同向仓位
     fn close_same_direction(
         &self,
         direction: &DirectionType,
@@ -646,12 +690,18 @@ impl ContractDetail {
                 .close_opposite(&opd, &PositionDateType::Today, trading_day)
                 .or(self.close_opposite(&opd, &PositionDateType::Yesterday, trading_day)),
         };
+        if let Some(op) = op {
+            info!("op1={:?}", op);
+        }
         // 2. 再平同向仓
         let op = op.or({
             let target_position = target.position.abs();
             let current_total = self.summation(&d, &PositionDateType::Total, trading_day);
-            let diff = target_position - current_total;
+            let diff = current_total - target_position;
             if diff > 0 {
+                info!(
+                    "diff={diff} target_position={target_position} current_total={current_total}"
+                );
                 match target.close_priority {
                     ClosePriorityType::AnyFirst => {
                         self.close_same_direction(&d, &PositionDateType::Total, diff, trading_day)
@@ -758,38 +808,28 @@ impl ContractDetail {
         Operation::NOP
     }
 
-    // 检查持仓是否与目标一致，如果不一致，则返回相应的操作.
-    fn check_target(
-        &self,
-        md: &MarketDataSnapshot,
-        price_tick: f64,
-        trading_day: &TThostFtdcDateType,
-    ) -> Operation {
+    /// 检查持仓是否与目标一致，如果不一致，则返回相应的操作.
+    fn check_target(&self, md: &MarketDataSnapshot, trading_day: &TThostFtdcDateType) -> Operation {
         match &self.target {
             Some(target) => {
-                // 1 先撤反向平单(开或平)
-                for o in self.ol.iter().filter(|o| {
-                    if o.OrderStatus as u8 != THOST_FTDC_OST_Canceled
-                        && o.OrderStatus as u8 != THOST_FTDC_OST_AllTraded
-                        && o.OrderStatus as u8 != THOST_FTDC_OST_NoTradeNotQueueing
-                    {
-                        return true;
-                    }
-                    false
-                }) {
+                // pol 是活跃订单，只要有活跃订单就先撤再重发. pol 会由Spi返回的相关事件进行更新
+                // 如果要求撤单同时就发新单，则需要另外写处理逻辑
+                for o in self.pol.iter() {
                     let mut r = CThostFtdcInputOrderActionField::default();
-                    r.ExchangeID = o.ExchangeID.clone();
-                    r.InstrumentID = o.InstrumentID.clone();
-                    r.FrontID = o.FrontID;
-                    r.SessionID = o.SessionID;
-                    r.OrderRef = o.OrderRef.clone();
-                    r.OrderSysID = o.OrderSysID;
-                    r.LimitPrice = o.LimitPrice;
+                    set_cstr_from_str_truncate_i8(&mut r.ExchangeID, &self.exchange);
+                    set_cstr_from_str_truncate_i8(&mut r.InstrumentID, &self.symbol);
+                    r.FrontID = o.front_id;
+                    r.SessionID = o.session_id;
+                    r.OrderRef = o.order_ref.clone();
+                    // r.OrderSysID = o.OrderSysID;
+                    // r.LimitPrice = o.LimitPrice;
+                    r.ActionFlag = THOST_FTDC_AF_Delete as i8;
+                    info!("pol len={}", self.pol.len());
                     return Operation::Cancel(r);
                 }
                 // 先平仓，再开仓
-                self.close_position(target, md, price_tick, trading_day)
-                    .or(self.open_position(target, md, price_tick, trading_day))
+                self.close_position(target, md, self.price_tick, trading_day)
+                    .or(self.open_position(target, md, self.price_tick, trading_day))
                 // 考虑到股票的情况，既不分平今平昨，同时还有最小交易量的限制，导致平仓的时候可能出现如昨仓还剩下2股，今仓8股，但最小交易量为10股/手，
                 // 这时平不出去，如果先平今的话，8股也不够一手
             }
@@ -813,8 +853,8 @@ fn from_trade_to_position_detail(
     output
 }
 
-// 对手价
-// 1 注意 bid , ask 可能因极端行情而特别偏离当前价.
+/// 对手价
+/// 1 注意 bid , ask 可能因极端行情而特别偏离当前价.
 fn get_counterparty_price(
     md: &MarketDataSnapshot,
     d: DirectionType,
@@ -822,8 +862,8 @@ fn get_counterparty_price(
     shift: i32,
 ) -> f64 {
     match d {
-        DirectionType::Long => md.ask1 - price_tick * shift as f64,
-        DirectionType::Short => md.bid1 + price_tick * shift as f64,
+        DirectionType::Long => md.bid1 + price_tick * shift as f64,
+        DirectionType::Short => md.ask1 - price_tick * shift as f64,
     }
 }
 
@@ -851,7 +891,7 @@ pub async fn run_ctp_md_cache(
             false,
         ))
     };
-    for front in ca.md_fronts.iter() {
+    for front in ca.md_fronts.iter().filter(|f| !f.starts_with("#")) {
         info!("Md RegisterFront {}", front);
         mdapi.register_front(CString::new(front.as_str()).unwrap());
     }
@@ -961,6 +1001,7 @@ pub async fn run_ctp_md_cache(
                                 .or_insert_with(|| {
                                     let mut md = MarketDataSnapshot::from(ctp_md);
                                     md.timestamp = Local::now().timestamp();
+                                    info!("[{symbol1}] insert md = {:?}", md);
                                     md
                                 });
                         }
@@ -981,12 +1022,13 @@ pub async fn run_ctp_md_cache(
     test_spawn(ca, rx, cmc);
 }
 
+/// 不加这个编译出错
 fn test_spawn(ca: CtpAccountConfig, rx: mpsc::Receiver<String>, cmc: Arc<Mutex<CtpMdCache>>) {
     tokio::spawn(async move { Box::pin(run_ctp_md_cache(ca, rx, cmc)).await });
 }
 
 impl CtpMdCache {
-    pub async fn subscribe(&mut self, exchange: &str, symbol: &str) {
+    pub async fn subscribe(&mut self, _exchange: &str, symbol: &str) {
         let symbol = symbol.to_string();
         if let None = self.subscribed.iter().find(|&e| *e == symbol) {
             self.subscribed.push(symbol.clone());
@@ -1068,6 +1110,7 @@ impl Executor {
         state: &mut AccountState,
         ca: &CtpAccountConfig,
         cmc: &Arc<Mutex<CtpMdCache>>,
+        api: &mut Box<CThostFtdcTraderApi>,
     ) -> Result<(), Error> {
         use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
         match spi_msg {
@@ -1109,12 +1152,11 @@ impl Executor {
             OnErrRtnOrderInsert(ref p) => {
                 // 需要构建order通知撤单
                 if let Some(input) = p.p_input_order.as_ref() {
-                    state.set_order_status(
+                    state.remove_po(
                         get_symbol(&input.InstrumentID).unwrap(),
                         state.front_id,
                         state.session_id,
                         &input.OrderRef,
-                        THOST_FTDC_OST_Canceled as i8,
                     );
                     info!(
                         "{}:{} 删除发送失败的委托 OrderRef={} result={:?}",
@@ -1155,46 +1197,56 @@ impl Executor {
                                 ),
                             };
                             info!("已撤单 OrderSubmitStatus={}", submit_status_msg);
-                            // 完成成交的委托要放到成交回报里面处理，以避免成交未计算持仓导致重复开仓
-                            let status_msg = ascii_cstr_to_str_i8(&o.StatusMsg).unwrap();
-                            if status_msg.contains("当前状态禁止")
-                                || status_msg.contains("废单")
+                            let status_msg = gb18030_cstr_to_str_i8(&o.StatusMsg).to_string();
+                            if submit_status == ctp_futures::THOST_FTDC_OSS_InsertRejected as i8
                                 || submit_status == ctp_futures::THOST_FTDC_OSS_CancelRejected as i8
-                                || submit_status == ctp_futures::THOST_FTDC_OSS_InsertRejected as i8
+                                || status_msg.contains("当前状态禁止")
+                                || status_msg.contains("废单")
                             {
                                 info!("非交易时间不发单, OrderSubmitStatus={}", submit_status);
                             } else {
                                 // 价格变化导致的撤单，要及时重新发单
-                                // state.set_check_target(instrument_id, target, md)
+                                let exchange = ascii_cstr_to_str_i8(&o.ExchangeID)
+                                    .expect("OnRtnOrder ascii_cstr_to_str_i8")
+                                    .to_string();
+                                let symbol = ascii_cstr_to_str_i8(&o.InstrumentID)
+                                    .expect("OnRtnOrder ascii_cstr_to_str_i8")
+                                    .to_string();
+                                if let Err(e) = state
+                                    .set_check_target(exchange, symbol, None, &cmc, api)
+                                    .await
+                                {
+                                    error!("OnRtnOrder set_check_target {e}");
+                                }
                             }
                         }
-                        cmc.lock()
-                            .await
-                            .subscribe("", ascii_cstr_to_str_i8(&o.InstrumentID).unwrap())
-                            .await;
                     }
                     None => error!("RtnOrder rtn=nil"),
                 }
             }
-            OnRtnTrade(ref rtn) => {
-                match rtn.p_trade.as_ref() {
+            OnRtnTrade(rtn) => {
+                match rtn.p_trade {
                     Some(trade) => {
                         // rtn.TradingDay = state.trading_day_ctp.clone(); // 上海夜盘成交的交易日没有更新到第二天
                         state.update_by_trade(trade).unwrap();
-                        cmc.lock()
+                        let exchange = ascii_cstr_to_str_i8(&trade.ExchangeID)
+                            .expect("OnRtnTrade ascii_cstr_to_str_i8")
+                            .to_string();
+                        let symbol = ascii_cstr_to_str_i8(&trade.InstrumentID)
+                            .expect("OnRtnTrade ascii_cstr_to_str_i8")
+                            .to_string();
+
+                        if let Err(e) = state
+                            .set_check_target(exchange, symbol, None, &cmc, api)
                             .await
-                            .subscribe("", ascii_cstr_to_str_i8(&trade.InstrumentID).unwrap())
-                            .await;
-                        // 只要有成交都重新触发
-                        // info!(
-                        //     "重新触发sync symbol target {}:{} position={}",
-                        //     target.exchange, target.symbol, target.position
-                        // );
+                        {
+                            error!("OnRtnTrade set_check_target {e}");
+                        }
                     }
                     None => error!("RtnTrade rtn=nil"),
                 }
             }
-            OnRspQryTradingAccount(ref p) => {}
+            OnRspQryTradingAccount(ref _p) => {}
             OnRspQryInvestorPosition(ref p) => {
                 let _pos = match p.p_investor_position {
                     Some(ref _ip) => (),
@@ -1214,38 +1266,19 @@ impl Executor {
         Ok(())
     }
 
-    pub async fn handle_set_contract_target(
-        target: ContractPositionTarget,
-        state: &mut AccountState,
-        ca: &CtpAccountConfig,
-        cmc: &Arc<Mutex<CtpMdCache>>,
-        api: &mut Box<CThostFtdcTraderApi>,
-    ) -> Result<(), Error> {
-        let md = { cmc.lock().await.get_md(&target.symbol).cloned() };
-        match md {
-            Some(md) => {
-                let op = state.set_check_target(target, &md);
-                Ok(())
-            }
-            None => Err(Error::MdNotFound),
-        }
-    }
-
     pub async fn handle_request_msg(
         req_msg: &ReqMessage,
         state: &mut AccountState,
-        ca: &CtpAccountConfig,
-        cmc: &Arc<Mutex<CtpMdCache>>,
         api: &mut Box<CThostFtdcTraderApi>,
     ) -> Result<(), Error> {
         use ReqMessage::*;
         match req_msg {
-            SetContractTarget(target) => {}
+            SetContractTarget(_target) => {}
             QueryPositionDetail => {
                 info!("req_msg={:?}", req_msg);
                 let mut req = CThostFtdcQryInvestorPositionDetailField::default();
-                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &state.broker_id);
+                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &state.account);
                 let result = api.req_qry_investor_position_detail(&mut req, state.get_request_id());
                 if result != 0 {
                     info!("ReqQueryInvestorPositionDetail={}", result);
@@ -1253,7 +1286,7 @@ impl Executor {
             }
             QueryTradingAccount => {
                 let mut req = CThostFtdcQryTradingAccountField::default();
-                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &state.account);
                 let result = api.req_qry_trading_account(&mut req, state.get_request_id());
                 if result != 0 {
                     info!("ReqQueryTradingAccount={}", result);
@@ -1285,7 +1318,7 @@ impl Executor {
         if ca.name_servers.len() > 0 {
             api.register_name_server(CString::new(ca.name_servers[0].as_str()).unwrap());
         } else if ca.trade_fronts.len() > 0 {
-            for front in ca.trade_fronts.iter() {
+            for front in ca.trade_fronts.iter().filter(|f| !f.starts_with("#")) {
                 api.register_front(CString::new(front.as_str()).unwrap());
             }
         }
@@ -1293,6 +1326,9 @@ impl Executor {
         api.subscribe_private_topic(ctp_futures::THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
         api.init();
         // 处理登陆初始化查询
+        let mut cached_orders: Vec<CThostFtdcOrderField> = vec![];
+        let mut missed_trades: Option<Vec<CThostFtdcTradeField>> = None;
+
         while let Some(spi_msg) = stream.next().await {
             use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
             match spi_msg {
@@ -1347,10 +1383,17 @@ impl Executor {
                         info!("ReqQryInstrument = {:?}", result);
                     }
                 }
-                OnRspQryInvestorPositionDetail(ref detail) => {
-                    if let Some(pd) = &detail.p_investor_position_detail {
-                        info!("pd={:?}", get_symbol(&pd.InstrumentID).unwrap());
-                        state.insert_position_detail(pd).unwrap();
+                OnRspQryInvestorPositionDetail(detail) => {
+                    if let Some(pd) = detail.p_investor_position_detail {
+                        if pd.Volume > 0 {
+                            info!(
+                                "pd {} Volume={} CloseVolume={}",
+                                get_symbol(&pd.InstrumentID).unwrap(),
+                                pd.Volume,
+                                pd.CloseVolume
+                            );
+                            state.insert_position_detail(pd).unwrap();
+                        }
                     }
                     if detail.b_is_last {
                         let mut req = CThostFtdcQryOrderField::default();
@@ -1361,14 +1404,35 @@ impl Executor {
                         if result != 0 {
                             info!("ReqQryOrder = {:?}", result);
                         }
+                        missed_trades = Some(vec![]);
                     }
                 }
-                OnRspQryOrder(ref p) => {
-                    if let Some(o) = &p.p_order {
-                        state.update_by_order(&o).unwrap();
+                OnRspQryOrder(p) => {
+                    if let Some(o) = p.p_order {
+                        cached_orders.push(o);
                     }
                     if p.b_is_last {
+                        // let mut req = CThostFtdcQryTradeField::default();
+                        // set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                        // set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                        // tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                        // let ret = api.req_qry_trade(&mut req, state.get_request_id());
+                        // if ret != 0 {
+                        //     error!("ReqQryTrade = {}", ret);
+                        // }
                         break;
+                    }
+                }
+                OnRtnOrder(p) => {
+                    if let Some(o) = p.p_order {
+                        cached_orders.push(o);
+                    }
+                }
+                OnRtnTrade(p) => {
+                    if let Some(trade) = p.p_trade {
+                        if let Some(missed_trades) = &mut missed_trades {
+                            missed_trades.push(trade);
+                        }
                     }
                 }
                 OnRspQryInstrument(ref p) => {
@@ -1421,6 +1485,20 @@ impl Executor {
                 _ => {}
             }
         }
+        // 初始化查询过程中推送的成交
+        if let Some(missed_trades) = missed_trades {
+            if missed_trades.len() > 0 {
+                info!("Missed trades {}", missed_trades.len());
+            }
+            for trade in missed_trades.into_iter() {
+                if let Err(e) = state.update_by_trade(trade) {
+                    error!("Missed trade update {e} volume={}", trade.Volume);
+                }
+            }
+        }
+        if let Err(e) = state.update_by_order_on_initialized(cached_orders) {
+            error!("Cached orders update {e}");
+        }
         info!("{} 初始化查询完成.", ca.account);
         let (api, _api2) = ctp_futures::trader_api::unsafe_clone_api(api);
         let (mut api, _api3) = ctp_futures::trader_api::unsafe_clone_api(api);
@@ -1441,7 +1519,7 @@ impl Executor {
         loop {
             tokio::select! {
                 Some(spi_msg) = stream.next() => {
-                    let _ = Executor::handle_spi_msg(&spi_msg, &mut state, &ca, &cmc).await?;
+                    let _ = Executor::handle_spi_msg(&spi_msg, &mut state, &ca, &cmc, &mut api).await?;
                     use ctp_futures::trader_api::CThostFtdcTraderSpiOutput::*;
                     use ReqMessage::*;
                     if let Some((req_msg, rsp_tx, mut response_packets)) = query_req.take() {
@@ -1462,14 +1540,20 @@ impl Executor {
                 },
                 Some((req_msg, rsp_tx)) = rx.recv() => {
                     if let ReqMessage::SetContractTarget(target) = req_msg {
-                        let res = Executor::handle_set_contract_target(target, &mut state, &ca, &cmc, &mut api).await.map(|_|vec![]);
+                        // let res = Executor::handle_set_contract_target(target, &mut state, &ca, &cmc, &mut api).await.map(|_|vec![]);
+                        let exchange = target.exchange.clone();
+                        let symbol = target.symbol.clone();
+                        let res = state.set_check_target(exchange, symbol, Some(target), &cmc, &mut api).await.map(|_|vec![]);
+                        if let Err(e) = &res {
+                            error!("req set contract target {e}");
+                        }
                         let _ = rsp_tx.send(res);
                     } else {
                         if query_req.is_some() {
                             let _ = rsp_tx.send(Err(Error::CtpLastQueryIsProceeding));
                         } else {
                             query_req = Some((req_msg, rsp_tx, vec![]));
-                            Executor::handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, &ca, &cmc, &mut api).await?;
+                            Executor::handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, &mut api).await?;
                         }
                     }
                 },

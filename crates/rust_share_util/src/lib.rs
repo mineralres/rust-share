@@ -3,6 +3,18 @@ use encoding::{DecoderTrap, Encoding};
 use simple_error::SimpleError;
 use std::borrow::Cow;
 
+pub fn cstr_i8_eq(c: &[i8], other: &[i8]) -> bool {
+    for (ch, other_ch) in c.iter().zip(other.iter()) {
+        if *ch != *other_ch {
+            return false;
+        }
+        if *ch == 0i8 || *other_ch == 0i8 {
+            return true;
+        }
+    }
+    true
+}
+
 pub fn ascii_cstr_i8_eq(c: &[i8], other: &str) -> bool {
     for (ch, other_ch) in c.iter().zip(other.as_bytes().iter()) {
         if *ch as u8 != *other_ch {
@@ -132,6 +144,10 @@ mod tests {
         let mut date2: [u8; 9] = [0; 9];
         set_cstr_from_str_truncate(&mut date2, "20240119");
         info!("d1-d2 cmp:{:?}", 20240118.cmp(&20240119));
-        info!("date1-date2 eq:{} cmp:{:?}", date1.eq(&date2), date1.cmp(&date2));
+        info!(
+            "date1-date2 eq:{} cmp:{:?}",
+            date1.eq(&date2),
+            date1.cmp(&date2)
+        );
     }
 }

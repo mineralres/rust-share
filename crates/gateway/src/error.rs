@@ -10,5 +10,8 @@ pub enum Error {
     CtpLastQueryIsProceeding,
     CtpQueryTimeout,
     InvalidSymbol,
-    MdNotFound
+    MdNotFound,
+    CtpApiErr(i32),
+    SimpleErr(simple_error::SimpleError),
+    OrderNotFound,
 }

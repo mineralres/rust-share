@@ -7,12 +7,7 @@ pub mod http {
         routing::any,
         Router,
     };
-    use futures::StreamExt;
     use log::info;
-    use ::ctp_futures::*;
-    use ::rust_share_util::*;
-    use std::ffi::{CStr, CString};
-    use std::io::Write;
     use std::net::SocketAddr;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -23,7 +18,7 @@ pub mod http {
             XResponse {
                 data: "".to_string(),
                 msg: self.to_string(),
-                code: 0,
+                code: -1,
             }
             .into_response()
         }
@@ -126,18 +121,20 @@ pub mod http {
         State(s): State<ShareState>,
         Json(req): Json<ReqSetContractTarget>,
     ) -> Result<(), Error> {
-        info!("set_contract_target = {:?}", req);
+        info!(
+            "set_contract_target [{}:{}] position={} shift={}",
+            req.target.exchange, req.target.symbol, req.target.position, req.target.shift
+        );
         if req.target.symbol == "" {
             return Err(Error::InvalidSymbol);
         }
         let req_msg = ReqMessage::SetContractTarget(req.target);
-        let resp = s
+        let _resp = s
             .executor
             .lock()
             .await
             .query(&req.account, req_msg)
             .await??;
-        info!("resp={:?}", resp);
         Ok(())
     }
 }

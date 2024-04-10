@@ -113,3 +113,8 @@ pub fn is_order_canceled(o: &CThostFtdcOrderField) -> bool {
         _ => false,
     }
 }
+
+/// 判断CTP委托是否完成
+pub fn is_order_done(o: &CThostFtdcOrderField) -> bool {
+    o.OrderStatus as u8 == THOST_FTDC_OST_AllTraded
+}
