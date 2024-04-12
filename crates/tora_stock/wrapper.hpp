@@ -1,0 +1,5 @@
+/// #include "v_current/TORATstpMdApi.h"
+#include "v_current/TORATstpXMdApi.h"
+#include "v_current/TORATstpUserApiDataType.h"
+#include "v_current/TORATstpUserApiStruct.h"
+#include "v_current/TORATstpTraderApi.h"

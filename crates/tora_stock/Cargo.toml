@@ -1,7 +1,6 @@
 [package]
-name = "ctp_futures"
+name = "tora_stock"
 version = "0.1.0"
-authors = ["xiaobing <pangxiaobing@gmail.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -16,12 +15,11 @@ simple-error = "0.2.1"
 time = "0.1.43"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.117"
-futures = "0.3.5"
-bincode = { version = "2.0.0-rc.2", features = ["derive"] }
-derive_more = "0.99.8"
 base = { path = "../base" }
+futures = "0.3.5"
 tokio = { version = "1", features = ["full"] }
 itertools = "0.12.0"
+bincode = { version = "2.0.0-rc.2", features = ["derive"] }
 
 [build-dependencies]
 clang-sys = { version = "1", features = ["clang_6_0", "runtime"] }
@@ -31,4 +29,3 @@ regex = "1.4.1"
 encoding = "0.2.33"
 Inflector = "*"
 libc = { version = "0.2.39", default-features = false }
-cargo-emit = "0.2"

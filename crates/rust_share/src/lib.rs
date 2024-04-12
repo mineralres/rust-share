@@ -1,8 +1,7 @@
 pub use base;
 pub use ctp_futures;
-pub use gateway;
-pub use rust_share_util;
 pub use spider;
+pub use tora_stock;
 
 #[cfg(test)]
 mod tests {

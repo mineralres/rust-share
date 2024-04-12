@@ -9,6 +9,5 @@ edition = "2021"
 tracing-subscriber = "0.3.18"
 base = { path = "../base" }
 ctp_futures = { path = "../ctp_futures" }
-rust_share_util = { path = "../rust_share_util" }
+tora_stock = { path = "../tora_stock" }
 spider = { path = "../spider" }
-gateway = { path = "../gateway" }

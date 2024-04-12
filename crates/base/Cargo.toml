@@ -7,3 +7,12 @@ edition = "2021"
 
 [dependencies]
 tracing-subscriber = "0.3.18"
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0.117"
+serde_json = { version = "1" }
+encoding = "0.2.33"
+simple-error = "0.2.1"
+memchr = "2.3.3"
+log = "0.4"
+derive_more = "0.99.8"
+tokio = { version = "1", features = ["full"] }

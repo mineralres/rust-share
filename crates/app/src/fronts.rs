@@ -1,17 +1,23 @@
 pub mod http {
     use crate::executor::Executor;
-    use crate::{error::Error, executor::ReqMessage};
     use axum::{
         extract::{Json, State},
         response::Response,
         routing::any,
         Router,
     };
+    use base::ReqMessage;
     use log::info;
     use std::net::SocketAddr;
     use std::sync::Arc;
     use tokio::sync::Mutex;
     use types::*;
+
+    #[derive(Debug, derive_more::Display, derive_more::From)]
+    pub enum Error {
+        BaseErr(base::error::Error),
+        SimpleErr(simple_error::SimpleError),
+    }
 
     impl axum::response::IntoResponse for Error {
         fn into_response(self) -> Response {
@@ -30,12 +36,13 @@ pub mod http {
         use axum::{extract::Json, response::Response};
         use serde::Serialize;
 
-        use crate::executor::{ContractPositionTarget, Executor};
+        use crate::executor::Executor;
+        use base::state::ContractPositionTarget;
         use tokio::sync::Mutex;
 
         #[derive(Clone)]
         pub struct ShareState {
-            pub config: crate::Config,
+            pub config: base::ExecutorConfig,
             pub executor: Arc<Mutex<Executor>>,
         }
 
@@ -52,7 +59,7 @@ pub mod http {
             }
         }
 
-        #[derive(Default, serde::Serialize, serde::Deserialize)]
+        #[derive(Default, serde::Serialize, serde::Deserialize, std::fmt::Debug)]
         pub struct ReqQuery {
             pub broker_id: String,
             pub account: String,
@@ -72,7 +79,7 @@ pub mod http {
         }
     }
 
-    pub async fn serve(conf: crate::Config, executor: Arc<Mutex<Executor>>) {
+    pub async fn serve(conf: base::ExecutorConfig, executor: Arc<Mutex<Executor>>) {
         let addr = SocketAddr::from(([0, 0, 0, 0], conf.http_port));
         info!("Http listening on {}", addr);
         let state = ShareState {
@@ -102,19 +109,23 @@ pub mod http {
             .await
             .query(&req.account, req_msg)
             .await??;
-        let config = bincode::config::standard();
-        let encoded: Vec<u8> = bincode::encode_to_vec(&resp, config).unwrap();
-        Ok(encoded)
+        Ok(resp)
     }
 
     async fn query_position_detail(
         State(s): State<ShareState>,
         Json(req): Json<ReqQuery>,
-    ) -> Result<(), Error> {
+    ) -> Result<Vec<u8>, Error> {
         let req_msg = ReqMessage::QueryPositionDetail;
-        let resp = s.executor.lock().await.query(&req.account, req_msg).await?;
-        info!("resp={:?}", resp);
-        Ok(())
+        info!("query_position_detail={:?}", req);
+        let resp = s
+            .executor
+            .lock()
+            .await
+            .query(&req.account, req_msg)
+            .await??;
+        info!("query_position_detail resp={:?}", resp.len());
+        Ok(resp)
     }
 
     async fn set_contract_target(
@@ -126,7 +137,9 @@ pub mod http {
             req.target.exchange, req.target.symbol, req.target.position, req.target.shift
         );
         if req.target.symbol == "" {
-            return Err(Error::InvalidSymbol);
+            return Err(Error::SimpleErr(simple_error::SimpleError::new(
+                "Symbol can't be null",
+            )));
         }
         let req_msg = ReqMessage::SetContractTarget(req.target);
         let _resp = s

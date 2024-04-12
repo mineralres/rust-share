@@ -27,27 +27,33 @@ pub fn ascii_cstr_i8_eq(c: &[i8], other: &str) -> bool {
     true
 }
 
+/// 省略一些ascii检查, 在能确保source是正常ascii的情况下使用
+pub fn get_ascii_str(source: &[i8]) -> Result<&str, SimpleError> {
+    let source = unsafe { std::slice::from_raw_parts(source.as_ptr() as *mut u8, source.len()) };
+    for i in 0..source.len() {
+        if source[i] == 0 {
+            return unsafe { Ok(std::str::from_utf8_unchecked(&source[0..i])) };
+        }
+    }
+    Err(SimpleError::new("ascii str should terminate with null"))
+}
+
 pub fn ascii_cstr_to_str_i8(v: &[i8]) -> Result<&str, SimpleError> {
     let mut s = unsafe { std::slice::from_raw_parts(v.as_ptr() as *mut u8, v.len()) };
     ascii_cstr_to_str(&mut s)
 }
 
 pub fn ascii_cstr_to_str(s: &[u8]) -> Result<&str, SimpleError> {
-    match s.last() {
-        Some(&0u8) => {
-            let len = memchr::memchr(0, s).unwrap();
-            let ascii_s = &s[0..len];
+    match memchr::memchr(0, s) {
+        Some(i) => {
+            let ascii_s = &s[0..i];
             if ascii_s.is_ascii() {
                 unsafe { Ok(std::str::from_utf8_unchecked(ascii_s)) }
             } else {
                 Err(SimpleError::new("cstr is not ascii"))
             }
         }
-        Some(&c) => Err(SimpleError::new(format!(
-            "cstr should terminate with null instead of {:#x}",
-            c
-        ))),
-        None => Err(SimpleError::new("cstr cannot have 0 length")),
+        None => Err(SimpleError::new("cstr should terminate with null")),
     }
 }
 
@@ -100,19 +106,6 @@ pub fn check_make_dir(dir: &str) {
     }
 }
 
-#[macro_export]
-macro_rules! print_rsp_info {
-    ($p:expr) => {
-        if let Some(p) = $p {
-            info!(
-                "ErrorID={} Msg={}",
-                p.ErrorID,
-                gb18030_cstr_to_str_i8(&p.ErrorMsg).to_string()
-            );
-        }
-    };
-}
-
 pub fn gb18030_cstr_to_str_i8(v: &[i8]) -> Cow<str> {
     let v = unsafe { std::slice::from_raw_parts(v.as_ptr() as *mut u8, v.len()) };
     gb18030_cstr_to_str(v)
@@ -131,23 +124,15 @@ pub fn gb18030_cstr_to_str(v: &[u8]) -> Cow<str> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use log::info;
-
-    #[test]
-    fn it_works() {
-        base::init_logger();
-        let mut date1: [u8; 9] = [0; 9];
-        set_cstr_from_str_truncate(&mut date1, "20241019");
-        let mut date2: [u8; 9] = [0; 9];
-        set_cstr_from_str_truncate(&mut date2, "20240119");
-        info!("d1-d2 cmp:{:?}", 20240118.cmp(&20240119));
-        info!(
-            "date1-date2 eq:{} cmp:{:?}",
-            date1.eq(&date2),
-            date1.cmp(&date2)
-        );
-    }
+#[macro_export]
+macro_rules! print_rsp_info {
+    ($p:expr) => {
+        if let Some(p) = $p {
+            info!(
+                "ErrorID={} Msg={}",
+                p.ErrorID,
+                gb18030_cstr_to_str_i8(&p.ErrorMsg).to_string()
+            );
+        }
+    };
 }

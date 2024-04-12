@@ -11,7 +11,8 @@ pub enum Error {
     CtpQueryTimeout,
     InvalidSymbol,
     MdNotFound,
-    CtpApiErr(i32),
+    TraderApiErr(i32),
     SimpleErr(simple_error::SimpleError),
     OrderNotFound,
+    ShareholderAccountNotFound,
 }
