@@ -17,6 +17,7 @@ pub mod http {
     pub enum Error {
         BaseErr(base::error::Error),
         SimpleErr(simple_error::SimpleError),
+        Base64DocodeErr(base64::DecodeError),
     }
 
     impl axum::response::IntoResponse for Error {
@@ -34,11 +35,11 @@ pub mod http {
         use std::sync::Arc;
 
         use axum::{extract::Json, response::Response};
-        use serde::Serialize;
+        use serde::{Deserialize, Serialize};
 
+        use super::Executor;
         use base::state::ContractPositionTarget;
         use tokio::sync::Mutex;
-        use super::Executor;
 
         #[derive(Clone)]
         pub struct ShareState {
@@ -46,7 +47,7 @@ pub mod http {
             pub executor: Arc<Mutex<Executor>>,
         }
 
-        #[derive(Debug, Serialize)]
+        #[derive(Debug, Serialize, Deserialize)]
         pub struct XResponse<T> {
             pub data: T,
             pub msg: String,
@@ -56,6 +57,18 @@ pub mod http {
         impl<T: serde::Serialize> axum::response::IntoResponse for XResponse<T> {
             fn into_response(self) -> Response {
                 Json(self).into_response()
+            }
+        }
+
+        impl XResponse<String> {
+            pub fn new(v: &Vec<u8>) -> Self {
+                use base64::prelude::*;
+                let data = BASE64_STANDARD.encode(v);
+                Self {
+                    code: 0,
+                    msg: "".into(),
+                    data,
+                }
             }
         }
 
@@ -101,7 +114,7 @@ pub mod http {
     async fn query_trading_account(
         State(s): State<ShareState>,
         Json(req): Json<ReqQueryTradingAccount>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<XResponse<String>, Error> {
         let req_msg = ReqMessage::QueryTradingAccount;
         let resp = s
             .executor
@@ -109,13 +122,13 @@ pub mod http {
             .await
             .query(&req.account, req_msg)
             .await??;
-        Ok(resp)
+        Ok(XResponse::<String>::new(&resp))
     }
 
     async fn query_position_detail(
         State(s): State<ShareState>,
         Json(req): Json<ReqQueryPositionDetail>,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<XResponse<String>, Error> {
         let req_msg = ReqMessage::QueryPositionDetail;
         info!("query_position_detail={:?}", req);
         let resp = s
@@ -125,7 +138,7 @@ pub mod http {
             .query(&req.account, req_msg)
             .await??;
         info!("query_position_detail resp={:?}", resp.len());
-        Ok(resp)
+        Ok(XResponse::<String>::new(&resp))
     }
 
     async fn set_contract_target(
