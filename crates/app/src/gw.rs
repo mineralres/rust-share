@@ -1,10 +1,11 @@
+use base::state::{ReqMessage, RspMessage};
 use base::*;
 use clap::Parser;
+use log::info;
+use rust_share::gateway::executor;
+use rust_share::gateway::fronts;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
-mod executor;
-mod fronts;
-use log::info;
 
 #[derive(Parser)]
 #[clap()]
@@ -30,7 +31,7 @@ async fn main() {
                     let cmc = Arc::clone(&cmc);
                     let ca = ca.clone();
                     let (tx, rx) = mpsc::channel::<(
-                        base::ReqMessage,
+                        ReqMessage,
                         tokio::sync::oneshot::Sender<RspMessage>,
                     )>(1000);
                     ex.sorted_accounts.push(executor::TraderHandle {
@@ -46,7 +47,7 @@ async fn main() {
                     let cmc = Arc::clone(&cmc);
                     let ca = ca.clone();
                     let (tx, rx) = mpsc::channel::<(
-                        base::ReqMessage,
+                        ReqMessage,
                         tokio::sync::oneshot::Sender<RspMessage>,
                     )>(1000);
                     ex.sorted_accounts.push(executor::TraderHandle {

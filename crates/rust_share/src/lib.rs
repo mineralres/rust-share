@@ -2,6 +2,7 @@ pub use base;
 pub use ctp_futures;
 pub use spider;
 pub use tora_stock;
+pub use gateway;
 
 #[cfg(test)]
 mod tests {

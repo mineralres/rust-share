@@ -93,40 +93,6 @@ pub mod route {
 
     type AccountStateType = route::CtpAccountState;
 
-    /// 判断CTP委托是否已撤单
-    pub fn is_order_canceled(o: &CThostFtdcOrderField) -> bool {
-        /*
-        ///全部成交
-        #define THOST_FTDC_OST_AllTraded '0'
-        ///部分成交还在队列中
-        #define THOST_FTDC_OST_PartTradedQueueing '1'
-        ///部分成交不在队列中
-        #define THOST_FTDC_OST_PartTradedNotQueueing '2'
-        ///未成交还在队列中
-        #define THOST_FTDC_OST_NoTradeQueueing '3'
-        ///未成交不在队列中
-        #define THOST_FTDC_OST_NoTradeNotQueueing '4'
-        ///撤单
-        #define THOST_FTDC_OST_Canceled '5'
-        ///未知
-        #define THOST_FTDC_OST_Unknown 'a'
-        ///尚未触发
-        #define THOST_FTDC_OST_NotTouched 'b'
-        ///已触发
-        #define THOST_FTDC_OST_Touched 'c'
-
-        */
-        match o.OrderStatus as u8 {
-            THOST_FTDC_OST_PartTradedNotQueueing | THOST_FTDC_OST_Canceled => true,
-            _ => false,
-        }
-    }
-
-    /// 判断CTP委托是否完成
-    pub fn is_order_done(o: &CThostFtdcOrderField) -> bool {
-        o.OrderStatus as u8 == THOST_FTDC_OST_AllTraded
-    }
-
     impl std::cmp::PartialEq for CThostFtdcOrderField {
         fn eq(&self, other: &Self) -> bool {
             self.FrontID == other.FrontID
@@ -218,17 +184,37 @@ pub mod route {
         }
     }
 
-    impl std::cmp::PartialEq<PendingOrder> for CThostFtdcOrderField {
-        fn eq(&self, other: &PendingOrder) -> bool {
-            self.FrontID == other.front_id
-                && self.SessionID == other.session_id
-                && cstr_i8_eq(&self.OrderRef, &other.order_ref)
-        }
-    }
-
     impl OrderType for CThostFtdcOrderField {
-        fn volume_total_original(&self) -> i32 {
-            self.VolumeTotalOriginal
+        fn pending_status(&self) -> PendingOrderStatus {
+            /*
+            ///全部成交
+            #define THOST_FTDC_OST_AllTraded '0'
+            ///部分成交还在队列中
+            #define THOST_FTDC_OST_PartTradedQueueing '1'
+            ///部分成交不在队列中
+            #define THOST_FTDC_OST_PartTradedNotQueueing '2'
+            ///未成交还在队列中
+            #define THOST_FTDC_OST_NoTradeQueueing '3'
+            ///未成交不在队列中
+            #define THOST_FTDC_OST_NoTradeNotQueueing '4'
+            ///撤单
+            #define THOST_FTDC_OST_Canceled '5'
+            ///未知
+            #define THOST_FTDC_OST_Unknown 'a'
+            ///尚未触发
+            #define THOST_FTDC_OST_NotTouched 'b'
+            ///已触发
+            #define THOST_FTDC_OST_Touched 'c'
+
+            */
+
+            match self.OrderStatus as u8 {
+                THOST_FTDC_OST_PartTradedNotQueueing | THOST_FTDC_OST_Canceled => {
+                    PendingOrderStatus::Canceled
+                }
+                THOST_FTDC_OST_AllTraded => PendingOrderStatus::Done,
+                _ => PendingOrderStatus::Pending,
+            }
         }
         // fn front_id(&self) -> i32 {
         //     self.FrontID
@@ -244,15 +230,26 @@ pub mod route {
                 front_id: self.FrontID,
                 session_id: self.SessionID,
                 order_ref: self.OrderRef.clone(),
+                order_ref_i32: get_ascii_str(&self.OrderRef)
+                    .unwrap()
+                    .parse::<i32>()
+                    .expect("Ctp OrderRef error format"),
                 order_sys_id: self.OrderSysID.clone(),
+                volume_traded: self.VolumeTraded,
+                volume_canceled: self.volume_canceled(),
                 volume_total_original: self.VolumeTotalOriginal,
+                status: self.pending_status(),
+                trades: vec![],
             }
         }
         fn volume_traded(&self) -> i32 {
             self.VolumeTraded
         }
-        fn volume_total_original_mut(&mut self) -> &mut i32 {
-            &mut self.VolumeTotalOriginal
+        fn volume_canceled(&self) -> i32 {
+            match self.pending_status() {
+                PendingOrderStatus::Canceled => self.VolumeTotalOriginal - self.VolumeTraded,
+                _ => 0,
+            }
         }
         fn exchange(&self) -> &str {
             get_ascii_str(&self.ExchangeID)
@@ -265,11 +262,13 @@ pub mod route {
         fn order_sys_id(&self) -> &[i8; 21] {
             &self.OrderSysID
         }
-        fn is_done(&self) -> bool {
-            is_order_done(self)
-        }
-        fn is_canceled(&self) -> bool {
-            is_order_canceled(self)
+    }
+
+    impl std::cmp::PartialEq<PendingOrder> for CThostFtdcOrderField {
+        fn eq(&self, other: &PendingOrder) -> bool {
+            self.FrontID == other.front_id
+                && self.SessionID == other.session_id
+                && cstr_i8_eq(&self.OrderRef, &other.order_ref)
         }
     }
 
@@ -452,7 +451,7 @@ pub mod route {
                     Some(o) => {
                         let submit_status = o.OrderSubmitStatus;
                         state.update_by_order(o).unwrap();
-                        if o.is_canceled() {
+                        if o.pending_status() == PendingOrderStatus::Canceled {
                             let submit_status_msg = match submit_status as u8 as char {
                                 '0' => "THOST_FTDC_OSS_InsertSubmitted 已经提交",
                                 '1' => "THOST_FTDC_OSS_CancelSubmitted 撤单已提交",
@@ -492,15 +491,19 @@ pub mod route {
             }
             OnRtnTrade(rtn) => {
                 match rtn.p_trade {
-                    Some(trade) => {
+                    Some(mut trade) => {
                         // rtn.TradingDay = state.trading_day_ctp.clone(); // 上海夜盘成交的交易日没有更新到第二天
-                        state.update_by_trade(trade).unwrap();
-                        let us = UniqueSymbol::new(
-                            get_ascii_str(&trade.ExchangeID).expect("OnRtnTrade get_ascii_str"),
-                            get_ascii_str(&trade.InstrumentID).expect("OnRtnTrade get_ascii_str"),
-                        );
-                        if let Err(e) = state.set_check_target(us, None, &cmc, api).await {
-                            error!("OnRtnTrade set_check_target {e}");
+                        trade.TradeDate = trade.TradingDay.clone();
+                        let changed = state.update_by_trade(trade).unwrap();
+                        if changed {
+                            let us = UniqueSymbol::new(
+                                get_ascii_str(&trade.ExchangeID).expect("OnRtnTrade get_ascii_str"),
+                                get_ascii_str(&trade.InstrumentID)
+                                    .expect("OnRtnTrade get_ascii_str"),
+                            );
+                            if let Err(e) = state.set_check_target(us, None, &cmc, api).await {
+                                error!("OnRtnTrade set_check_target {e}");
+                            }
                         }
                     }
                     None => error!("RtnTrade rtn=nil"),
@@ -588,7 +591,7 @@ pub mod route {
         api.init();
         // 处理登陆初始化查询
         let mut cached_orders: Vec<CThostFtdcOrderField> = vec![];
-        let mut missed_trades: Option<Vec<CThostFtdcTradeField>> = None;
+        let mut cached_trades: Vec<CThostFtdcTradeField> = vec![];
 
         while let Some(spi_msg) = stream.next().await {
             use trader_api::CThostFtdcTraderSpiOutput::*;
@@ -652,10 +655,12 @@ pub mod route {
                     if let Some(pd) = detail.p_investor_position_detail {
                         if pd.Volume > 0 {
                             info!(
-                                "pd {} Volume={} CloseVolume={}",
+                                "pd {} Volume={} CloseVolume={} OpenDate={} TradingDay={}",
                                 get_ascii_str(&pd.InstrumentID).unwrap(),
                                 pd.Volume,
-                                pd.CloseVolume
+                                pd.CloseVolume,
+                                get_ascii_str(&pd.OpenDate).unwrap(),
+                                get_ascii_str(&pd.TradingDay).unwrap(),
                             );
                             state
                                 .insert_position_detail(PositionDetail::from(&pd))
@@ -671,7 +676,6 @@ pub mod route {
                         if result != 0 {
                             info!("ReqQryOrder = {:?}", result);
                         }
-                        missed_trades = Some(vec![]);
                     }
                 }
                 OnRspQryOrder(p) => {
@@ -679,15 +683,14 @@ pub mod route {
                         cached_orders.push(o);
                     }
                     if p.b_is_last {
-                        // let mut req = CThostFtdcQryTradeField::default();
-                        // set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                        // set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
-                        // tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                        // let ret = api.req_qry_trade(&mut req, state.get_request_id());
-                        // if ret != 0 {
-                        //     error!("ReqQryTrade = {}", ret);
-                        // }
-                        break;
+                        let mut req = CThostFtdcQryTradeField::default();
+                        set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                        set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                        let ret = api.req_qry_trade(&mut req, state.get_request_id());
+                        if ret != 0 {
+                            error!("ReqQryTrade = {}", ret);
+                        }
                     }
                 }
                 OnRtnOrder(p) => {
@@ -695,11 +698,18 @@ pub mod route {
                         cached_orders.push(o);
                     }
                 }
+                OnRspQryTrade(p) => {
+                    if let Some(p) = p.p_trade {
+                        cached_trades.push(p);
+                    }
+                    if p.b_is_last {
+                        break;
+                    }
+                }
                 OnRtnTrade(p) => {
-                    if let Some(trade) = p.p_trade {
-                        if let Some(missed_trades) = &mut missed_trades {
-                            missed_trades.push(trade);
-                        }
+                    if let Some(mut trade) = p.p_trade {
+                        trade.TradeDate = trade.TradingDay.clone();
+                        cached_trades.push(trade);
                     }
                 }
                 OnRspQryInstrument(ref p) => {
@@ -754,17 +764,7 @@ pub mod route {
             }
         }
         // 初始化查询过程中推送的成交
-        if let Some(missed_trades) = missed_trades {
-            if missed_trades.len() > 0 {
-                info!("Missed trades {}", missed_trades.len());
-            }
-            for trade in missed_trades.into_iter() {
-                if let Err(e) = state.update_by_trade(trade) {
-                    error!("Missed trade update {e} volume={}", trade.Volume);
-                }
-            }
-        }
-        if let Err(e) = state.update_by_order_on_initialized(cached_orders) {
+        if let Err(e) = state.update_on_initialized(cached_orders, cached_trades) {
             error!("Cached orders update {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
@@ -874,7 +874,9 @@ pub mod route {
                     info!("[{}] 行情服务器FrontConnected", ca.account);
                     let mut req_login: CThostFtdcReqUserLoginField = Default::default();
                     let ret = mdapi.req_user_login(&mut req_login, 3);
-                    info!("行情ReqUserLogin={}", ret);
+                    if ret != 0 {
+                        info!("Ctp md ReqUserLogin={}", ret);
+                    }
                 }
                 OnFrontDisconnected(ref p) => {
                     info!(
@@ -923,7 +925,8 @@ pub mod route {
             test_spawn(ca, rx, cmc);
             return;
         }
-        let subscribed = { cmc.lock().await.subscribed.clone() };
+        // 重新连接后订阅
+        let mut subscribed = { cmc.lock().await.subscribed.clone() };
         let result = mdapi.subscribe_market_data(
             subscribed
                 .iter()
@@ -934,6 +937,7 @@ pub mod route {
         if result != 0 {
             error!("Subscribe result = {}", result);
         }
+        subscribed.sort_by(|a, b| a.symbol.cmp(&b.symbol));
         loop {
             tokio::select! {
                 Some(msg) = stream.next() => {
@@ -949,7 +953,13 @@ pub mod route {
                         }
                         OnRtnDepthMarketData(ref ctp_md) => {
                             if let Some(ctp_md) = ctp_md.p_depth_market_data.as_ref() {
-                                let us = UniqueSymbol::new(get_ascii_str(&ctp_md.ExchangeID).unwrap(),get_ascii_str(&ctp_md.InstrumentID).unwrap());
+                                let us = if ctp_md.ExchangeID[0] == 0 {
+                                    let symbol = get_ascii_str(&ctp_md.InstrumentID).unwrap();
+                                    let i = subscribed.binary_search_by(|probe| probe.symbol.as_str().cmp(symbol)).unwrap();
+                                    UniqueSymbol::new(&subscribed[i].exchange, symbol)
+                                } else {
+                                    UniqueSymbol::new(get_ascii_str(&ctp_md.ExchangeID).unwrap(),get_ascii_str(&ctp_md.InstrumentID).unwrap())
+                                };
                                 let us1 = us.clone();
                                 let mut cmc = cmc.lock().await;
                                     cmc.hm_md
@@ -973,10 +983,12 @@ pub mod route {
                     }
                 }
                 Some(us) = rx.recv() => {
-                    let result = mdapi.subscribe_market_data(vec![CString::new(us.symbol).unwrap()], 1);
+                    let result = mdapi.subscribe_market_data(vec![CString::new(us.symbol.clone()).unwrap()], 1);
                     if result != 0 {
                         error!("Subscribe result = {}", result);
                     }
+                    subscribed.push(us);
+                    subscribed.sort_by(|a, b| a.symbol.cmp(&b.symbol));
                 }
             }
         }

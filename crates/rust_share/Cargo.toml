@@ -11,3 +11,4 @@ base = { path = "../base" }
 ctp_futures = { path = "../ctp_futures" }
 tora_stock = { path = "../tora_stock" }
 spider = { path = "../spider" }
+gateway = { path = "../gateway" }

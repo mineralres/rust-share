@@ -6,7 +6,7 @@ pub mod http {
         routing::any,
         Router,
     };
-    use base::ReqMessage;
+    use base::state::ReqMessage;
     use log::info;
     use std::net::SocketAddr;
     use std::sync::Arc;
@@ -36,9 +36,9 @@ pub mod http {
         use axum::{extract::Json, response::Response};
         use serde::Serialize;
 
-        use crate::executor::Executor;
         use base::state::ContractPositionTarget;
         use tokio::sync::Mutex;
+        use super::Executor;
 
         #[derive(Clone)]
         pub struct ShareState {
@@ -59,14 +59,14 @@ pub mod http {
             }
         }
 
-        #[derive(Default, serde::Serialize, serde::Deserialize, std::fmt::Debug)]
-        pub struct ReqQuery {
+        #[derive(Default, serde::Serialize, serde::Deserialize)]
+        pub struct ReqQueryTradingAccount {
             pub broker_id: String,
             pub account: String,
         }
 
-        #[derive(Default, serde::Serialize, serde::Deserialize)]
-        pub struct ReqQueryTradingAccount {
+        #[derive(Default, serde::Serialize, serde::Deserialize, Debug)]
+        pub struct ReqQueryPositionDetail {
             pub broker_id: String,
             pub account: String,
         }
@@ -114,7 +114,7 @@ pub mod http {
 
     async fn query_position_detail(
         State(s): State<ShareState>,
-        Json(req): Json<ReqQuery>,
+        Json(req): Json<ReqQueryPositionDetail>,
     ) -> Result<Vec<u8>, Error> {
         let req_msg = ReqMessage::QueryPositionDetail;
         info!("query_position_detail={:?}", req);

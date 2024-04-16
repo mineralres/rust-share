@@ -16,3 +16,4 @@ memchr = "2.3.3"
 log = "0.4"
 derive_more = "0.99.8"
 tokio = { version = "1", features = ["full"] }
+itertools = "0.12.0"

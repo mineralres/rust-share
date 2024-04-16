@@ -3,7 +3,8 @@
 use crate::error::Error;
 use crate::util::*;
 use crate::UniqueSymbol;
-use log::{error, info};
+use itertools::Itertools;
+use log::info;
 use md_cache::MdCache;
 use std::sync::atomic;
 use std::sync::Arc;
@@ -40,6 +41,15 @@ pub mod md_cache {
 }
 
 type RawApiDateType = [i8; 9];
+
+#[derive(Debug)]
+pub enum ReqMessage {
+    SetContractTarget(crate::state::ContractPositionTarget),
+    QueryPositionDetail,
+    QueryTradingAccount,
+}
+
+pub type RspMessage = Result<Vec<u8>, crate::error::Error>;
 
 #[derive(Debug, Clone)]
 pub struct InstrumentField {
@@ -109,14 +119,74 @@ pub struct MarketDataSnapshot {
     pub timestamp: i64,
 }
 
+#[derive(PartialEq, Debug, Clone)]
+pub enum PendingOrderStatus {
+    Pending,
+    Done,
+    Canceled,
+}
+
+#[derive(Clone)]
+pub struct PendingOrderTradeItem {
+    pub volume: i32,
+}
+
 /// 追踪Order状态
+/// 删除的条件是 status == canceld || status == done 并且 volume_traded 与trade_list合并结果相等
 #[derive(Clone)]
 pub struct PendingOrder {
     pub front_id: i32,
     pub session_id: i32,
     pub order_ref: [i8; 13],
+    pub order_ref_i32: i32,
     pub order_sys_id: [i8; 21],
+    pub volume_traded: i32,
     pub volume_total_original: i32,
+    pub volume_canceled: i32,
+    pub status: PendingOrderStatus,
+    pub trades: Vec<PendingOrderTradeItem>,
+}
+
+impl std::fmt::Debug for PendingOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            r#"{{status:{:?}, front_id:{}, session_id:{}, order_ref:[{}], order_sys_id:[{}], trades.len:{}, volume_traded:{}, trades_sum:{}, is_still_pending:{}, volume_total_original:{}, volume_canceled:{}}}"#,
+            self.status,
+            self.front_id,
+            self.session_id,
+            ascii_cstr_to_str_i8(&self.order_ref).unwrap(),
+            ascii_cstr_to_str_i8(&self.order_sys_id).unwrap(),
+            self.trades.len(),
+            self.volume_traded,
+            self.trades.iter().map(|x| x.volume).sum::<i32>(),
+            self.is_still_pending(),
+            self.volume_total_original,
+            self.volume_canceled
+        )
+    }
+}
+
+// impl<TT: TradeType> std::cmp::PartialEq<PendingOrder<TT>> for dyn OrderType {
+//     fn eq(&self, other: &PendingOrder<TT>) -> bool {
+//         self.front_id() == other.front_id
+//             && self.session_id() == other.session_id
+//             && cstr_i8_eq(self.order_ref(), &other.order_ref)
+//     }
+// }
+
+impl PendingOrder {
+    /// 判断是否可以删除
+    /// 确保所有的trade都已经收到并已经更新到position_detail中，以避免出现重复发单或错误发单
+    fn is_still_pending(&self) -> bool {
+        match self.status {
+            PendingOrderStatus::Done | PendingOrderStatus::Canceled => {
+                !(self.volume_traded == self.trades.iter().map(|x| x.volume).sum::<i32>()
+                    && self.volume_total_original == self.volume_canceled + self.volume_traded)
+            }
+            _ => true,
+        }
+    }
 }
 
 /// 访问持仓明细
@@ -151,18 +221,16 @@ impl PositionDetail {
 
 /// 访问委托
 pub trait OrderType {
-    fn volume_total_original(&self) -> i32;
-    fn volume_total_original_mut(&mut self) -> &mut i32;
     fn volume_traded(&self) -> i32;
+    fn volume_canceled(&self) -> i32;
     fn exchange(&self) -> &str;
     fn symbol(&self) -> &str;
     fn order_sys_id(&self) -> &[i8; 21];
-    fn is_done(&self) -> bool;
-    fn is_canceled(&self) -> bool;
     // fn front_id(&self) -> i32;
     // fn session_id(&self) -> i32;
     // fn order_ref(&self) -> &[i8; 13];
     fn to_pending_order(&self) -> PendingOrder;
+    fn pending_status(&self) -> PendingOrderStatus;
 }
 
 /// 访问成交
@@ -188,7 +256,7 @@ pub struct ContractDetail<OT: OrderType, TT: TradeType> {
     pub pl: Vec<PositionDetail>,                // 持仓明细
     pub pol: Vec<PendingOrder>,                 // 活跃委托
     pub hol: Vec<OT>,                           // 历史委托
-    pub tl: Vec<TT>,                            // 成交明细
+    pub htl: Vec<TT>,                           // 历史成交明细
     pub target: Option<ContractPositionTarget>, // 目标仓位
     pub price_tick: f64,                        // 最小变动价位
 }
@@ -307,7 +375,7 @@ pub struct AccountState<OT: OrderType + std::fmt::Debug, TT: TradeType + std::fm
 
 impl<
         OT: OrderType + std::fmt::Debug + std::cmp::PartialEq + std::cmp::PartialEq<PendingOrder>,
-        TT: TradeType + std::fmt::Debug,
+        TT: TradeType + std::fmt::Debug + Clone,
     > AccountState<OT, TT>
 {
     pub fn new(broker_id: &str, account: &str) -> Self {
@@ -386,9 +454,16 @@ impl<
     }
 
     /// 初始化时更新委托
-    /// 初始化查询得到的最新 Order snapshot，但考虑到部分PendingOrder对应的Trade并不全面，需要对Order.VolumeTotalOriginal作调整
+    /// 初始化查询得到的最新 Order snapshot，由于状态更新问题，vo必须要考虑顺序
+    /// vt不用考虑顺序
+    /// vo中pending的部分会放在state中
     /// AccountState中初始化得到的PositionDetailList + OnRtnTrade 合并得到最新的 PositionSnapshot, 但并不查询全部的Trade
-    pub fn update_by_order_on_initialized(&mut self, vo: Vec<OT>) -> Result<(), Error> {
+    pub fn update_on_initialized(&mut self, vo: Vec<OT>, vt: Vec<TT>) -> Result<(), Error> {
+        info!(
+            "update_on_initialized vo.len={} vt.len={}",
+            vo.len(),
+            vt.len()
+        );
         let mut v: Vec<OT> = vec![];
         for o in vo.into_iter() {
             match v.iter_mut().find(|x| **x == o) {
@@ -396,55 +471,75 @@ impl<
                 None => v.push(o),
             }
         }
-        for mut o in v.into_iter().filter(|x| !(x.is_canceled() || x.is_done())) {
-            *o.volume_total_original_mut() = o.volume_total_original() - o.volume_traded();
-            let us = UniqueSymbol::new(o.exchange(), o.symbol());
-            if let Ok(i) = self.sorted_cds.binary_search_by(|probe| probe.us.cmp(&us)) {
-                let order_volume_traded = self.sorted_cds[i]
-                    .tl
-                    .iter()
-                    .filter(|x| cstr_i8_eq(x.order_sys_id(), o.order_sys_id()))
-                    .map(|x| x.volume())
-                    .sum::<i32>();
-                *o.volume_total_original_mut() += order_volume_traded;
+        let mut vtx: Vec<TT> = vec![];
+        for t in vt.into_iter() {
+            if let None = vtx
+                .iter()
+                .find(|xt| cstr_i8_eq(t.order_sys_id(), xt.order_sys_id()))
+            {
+                vtx.push(t);
             }
-            self.update_by_order(o)?;
         }
-
+        for x in v
+            .iter()
+            .filter(|x| x.pending_status() == PendingOrderStatus::Pending)
+        {
+            let mut po = x.to_pending_order();
+            po.trades = vtx
+                .iter()
+                .filter(|xx| cstr_i8_eq(xx.order_sys_id(), x.order_sys_id()))
+                .map(|x| PendingOrderTradeItem { volume: x.volume() })
+                .collect_vec();
+            let us = UniqueSymbol {
+                exchange: x.exchange().into(),
+                symbol: x.symbol().into(),
+            };
+            let i = self.contract_detail_entry(us)?;
+            self.sorted_cds[i].pol.push(po);
+        }
         Ok(())
     }
 
     /// 委托更新
     /// AccountState中只保留PendingOrder, 完成成交和已撤单的委托都会被清除
     /// 追踪PendingOrder可以保证对齐持仓的过程中顺序操作，以免出现重复开平仓情形
-    pub fn update_by_order(&mut self, o: OT) -> Result<(), Error> {
+    /// 返回true表示移除了一个pending order，往往需要重新check_target
+    pub fn update_by_order(&mut self, o: OT) -> Result<bool, Error> {
         let us = UniqueSymbol::new(o.exchange(), o.symbol());
         let i = self.contract_detail_entry(us)?;
         let cd = &mut self.sorted_cds[i];
-        match cd.pol.iter().position(|x| o == *x) {
+        let index = match cd.pol.iter().position(|x| o == *x) {
             Some(index) => {
-                if o.is_canceled() {
-                    cd.pol.swap_remove(index);
-                } else {
-                    let old = &mut cd.pol[index];
-                    if old.order_sys_id[0] == 0 {
-                        old.order_sys_id = o.order_sys_id().clone();
-                    }
+                let old = &mut cd.pol[index];
+                if old.order_sys_id[0] == 0 {
+                    old.order_sys_id = o.order_sys_id().clone();
                 }
+                old.volume_traded = o.volume_traded();
+                old.volume_canceled = o.volume_canceled();
+                old.status = o.pending_status();
+                index
             }
             None => {
                 // 可能是其他终端下单
-                // let po = PendingOrder {
-                //     front_id: o.front_id(),
-                //     session_id: o.session_id(),
-                //     order_ref: o.order_ref().clone(),
-                //     order_sys_id: o.order_sys_id().clone(),
-                //     volume_total_original: o.volume_total_original(),
-                // };
-                cd.pol.push(o.to_pending_order());
+                let mut po = o.to_pending_order();
+                po.trades = cd
+                    .htl
+                    .iter()
+                    .filter(|xx| cstr_i8_eq(xx.order_sys_id(), o.order_sys_id()))
+                    .map(|x| PendingOrderTradeItem { volume: x.volume() })
+                    .collect_vec();
+                cd.pol.push(po);
+                cd.pol.len() - 1
             }
+        };
+        info!("update_by_order po={:?}", cd.pol[index]);
+        if !cd.pol[index].is_still_pending() {
+            info!("update_by_order remove none pending");
+            cd.pol.swap_remove(index);
+            Ok(true)
+        } else {
+            Ok(false)
         }
-        Ok(())
     }
 
     /// remove pending order when some error on order insert reponse
@@ -470,93 +565,72 @@ impl<
 
     /// 更新成交列表
     /// 更新本地持仓报表, 并删除已完全成交的PendingOrder
-    pub fn update_by_trade(&mut self, t: TT) -> Result<(), Error> {
+    /// 返回true表示需要马上重新对齐仓位, false表示无需操作
+    pub fn update_by_trade(&mut self, t: TT) -> Result<bool, Error> {
         let offset = t.offset_flag();
         let us = UniqueSymbol::new(t.exchange(), t.symbol());
         let i = self.contract_detail_entry(us)?;
         let cd = &mut self.sorted_cds[i];
-        if cd.tl.iter().any(|x| cstr_i8_eq(x.trade_id(), t.trade_id())) {
-            // 防止重复update
-            return Err(Error::DumplicateTrade);
-        }
-        let order_volume_traded = cd
-            .tl
-            .iter()
-            .filter(|x| cstr_i8_eq(x.order_sys_id(), t.order_sys_id()))
-            .map(|x| x.volume())
-            .sum::<i32>()
-            + t.volume();
-        // info!(
-        //     "rtn trade order_volume_traded={order_volume_traded} order_sys_id={}",
-        //     ascii_cstr_to_str_i8(t.order_sys_id()).unwrap()
-        // );
-        if let Some(index) = cd
-            .pol
-            .iter()
-            .position(|x| cstr_i8_eq(&x.order_sys_id, t.order_sys_id()))
-        {
-            let po = &cd.pol[index];
-            // info!("po.volume_total_original={}", po.volume_total_original);
-            if order_volume_traded > po.volume_total_original {
-                panic!(
-                    "order_volume_traded={order_volume_traded} po.volume_total_original={}",
-                    po.volume_total_original
-                );
-            }
-            if order_volume_traded == po.volume_total_original {
-                cd.pol.swap_remove(index);
-            }
-        } else {
-            error!(
-                "Update by trade order not found, [{}:{}] t.OrderSysID={}",
-                cd.us.exchange,
-                cd.us.symbol,
-                ascii_cstr_to_str_i8(t.order_sys_id()).unwrap()
-            );
-        }
         if offset == OffsetFlag::Open {
             cd.pl.push(t.to_position_detail());
-            return Ok(());
-        }
-        let mut left_volume = t.volume();
-        for pd in cd.pl.iter_mut().filter(|pd| {
-            if pd.volume > 0 && t.direction() != pd.direction {
-                // 平今 SHFE INE区分
-                if cd.us.exchange == "SHFE" || cd.us.exchange == "INE" {
-                    match offset {
-                        OffsetFlag::Open => false,
-                        OffsetFlag::CloseToday => {
-                            t.trade_date().cmp(&pd.open_date) == std::cmp::Ordering::Equal
+        } else {
+            let mut left_volume = t.volume();
+            for pd in cd.pl.iter_mut().filter(|pd| {
+                if pd.volume > 0 && t.direction() != pd.direction {
+                    // 平今 SHFE INE区分
+                    if cd.us.exchange == "SHFE" || cd.us.exchange == "INE" {
+                        match offset {
+                            OffsetFlag::Open => false,
+                            OffsetFlag::CloseToday => {
+                                t.trade_date().cmp(&pd.open_date) == std::cmp::Ordering::Equal
+                            }
+                            OffsetFlag::CloseYesterday | OffsetFlag::Close => {
+                                pd.open_date.cmp(t.trade_date()) == std::cmp::Ordering::Less
+                            }
+                            _ => true,
                         }
-                        OffsetFlag::CloseYesterday | OffsetFlag::Close => {
-                            pd.open_date.cmp(t.trade_date()) == std::cmp::Ordering::Less
-                        }
-                        _ => true,
+                    } else {
+                        true
                     }
                 } else {
-                    true
+                    false
                 }
-            } else {
-                false
+            }) {
+                let v = std::cmp::min(left_volume, pd.volume);
+                pd.volume -= v;
+                left_volume -= v;
+                if left_volume < 0 {
+                    panic!("left_volume < 0");
+                }
+                if left_volume == 0 {
+                    break;
+                }
             }
-        }) {
-            let v = std::cmp::min(left_volume, pd.volume);
-            pd.volume -= v;
-            left_volume -= v;
-            if left_volume < 0 {
-                panic!("left_volume < 0");
-            }
-            if left_volume == 0 {
-                break;
+            if left_volume > 0 {
+                info!("pl={:?}", cd.pl);
+                info!(
+                    "trade={:?} TradeDate={} TradingDay={}",
+                    t,
+                    get_ascii_str(t.trade_date()).unwrap(),
+                    get_ascii_str(t.trading_day()).unwrap()
+                );
+                panic!("left_volume>0 无仓可平");
             }
         }
-        if left_volume > 0 {
-            info!("pl={:?}", cd.pl);
-            info!("trade={:?}", t);
-            panic!("left_volume>0 无仓可平");
+        let index = cd
+            .pol
+            .iter_mut()
+            .position(|x| cstr_i8_eq(&x.order_sys_id, t.order_sys_id()))
+            .expect("update_by_trade trade must get pending order");
+        let po = &mut cd.pol[index];
+        po.trades.push(PendingOrderTradeItem { volume: t.volume() });
+        if !po.is_still_pending() {
+            cd.pol.swap_remove(index);
+            info!("update_by_trade remove none pending");
+            Ok(true)
+        } else {
+            Ok(false)
         }
-        cd.tl.push(t);
-        Ok(())
     }
 
     /// 查询合约最小变动价位
@@ -625,8 +699,13 @@ impl<
                                     front_id: self.front_id,
                                     session_id: self.session_id,
                                     order_ref: x_order_ref,
-                                    volume_total_original: iof.volume,
+                                    order_ref_i32: order_ref,
                                     order_sys_id: [0; 21],
+                                    volume_total_original: iof.volume,
+                                    volume_canceled: 0,
+                                    volume_traded: 0,
+                                    trades: vec![],
+                                    status: PendingOrderStatus::Pending,
                                 };
                                 self.sorted_cds[i].pol.push(po);
                                 Ok(())
@@ -639,7 +718,7 @@ impl<
                             "Cancel front_id={} session_id={} order_ref={}",
                             ioaf.front_id,
                             ioaf.session_id,
-                            ascii_cstr_to_str_i8(&ioaf.order_ref).unwrap()
+                            ascii_cstr_to_str_i8(&ioaf.order_ref).unwrap(),
                         );
                         api.req_order_action(
                             &self.broker_id,
@@ -669,7 +748,7 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
             pl: vec![],
             pol: vec![],
             hol: vec![],
-            tl: vec![],
+            htl: vec![],
             target: None,
         };
         cd
@@ -846,6 +925,13 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
     ) -> Operation {
         let d = target.direction();
         let current = self.summation(&d, &PositionDateType::Total, trading_day);
+        info!(
+            "{}:{} open_position current={} target.position={}",
+            self.us.exchange,
+            self.us.symbol,
+            current,
+            target.position.abs()
+        );
         if current < target.position.abs() {
             info!(
                 "{}:{} current_position={} od={:?} &md.TradingDay={} target={}",
@@ -875,7 +961,7 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
                 // pol 是活跃订单，只要有活跃订单就先撤再重发. pol 会由Spi返回的相关事件进行更新
                 // 如果要求撤单同时就发新单，则需要另外写处理逻辑
                 for o in self.pol.iter() {
-                    info!("pol len={}", self.pol.len());
+                    info!("po={:?}", o);
                     let ioaf = InputOrderActionField {
                         front_id: o.front_id,
                         session_id: o.session_id,

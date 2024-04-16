@@ -24,15 +24,6 @@ impl UniqueSymbol {
     }
 }
 
-#[derive(Debug)]
-pub enum ReqMessage {
-    SetContractTarget(crate::state::ContractPositionTarget),
-    QueryPositionDetail,
-    QueryTradingAccount,
-}
-
-pub type RspMessage = Result<Vec<u8>, crate::error::Error>;
-
 /// 交易账号
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Default)]
 #[serde(default)]

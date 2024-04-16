@@ -111,46 +111,19 @@ pub mod route {
 
     type AccountStateType = ToraAccountState;
 
-    /// 判断CTP委托是否已撤单
-    pub fn is_order_canceled(o: &TORASTOCKAPI_CTORATstpOrderField) -> bool {
-        /*
-        ///预埋
-        const char TORA_TSTP_OST_Cached = '0';
-        ///未知
-        const char TORA_TSTP_OST_Unknown = '1';
-        ///交易所已接收
-        const char TORA_TSTP_OST_Accepted = '2';
-        ///部分成交
-        const char TORA_TSTP_OST_PartTraded = '3';
-        ///全部成交
-        const char TORA_TSTP_OST_AllTraded = '4';
-        ///部成部撤
-        const char TORA_TSTP_OST_PartTradeCanceled = '5';
-        ///全部撤单
-        const char TORA_TSTP_OST_AllCanceled = '6';
-        ///交易所已拒绝
-        const char TORA_TSTP_OST_Rejected = '7';
-        ///发往交易核心
-        const char TORA_TSTP_OST_SendTradeEngine = '#';
-        */
-        match o.OrderStatus {
-            TORASTOCKAPI_TORA_TSTP_OST_PartTradeCanceled
-            | TORASTOCKAPI_TORA_TSTP_OST_AllCanceled
-            | TORASTOCKAPI_TORA_TSTP_OST_Rejected => true,
-            _ => false,
-        }
-    }
-
-    /// 判断CTP委托是否完成
-    pub fn is_order_done(o: &TORASTOCKAPI_CTORATstpOrderField) -> bool {
-        o.OrderStatus == TORASTOCKAPI_TORA_TSTP_OST_AllTraded
-    }
-
     impl std::cmp::PartialEq for TORASTOCKAPI_CTORATstpOrderField {
         fn eq(&self, other: &Self) -> bool {
             self.FrontID == other.FrontID
                 && self.SessionID == other.SessionID
                 && self.OrderRef == other.OrderRef
+        }
+    }
+
+    impl std::cmp::PartialEq<PendingOrder> for TORASTOCKAPI_CTORATstpOrderField {
+        fn eq(&self, other: &PendingOrder) -> bool {
+            self.FrontID == other.front_id
+                && self.SessionID == other.session_id
+                && self.OrderRef == other.order_ref_i32
         }
     }
 
@@ -230,22 +203,7 @@ pub mod route {
         }
     }
 
-    impl std::cmp::PartialEq<PendingOrder> for TORASTOCKAPI_CTORATstpOrderField {
-        fn eq(&self, other: &PendingOrder) -> bool {
-            self.FrontID == other.front_id
-                && self.SessionID == other.session_id
-                && self.OrderRef
-                    == get_ascii_str(&other.order_ref)
-                        .unwrap()
-                        .parse::<i32>()
-                        .unwrap()
-        }
-    }
-
     impl OrderType for TORASTOCKAPI_CTORATstpOrderField {
-        fn volume_total_original(&self) -> i32 {
-            self.VolumeTotalOriginal
-        }
         // fn front_id(&self) -> i32 {
         //     self.FrontID
         // }
@@ -255,22 +213,11 @@ pub mod route {
         // fn order_ref(&self) -> i32 {
         //     self.OrderRef
         // }
-        fn to_pending_order(&self) -> PendingOrder {
-            let mut order_ref: [i8; 13] = [0; 13];
-            set_cstr_from_str_truncate_i8(&mut order_ref, &format!("{}", self.OrderRef));
-            PendingOrder {
-                front_id: self.FrontID,
-                session_id: self.SessionID,
-                order_ref,
-                order_sys_id: self.OrderSysID.clone(),
-                volume_total_original: self.VolumeTotalOriginal,
-            }
-        }
         fn volume_traded(&self) -> i32 {
             self.VolumeTraded
         }
-        fn volume_total_original_mut(&mut self) -> &mut i32 {
-            &mut self.VolumeTotalOriginal
+        fn volume_canceled(&self) -> i32 {
+            self.VolumeCanceled
         }
         fn exchange(&self) -> &str {
             exchange_from_tora_stock_exchange_id(self.ExchangeID)
@@ -282,11 +229,50 @@ pub mod route {
         fn order_sys_id(&self) -> &[i8; 21] {
             &self.OrderSysID
         }
-        fn is_done(&self) -> bool {
-            is_order_done(self)
+        fn to_pending_order(&self) -> PendingOrder {
+            let mut order_ref = [0i8; 13];
+            set_cstr_from_str_truncate_i8(&mut order_ref, &format!("{}", self.OrderRef));
+            PendingOrder {
+                front_id: self.FrontID,
+                session_id: self.SessionID,
+                order_ref,
+                order_ref_i32: self.OrderRef,
+                order_sys_id: self.OrderSysID.clone(),
+                volume_traded: self.VolumeTraded,
+                volume_canceled: self.VolumeCanceled,
+                volume_total_original: self.VolumeTotalOriginal,
+                status: self.pending_status(),
+                trades: vec![],
+            }
         }
-        fn is_canceled(&self) -> bool {
-            is_order_canceled(self)
+        fn pending_status(&self) -> PendingOrderStatus {
+            /*
+            ///预埋
+            const char TORA_TSTP_OST_Cached = '0';
+            ///未知
+            const char TORA_TSTP_OST_Unknown = '1';
+            ///交易所已接收
+            const char TORA_TSTP_OST_Accepted = '2';
+            ///部分成交
+            const char TORA_TSTP_OST_PartTraded = '3';
+            ///全部成交
+            const char TORA_TSTP_OST_AllTraded = '4';
+            ///部成部撤
+            const char TORA_TSTP_OST_PartTradeCanceled = '5';
+            ///全部撤单
+            const char TORA_TSTP_OST_AllCanceled = '6';
+            ///交易所已拒绝
+            const char TORA_TSTP_OST_Rejected = '7';
+            ///发往交易核心
+            const char TORA_TSTP_OST_SendTradeEngine = '#';
+            */
+            match self.OrderStatus {
+                TORASTOCKAPI_TORA_TSTP_OST_PartTradeCanceled
+                | TORASTOCKAPI_TORA_TSTP_OST_AllCanceled
+                | TORASTOCKAPI_TORA_TSTP_OST_Rejected => PendingOrderStatus::Canceled,
+                TORASTOCKAPI_TORA_TSTP_OST_AllTraded => PendingOrderStatus::Done,
+                _ => PendingOrderStatus::Pending,
+            }
         }
     }
 
@@ -567,6 +553,33 @@ pub mod route {
                         OnFrontDisconnected(_p) => {
                             break;
                         }
+                        OnRtnMarketData(md) =>{
+                            if let Some(md) = md.p_market_data_field {
+                                let us = UniqueSymbol::new(exchange_from_tora_stock_exchange_id(md.ExchangeID), get_ascii_str(&md.SecurityID).unwrap());
+                                let us1 = us.clone();
+                                let mut cmc = cmc.lock().await;
+                                cmc.hm_md
+                                    .entry(us)
+                                    .and_modify(|e| {
+                                        e.ask1 = md.AskPrice1;
+                                        e.bid1 = md.BidPrice1;
+                                        e.ask1_volume1 = md.AskVolume1 as i64;
+                                        e.bid1_volume = md.BidVolume1 as i64;
+                                        e.timestamp = Local::now().timestamp();
+                                    })
+                                    .or_insert_with(|| {
+                                        let md = MarketDataSnapshot {
+                                            ask1: md.AskPrice1,
+                                            bid1: md.BidPrice1,
+                                            ask1_volume1: md.AskVolume1,
+                                            bid1_volume: md.BidVolume1,
+                                            timestamp: Local::now().timestamp(),
+                                        };
+                                        info!("[{}:{}] insert md = {:?}",us1.exchange, us1.symbol, md);
+                                        md
+                                    });
+                            }
+                        }
                         OnRtnSPMarketData(md) => {
                             if let Some(md) = md.p_market_data_field {
                                 let us = UniqueSymbol::new(exchange_from_tora_stock_exchange_id(md.ExchangeID), get_ascii_str(&md.SecurityID).unwrap());
@@ -594,7 +607,7 @@ pub mod route {
                                     });
                             }
                         }
-                        _ => (),
+                        other => error!("{:?}", other),
                     }
                 }
                 Some(us) = rx.recv() => {
@@ -602,7 +615,7 @@ pub mod route {
                     let mut sa = StringArray::new();
                     sa.push(&us.symbol);
                     let result = mdapi
-                        .subscribe_sp_market_data(&mut sa, 1, exchangeid);
+                        .subscribe_market_data(&mut sa, 1, exchangeid);
                     if result != 0 {
                         error!("Tora Stock subscribe result = {}", result);
                     }
@@ -711,9 +724,14 @@ pub mod route {
             }
             OnRtnOrder(ref rtn) => {
                 if let Some(o) = rtn.p_order_field {
+                    info!(
+                        "OnRtnOrder o.sys_id={} status={}",
+                        ascii_cstr_to_str_i8(&o.OrderSysID).unwrap(),
+                        o.OrderStatus
+                    );
                     let submit_status = o.OrderSubmitStatus;
                     state.update_by_order(o).unwrap();
-                    if o.is_canceled() {
+                    if o.pending_status() == PendingOrderStatus::Canceled {
                         let submit_status_msg = match submit_status as u8 as char {
                             '0' => "THOST_FTDC_OSS_InsertSubmitted 已经提交",
                             '1' => "THOST_FTDC_OSS_CancelSubmitted 撤单已提交",
@@ -749,13 +767,20 @@ pub mod route {
             }
             OnRtnTrade(rtn) => {
                 if let Some(trade) = rtn.p_trade_field {
-                    state.update_by_trade(trade).unwrap();
-                    let us = UniqueSymbol::new(
-                        exchange_from_tora_stock_exchange_id(trade.ExchangeID),
-                        get_ascii_str(&trade.SecurityID).expect("OnRtnTrade get_ascii_str"),
+                    info!(
+                        "OnRtnTrade OrderSysID={} Volume={}",
+                        ascii_cstr_to_str_i8(&trade.OrderSysID).unwrap(),
+                        trade.Volume
                     );
-                    if let Err(e) = state.set_check_target(us, None, &cmc, api).await {
-                        error!("OnRtnTrade set_check_target {e}");
+                    let changed = state.update_by_trade(trade).unwrap();
+                    if changed {
+                        let us = UniqueSymbol::new(
+                            exchange_from_tora_stock_exchange_id(trade.ExchangeID),
+                            get_ascii_str(&trade.SecurityID).expect("OnRtnTrade get_ascii_str"),
+                        );
+                        if let Err(e) = state.set_check_target(us, None, &cmc, api).await {
+                            error!("OnRtnTrade set_check_target {e}");
+                        }
                     }
                 }
             }
@@ -827,7 +852,7 @@ pub mod route {
         api.init();
         // 处理登陆初始化查询
         let mut cached_orders: Vec<TORASTOCKAPI_CTORATstpOrderField> = vec![];
-        let mut missed_trades: Option<Vec<TORASTOCKAPI_CTORATstpTradeField>> = None;
+        let mut cached_trades: Vec<TORASTOCKAPI_CTORATstpTradeField> = vec![];
 
         while let Some(spi_msg) = stream.next().await {
             use trader_api::TORASTOCKAPI_CTORATstpTraderSpiOutput::*;
@@ -910,7 +935,16 @@ pub mod route {
                 }
                 OnRspQryPosition(ref p) => {
                     if let Some(p) = p.p_position_field {
+                        info!(
+                            "{} TodayBSPos={} HistoryPos={}",
+                            get_ascii_str(&p.SecurityID).unwrap(),
+                            p.TodayBSPos,
+                            p.HistoryPos
+                        );
+                        info!("p={:?}", p);
                         let (tpd, ypd) = make_position_detail(&p);
+                        info!("tpd={:?}", tpd);
+                        info!("ypd={:?}", ypd);
                         state.insert_position_detail(tpd).unwrap();
                         state.insert_position_detail(ypd).unwrap();
                     }
@@ -926,11 +960,31 @@ pub mod route {
                 }
                 OnRspQryOrder(ref p) => {
                     if let Some(p) = p.p_order_field {
+                        info!(
+                            "sysid={} status={}",
+                            ascii_cstr_to_str_i8(&p.OrderSysID).unwrap(),
+                            p.OrderStatus
+                        );
                         cached_orders.push(p);
                     }
                     if p.b_is_last {
+                        let mut req = TORASTOCKAPI_CTORATstpQryTradeField::default();
+                        let ret = api.req_qry_trade(&mut req, state.get_request_id());
+                        if ret != 0 {
+                            info!("Tora stock req_qry_trade={}", ret);
+                        }
+                    }
+                }
+                OnRspQryTrade(p) => {
+                    if let Some(p) = p.p_trade_field {
+                        cached_trades.push(p);
+                    }
+                    if p.b_is_last {
                         let mut req = TORASTOCKAPI_CTORATstpQryShareholderAccountField::default();
-                        api.req_qry_shareholder_account(&mut req, state.get_request_id());
+                        let ret = api.req_qry_shareholder_account(&mut req, state.get_request_id());
+                        if ret != 0 {
+                            error!("tora req_qry_shareholder_account {}", ret);
+                        }
                     }
                 }
                 OnRspQryShareholderAccount(ref p) => {
@@ -961,9 +1015,7 @@ pub mod route {
                 }
                 OnRtnTrade(p) => {
                     if let Some(trade) = p.p_trade_field {
-                        if let Some(missed_trades) = &mut missed_trades {
-                            missed_trades.push(trade);
-                        }
+                        cached_trades.push(trade);
                     }
                 }
                 OnRtnTradingNotice(ref p) => {
@@ -973,17 +1025,12 @@ pub mod route {
             }
         }
         // 初始化查询过程中推送的成交
-        if let Some(missed_trades) = missed_trades {
-            if missed_trades.len() > 0 {
-                info!("Missed trades {}", missed_trades.len());
-            }
-            for trade in missed_trades.into_iter() {
-                if let Err(e) = state.update_by_trade(trade) {
-                    error!("Missed trade update {e} volume={}", trade.Volume);
-                }
-            }
-        }
-        if let Err(e) = state.update_by_order_on_initialized(cached_orders) {
+        info!(
+            "cached_orders={} cached_trades={}",
+            cached_orders.len(),
+            cached_trades.len()
+        );
+        if let Err(e) = state.update_on_initialized(cached_orders, cached_trades) {
             error!("Cached orders update {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
