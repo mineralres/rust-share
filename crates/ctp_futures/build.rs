@@ -506,52 +506,24 @@ fn main() {
 
     println!("cargo:rustc-link-search=./crates/ctp-futures/v_current");
     let dir = var("CARGO_MANIFEST_DIR").unwrap();
+    
     let library_path = Path::new(&dir).join("v_current");
     println!("cargo:rustc-link-search=native={}", library_path.display());
-    if cfg!(windows) {
-        let output = var("OUT_DIR").unwrap();
-        std::fs::copy(
-            library_path.join("thostmduserapi_se.dll"),
-            Path::new(&output)
-                .join("..")
-                .join("..")
-                .join("..")
-                .join("thostmduserapi_se.dll"),
-        )
-        .unwrap();
-        std::fs::copy(
-            library_path.join("thosttraderapi_se.dll"),
-            Path::new(&output)
-                .join("..")
-                .join("..")
-                .join("..")
-                .join("thosttraderapi_se.dll"),
-        )
-        .unwrap();
+    let output = var("OUT_DIR").unwrap();
+    let v_libs = if cfg!(windows) {
+        vec!["thostmduserapi_se.dll", "thosttraderapi_se.dll"]
     } else if cfg!(unix) {
-        let output = var("OUT_DIR").unwrap();
-        std::fs::copy(
-            library_path.join("libthostmduserapi_se.so"),
-            Path::new(&output)
-                .join("..")
-                .join("..")
-                .join("..")
-                .join("libthostmduserapi_se.so"),
-        )
-        .unwrap();
-        std::fs::copy(
-            library_path.join("libthosttraderapi_se.so"),
-            Path::new(&output)
-                .join("..")
-                .join("..")
-                .join("..")
-                .join("libthosttraderapi_se.so"),
-        )
-        .unwrap();
+        vec!["libthostmduserapi_se.so", "libthosttraderapi_se.so"]
     } else {
-        println!("cargo:rustc-env=LD_LIBRARY_PATH={}", library_path.display());
-    }
-
+        vec![]
+    };
+    v_libs.iter().for_each(|p| {
+        std::fs::copy(
+            library_path.join(p),
+            Path::new(&output).join("..").join("..").join("..").join(p),
+        )
+        .unwrap();
+    });
     println!("cargo:rustc-link-lib=thosttraderapi_se");
     println!("cargo:rustc-link-lib=thostmduserapi_se");
 

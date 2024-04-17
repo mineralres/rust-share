@@ -2,7 +2,9 @@
 use bindgen::callbacks::{DeriveInfo, ParseCallbacks};
 use clang::*;
 use inflector::Inflector;
+use std::env::var;
 use std::{env, fs::File, io::Write, path::PathBuf};
+use std::path::Path;
 
 #[derive(Debug)]
 struct MyCallback {}
@@ -520,6 +522,24 @@ fn main() {
     println!("cargo:rustc-link-lib=xfastmdapi");
     println!("cargo:rustc-link-lib=fasttraderapi");
     println!("cargo:rustc-link-lib=traderapi");
+
+    let dir = var("CARGO_MANIFEST_DIR").unwrap();
+    let library_path = Path::new(&dir).join("v_current");
+    let output = var("OUT_DIR").unwrap();
+    let v_libs = if cfg!(windows) {
+        vec!["fasttraderapi.dll", "traderapi.dll", "xfastmdapi.dll"]
+    } else if cfg!(unix) {
+        vec!["libxfastmdapi.so", "libfasttraderapi.so", "libtraderapi.so"]
+    } else {
+        vec![]
+    };
+    v_libs.iter().for_each(|p| {
+        std::fs::copy(
+            library_path.join(p),
+            Path::new(&output).join("..").join("..").join("..").join(p),
+        )
+        .unwrap();
+    });
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.hpp")

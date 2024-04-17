@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::util::*;
 use crate::UniqueSymbol;
 use itertools::Itertools;
-use log::info;
+use log::{error, info};
 use md_cache::MdCache;
 use std::sync::atomic;
 use std::sync::Arc;
@@ -119,6 +119,17 @@ pub struct MarketDataSnapshot {
     pub timestamp: i64,
 }
 
+impl MarketDataSnapshot {
+    /// 对手价
+    /// 1 注意 bid , ask 可能因极端行情而特别偏离当前价.
+    pub fn get_counterparty_price(&self, d: &DirectionType, price_tick: f64, shift: i32) -> f64 {
+        match d {
+            DirectionType::Long => self.bid1 + price_tick * shift as f64,
+            DirectionType::Short => self.ask1 - price_tick * shift as f64,
+        }
+    }
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub enum PendingOrderStatus {
     Pending,
@@ -166,14 +177,6 @@ impl std::fmt::Debug for PendingOrder {
         )
     }
 }
-
-// impl<TT: TradeType> std::cmp::PartialEq<PendingOrder<TT>> for dyn OrderType {
-//     fn eq(&self, other: &PendingOrder<TT>) -> bool {
-//         self.front_id() == other.front_id
-//             && self.session_id() == other.session_id
-//             && cstr_i8_eq(self.order_ref(), &other.order_ref)
-//     }
-// }
 
 impl PendingOrder {
     /// 判断是否可以删除
@@ -226,9 +229,6 @@ pub trait OrderType {
     fn exchange(&self) -> &str;
     fn symbol(&self) -> &str;
     fn order_sys_id(&self) -> &[i8; 21];
-    // fn front_id(&self) -> i32;
-    // fn session_id(&self) -> i32;
-    // fn order_ref(&self) -> &[i8; 13];
     fn to_pending_order(&self) -> PendingOrder;
     fn pending_status(&self) -> PendingOrderStatus;
 }
@@ -259,6 +259,7 @@ pub struct ContractDetail<OT: OrderType, TT: TradeType> {
     pub htl: Vec<TT>,                           // 历史成交明细
     pub target: Option<ContractPositionTarget>, // 目标仓位
     pub price_tick: f64,                        // 最小变动价位
+    pub last_open_timestamp_milli: i64,         // 上次发送开仓单时间, 用作简单风控
 }
 
 /// 发送委托
@@ -435,7 +436,11 @@ impl<
         let i = match self.sorted_cds.binary_search_by(|probe| probe.us.cmp(&us)) {
             Ok(i) => i,
             Err(i) => {
-                let price_tick = self.get_price_tick(&us)?;
+                let price_tick = self
+                    .hm_inst
+                    .get(&us)
+                    .ok_or(Error::InstrumentNotFound)?
+                    .price_tick;
                 self.sorted_cds
                     .insert(i, ContractDetail::new(us, price_tick));
                 i
@@ -444,26 +449,29 @@ impl<
         Ok(i)
     }
 
-    // 初始化持仓明细
-    pub fn insert_position_detail(&mut self, pd: PositionDetail) -> Result<(), Error> {
-        pd.check_open_date();
-        let us = UniqueSymbol::new(&pd.exchange, &pd.symbol);
-        let i = self.contract_detail_entry(us)?;
-        self.sorted_cds[i].pl.push(pd);
-        Ok(())
-    }
-
     /// 初始化时更新委托
     /// 初始化查询得到的最新 Order snapshot，由于状态更新问题，vo必须要考虑顺序
     /// vt不用考虑顺序
     /// vo中pending的部分会放在state中
     /// AccountState中初始化得到的PositionDetailList + OnRtnTrade 合并得到最新的 PositionSnapshot, 但并不查询全部的Trade
-    pub fn update_on_initialized(&mut self, vo: Vec<OT>, vt: Vec<TT>) -> Result<(), Error> {
+    pub fn update_on_initialized(
+        &mut self,
+        pdl: Vec<PositionDetail>,
+        vo: Vec<OT>,
+        vt: Vec<TT>,
+    ) -> Result<(), Error> {
         info!(
-            "update_on_initialized vo.len={} vt.len={}",
+            "update_on_initialized pdl.len={} vo.len={} vt.len={}",
+            pdl.len(),
             vo.len(),
             vt.len()
         );
+        for pd in pdl.into_iter() {
+            pd.check_open_date();
+            let us = UniqueSymbol::new(&pd.exchange, &pd.symbol);
+            let i = self.contract_detail_entry(us)?;
+            self.sorted_cds[i].pl.push(pd);
+        }
         let mut v: Vec<OT> = vec![];
         for o in vo.into_iter() {
             match v.iter_mut().find(|x| **x == o) {
@@ -633,15 +641,6 @@ impl<
         }
     }
 
-    /// 查询合约最小变动价位
-    pub fn get_price_tick(&self, us: &UniqueSymbol) -> Result<f64, Error> {
-        Ok(self
-            .hm_inst
-            .get(us)
-            .ok_or(Error::InstrumentNotFound)?
-            .price_tick)
-    }
-
     /// 设置某合约的target 并返回对应的操作
     /// 如果target = None, 则查看已经设置好的target并进行持仓对齐
     pub async fn set_check_target(
@@ -662,22 +661,27 @@ impl<
                     }
                     self.sorted_cds[i].check_target(md, &self.trading_day_raw)
                 };
-                let cd = &self.sorted_cds[i];
                 match op {
-                    Operation::NOP => {
-                        info!("NOP");
-                        Ok(())
-                    }
+                    Operation::NOP => Ok(()),
                     Operation::Input(iof) => {
+                        let cd = &self.sorted_cds[i];
+                        let nowts = chrono::Local::now().timestamp_millis();
                         info!(
-                            "Input {}:{} Direction={:?} Volume={} Price={} md={:?}",
+                            "Input {}:{} Direction={:?} Volume={} Price={} time_diff={} md={:?}",
                             &cd.us.exchange,
                             &cd.us.symbol,
                             iof.direction,
                             iof.volume,
                             iof.price,
-                            md
+                            nowts - cd.last_open_timestamp_milli,
+                            md,
                         );
+                        if iof.offset == OffsetFlag::Open
+                            && nowts - cd.last_open_timestamp_milli < 1000
+                        {
+                            error!("距上次开仓发单时间间隔小于1秒");
+                            panic!("");
+                        }
                         let order_ref = self.get_order_ref();
                         match api.req_order_insert(
                             &self.broker_id,
@@ -708,6 +712,7 @@ impl<
                                     status: PendingOrderStatus::Pending,
                                 };
                                 self.sorted_cds[i].pol.push(po);
+                                self.sorted_cds[i].last_open_timestamp_milli = nowts;
                                 Ok(())
                             }
                             Err(e) => Err(e),
@@ -720,6 +725,7 @@ impl<
                             ioaf.session_id,
                             ascii_cstr_to_str_i8(&ioaf.order_ref).unwrap(),
                         );
+                        let cd = &self.sorted_cds[i];
                         api.req_order_action(
                             &self.broker_id,
                             &self.account,
@@ -750,6 +756,7 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
             hol: vec![],
             htl: vec![],
             target: None,
+            last_open_timestamp_milli: 0,
         };
         cd
     }
@@ -902,7 +909,7 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
                     "{}:{} close potition volume={volume} direction={:?} offset={:?}",
                     &self.us.exchange, &self.us.symbol, direction, offset
                 );
-                let price = get_counterparty_price(md, &direction, price_tick, target.shift);
+                let price = md.get_counterparty_price(&direction, price_tick, target.shift);
                 let input = InputOrderField {
                     direction,
                     offset,
@@ -925,13 +932,6 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
     ) -> Operation {
         let d = target.direction();
         let current = self.summation(&d, &PositionDateType::Total, trading_day);
-        info!(
-            "{}:{} open_position current={} target.position={}",
-            self.us.exchange,
-            self.us.symbol,
-            current,
-            target.position.abs()
-        );
         if current < target.position.abs() {
             info!(
                 "{}:{} current_position={} od={:?} &md.TradingDay={} target={}",
@@ -942,7 +942,7 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
                 ascii_cstr_to_str_i8(trading_day).unwrap(),
                 target.position
             );
-            let price = get_counterparty_price(md, &d, price_tick, target.shift);
+            let price = md.get_counterparty_price(&d, price_tick, target.shift);
             let input = InputOrderField {
                 direction: d,
                 offset: OffsetFlag::Open,
@@ -977,19 +977,5 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
             }
             None => Operation::NOP,
         }
-    }
-}
-
-/// 对手价
-/// 1 注意 bid , ask 可能因极端行情而特别偏离当前价.
-fn get_counterparty_price(
-    md: &MarketDataSnapshot,
-    d: &DirectionType,
-    price_tick: f64,
-    shift: i32,
-) -> f64 {
-    match d {
-        DirectionType::Long => md.bid1 + price_tick * shift as f64,
-        DirectionType::Short => md.ask1 - price_tick * shift as f64,
     }
 }

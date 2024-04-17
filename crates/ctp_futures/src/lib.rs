@@ -522,6 +522,7 @@ pub mod route {
                     None => (),
                 };
             }
+            OnRtnInstrumentStatus(_p) => {}
             other => {
                 info!("Un handled spi msg = {:?}", other);
             }
@@ -590,6 +591,7 @@ pub mod route {
         api.subscribe_private_topic(THOST_TE_RESUME_TYPE_THOST_TERT_QUICK);
         api.init();
         // 处理登陆初始化查询
+        let mut cached_pdl: Vec<PositionDetail> = vec![];
         let mut cached_orders: Vec<CThostFtdcOrderField> = vec![];
         let mut cached_trades: Vec<CThostFtdcTradeField> = vec![];
 
@@ -654,17 +656,15 @@ pub mod route {
                 OnRspQryInvestorPositionDetail(detail) => {
                     if let Some(pd) = detail.p_investor_position_detail {
                         if pd.Volume > 0 {
-                            info!(
-                                "pd {} Volume={} CloseVolume={} OpenDate={} TradingDay={}",
-                                get_ascii_str(&pd.InstrumentID).unwrap(),
-                                pd.Volume,
-                                pd.CloseVolume,
-                                get_ascii_str(&pd.OpenDate).unwrap(),
-                                get_ascii_str(&pd.TradingDay).unwrap(),
-                            );
-                            state
-                                .insert_position_detail(PositionDetail::from(&pd))
-                                .unwrap();
+                            // info!(
+                            //     "pd {} Volume={} CloseVolume={} OpenDate={} TradingDay={}",
+                            //     get_ascii_str(&pd.InstrumentID).unwrap(),
+                            //     pd.Volume,
+                            //     pd.CloseVolume,
+                            //     get_ascii_str(&pd.OpenDate).unwrap(),
+                            //     get_ascii_str(&pd.TradingDay).unwrap(),
+                            // );
+                            cached_pdl.push(PositionDetail::from(&pd));
                         }
                     }
                     if detail.b_is_last {
@@ -764,7 +764,7 @@ pub mod route {
             }
         }
         // 初始化查询过程中推送的成交
-        if let Err(e) = state.update_on_initialized(cached_orders, cached_trades) {
+        if let Err(e) = state.update_on_initialized(cached_pdl, cached_orders, cached_trades) {
             error!("Cached orders update {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
@@ -791,7 +791,7 @@ pub mod route {
                     let _ = handle_spi_msg(&spi_msg, &mut state, &cmc, &mut api).await?;
                     use trader_api::CThostFtdcTraderSpiOutput::*;
                     use ReqMessage::*;
-                    if let Some((req_msg, rsp_tx, mut response_packets)) = query_req.take() {
+                    let is_last = if let Some((req_msg, rsp_tx, ref mut response_packets)) = &mut query_req {
                         let (is_result, is_last) = match (req_msg, &spi_msg) {
                             (SetContractTarget(_), _) => panic!("SetContractTarget do not have response"),
                             (QueryPositionDetail, OnRspQryInvestorPositionDetail(p)) => (true, p.b_is_last),
@@ -801,11 +801,17 @@ pub mod route {
                         if is_result {
                             response_packets.push(spi_msg);
                         }
-                        if is_last {
+                        is_last
+                    } else {
+                        false
+                    };
+                    if is_last {
+                        if let Some((req_msg, rsp_tx, response_packets)) = query_req.take() {
                             let config = bincode::config::standard();
                             let encoded: Vec<u8> = bincode::encode_to_vec(&response_packets, config).unwrap();
-                            let _ = rsp_tx.send(Ok(encoded));
-                            query_req = None;
+                            if let Err(_) = rsp_tx.send(Ok(encoded)) {
+                                error!("the receiver droped");
+                            }
                         }
                     }
                 },
@@ -974,7 +980,7 @@ pub mod route {
                                     .or_insert_with(|| {
                                         let mut md = MarketDataSnapshot::from(ctp_md);
                                         md.timestamp = Local::now().timestamp();
-                                        info!("[{}:{}] insert md = {:?}", us1.exchange, us1.symbol ,md);
+                                        info!("[{: >5}:{: <6}] insert md = {:?}", us1.exchange, us1.symbol ,md);
                                         md
                                     });
                             }

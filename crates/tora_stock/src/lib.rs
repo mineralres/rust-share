@@ -217,7 +217,10 @@ pub mod route {
             self.VolumeTraded
         }
         fn volume_canceled(&self) -> i32 {
-            self.VolumeCanceled
+            match self.OrderStatus {
+                TORASTOCKAPI_TORA_TSTP_OST_Rejected => self.VolumeTotalOriginal,
+                _ => self.VolumeCanceled,
+            }
         }
         fn exchange(&self) -> &str {
             exchange_from_tora_stock_exchange_id(self.ExchangeID)
@@ -239,7 +242,7 @@ pub mod route {
                 order_ref_i32: self.OrderRef,
                 order_sys_id: self.OrderSysID.clone(),
                 volume_traded: self.VolumeTraded,
-                volume_canceled: self.VolumeCanceled,
+                volume_canceled: self.volume_canceled(),
                 volume_total_original: self.VolumeTotalOriginal,
                 status: self.pending_status(),
                 trades: vec![],
@@ -458,15 +461,7 @@ pub mod route {
         );
         // info!("要订阅的Symbol数量={}", v_instruments.len(),);
         let flow_path = format!(".cache/tora_md_flow_{}_{}//", ca.broker_id, ca.account);
-        match std::fs::create_dir(&flow_path) {
-            Ok(()) => (),
-            Err(e) => {
-                if e.kind() == std::io::ErrorKind::AlreadyExists {
-                } else {
-                    panic!("创建tora流目录失败 {}", e);
-                }
-            }
-        }
+        check_make_dir(&flow_path);
         let md_sub_mode = Box::new(TORALEV1API_TORA_TSTP_MST_TCP);
         let derive_sub_mode = Box::new(TORALEV1API_TORA_TSTP_MST_TCP);
         let mut mdapi = unsafe {
@@ -484,7 +479,7 @@ pub mod route {
                 panic!("udp组播行情地址格式不对,需要同时提供网卡地址 md_front={md_front}",);
             }
             info!(
-                "Tora Stock [{}]:行情RegisterMulticast {} {} {}",
+                "Tora stock md [{}]:行情RegisterMulticast {} {} {}",
                 ca.account, arr[0], arr[1], arr[2]
             );
             mdapi.register_multicast(&arr[0], &arr[1], &arr[2]);
@@ -607,6 +602,8 @@ pub mod route {
                                     });
                             }
                         }
+                        OnRspSubMarketData(_p) =>{
+                        }
                         other => error!("{:?}", other),
                     }
                 }
@@ -725,9 +722,10 @@ pub mod route {
             OnRtnOrder(ref rtn) => {
                 if let Some(o) = rtn.p_order_field {
                     info!(
-                        "OnRtnOrder o.sys_id={} status={}",
+                        "OnRtnOrder o.sys_id={} status={} VolumeCanceled={}",
                         ascii_cstr_to_str_i8(&o.OrderSysID).unwrap(),
-                        o.OrderStatus
+                        o.OrderStatus,
+                        o.VolumeCanceled
                     );
                     let submit_status = o.OrderSubmitStatus;
                     state.update_by_order(o).unwrap();
@@ -785,7 +783,15 @@ pub mod route {
                 }
             }
             OnRspQryTradingAccount(ref _p) => {}
-            OnRspQryPosition(p) => if let Some(_p) = p.p_position_field {},
+            OnRspQryPosition(p) => {
+                if p.p_position_field.is_none() {
+                    error!(
+                        "OnRspQryPosition null p_position_field is_last={}",
+                        p.b_is_last
+                    );
+                }
+            }
+            OnRtnMarketStatus(_p) => {}
             other => {
                 info!("tora stock unhandled spi msg = {:?}", other);
             }
@@ -851,6 +857,7 @@ pub mod route {
         api.subscribe_private_topic(TORALEV1API_TORA_TE_RESUME_TYPE_TORA_TERT_QUICK);
         api.init();
         // 处理登陆初始化查询
+        let mut cached_pdl: Vec<PositionDetail> = vec![];
         let mut cached_orders: Vec<TORASTOCKAPI_CTORATstpOrderField> = vec![];
         let mut cached_trades: Vec<TORASTOCKAPI_CTORATstpTradeField> = vec![];
 
@@ -882,7 +889,7 @@ pub mod route {
                     api.req_user_login(&mut req, state.get_request_id());
                 }
                 OnFrontDisconnected(p) => {
-                    info!("on front disconnected {:?} 直接Exit ", p);
+                    info!("tora stock on front disconnected {:?} 直接Exit ", p);
                     std::process::exit(-1);
                 }
                 OnRspUserLogin(ref p) => {
@@ -895,7 +902,7 @@ pub mod route {
                         );
                         state.on_login(u.FrontID, u.SessionID, &max_order_ref, &u.TradingDay);
                         info!(
-                            "{}:{} Ctp trade 登陆成功 trading_day={} front_id={} session_id={}",
+                            "{}:{} tora stock trader 登陆成功 trading_day={} front_id={} session_id={}",
                             state.broker_id,
                             state.account,
                             state.trading_day_i32,
@@ -935,18 +942,15 @@ pub mod route {
                 }
                 OnRspQryPosition(ref p) => {
                     if let Some(p) = p.p_position_field {
-                        info!(
-                            "{} TodayBSPos={} HistoryPos={}",
-                            get_ascii_str(&p.SecurityID).unwrap(),
-                            p.TodayBSPos,
-                            p.HistoryPos
-                        );
-                        info!("p={:?}", p);
+                        // info!(
+                        //     "{} TodayBSPos={} HistoryPos={}",
+                        //     get_ascii_str(&p.SecurityID).unwrap(),
+                        //     p.TodayBSPos,
+                        //     p.HistoryPos
+                        // );
                         let (tpd, ypd) = make_position_detail(&p);
-                        info!("tpd={:?}", tpd);
-                        info!("ypd={:?}", ypd);
-                        state.insert_position_detail(tpd).unwrap();
-                        state.insert_position_detail(ypd).unwrap();
+                        cached_pdl.push(tpd);
+                        cached_pdl.push(ypd);
                     }
                     if p.b_is_last {
                         // 流控
@@ -960,11 +964,12 @@ pub mod route {
                 }
                 OnRspQryOrder(ref p) => {
                     if let Some(p) = p.p_order_field {
-                        info!(
-                            "sysid={} status={}",
-                            ascii_cstr_to_str_i8(&p.OrderSysID).unwrap(),
-                            p.OrderStatus
-                        );
+                        // info!(
+                        //     "sysid={} status={} VolumeCanceled={}",
+                        //     ascii_cstr_to_str_i8(&p.OrderSysID).unwrap(),
+                        //     p.OrderStatus,
+                        //     p.VolumeCanceled
+                        // );
                         cached_orders.push(p);
                     }
                     if p.b_is_last {
@@ -1030,7 +1035,7 @@ pub mod route {
             cached_orders.len(),
             cached_trades.len()
         );
-        if let Err(e) = state.update_on_initialized(cached_orders, cached_trades) {
+        if let Err(e) = state.update_on_initialized(cached_pdl, cached_orders, cached_trades) {
             error!("Cached orders update {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
@@ -1038,7 +1043,6 @@ pub mod route {
         let (api, mut api3) = trader_api::unsafe_clone_api(api);
         let mut api = api as Box<dyn TraderApiType + Send>;
 
-        info!("{}:{} Trader initialized.", ca.broker_id, ca.account);
         {
             let mut cmc = cmc.lock().await;
             for cd in state.sorted_cds.iter() {
@@ -1057,7 +1061,7 @@ pub mod route {
                     let _ = handle_spi_msg(&spi_msg, &mut state, &cmc, &mut api).await?;
                     use trader_api::TORASTOCKAPI_CTORATstpTraderSpiOutput::*;
                     use ReqMessage::*;
-                    if let Some((req_msg, rsp_tx, mut response_packets)) = query_req.take() {
+                    let is_last = if let Some((req_msg, _rsp_tx, ref mut response_packets)) = &mut query_req {
                         let (is_result, is_last) = match (req_msg, &spi_msg) {
                             (SetContractTarget(_), _) => panic!("SetContractTarget do not have response"),
                             (QueryPositionDetail, OnRspQryPosition(p)) => (true, p.b_is_last),
@@ -1067,11 +1071,17 @@ pub mod route {
                         if is_result {
                             response_packets.push(spi_msg);
                         }
-                        if is_last {
+                        is_last
+                    } else {
+                        false
+                    };
+                    if is_last {
+                        if let Some((_req_msg, rsp_tx, response_packets)) = query_req.take() {
                             let config = bincode::config::standard();
                             let encoded: Vec<u8> = bincode::encode_to_vec(&response_packets, config).unwrap();
-                            let _ = rsp_tx.send(Ok(encoded));
-                            query_req = None;
+                            if let Err(_) = rsp_tx.send(Ok(encoded)) {
+                                error!("the receiver droped");
+                            }
                         }
                     }
                 },

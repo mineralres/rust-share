@@ -144,23 +144,23 @@ pub mod http {
     async fn set_contract_target(
         State(s): State<ShareState>,
         Json(req): Json<ReqSetContractTarget>,
-    ) -> Result<(), Error> {
-        info!(
-            "set_contract_target [{}:{}] position={} shift={}",
-            req.target.exchange, req.target.symbol, req.target.position, req.target.shift
-        );
+    ) -> Result<XResponse<String>, Error> {
+        // info!(
+        //     "set_contract_target [{}:{}] position={} shift={}",
+        //     req.target.exchange, req.target.symbol, req.target.position, req.target.shift
+        // );
         if req.target.symbol == "" {
             return Err(Error::SimpleErr(simple_error::SimpleError::new(
                 "Symbol can't be null",
             )));
         }
         let req_msg = ReqMessage::SetContractTarget(req.target);
-        let _resp = s
+        let resp = s
             .executor
             .lock()
             .await
             .query(&req.account, req_msg)
             .await??;
-        Ok(())
+        Ok(XResponse::<String>::new(&resp))
     }
 }

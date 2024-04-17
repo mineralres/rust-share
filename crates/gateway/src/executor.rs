@@ -35,7 +35,10 @@ impl Executor {
                 match tokio::time::timeout(tokio::time::Duration::from_secs(5), rx).await {
                     Ok(res) => match res {
                         Ok(v) => Ok(v),
-                        Err(_) => Err(Error::CtpQueryTimeout),
+                        Err(_) => {
+                            error!("recv err");
+                            Err(Error::CtpQueryTimeout)
+                        }
                     },
                     Err(_) => {
                         error!("did not receive value within 5 seconds");
