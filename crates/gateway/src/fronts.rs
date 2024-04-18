@@ -38,7 +38,7 @@ pub mod http {
         use serde::{Deserialize, Serialize};
 
         use super::Executor;
-        use base::state::ContractPositionTarget;
+        use base::{state::ContractPositionTarget, TradingAccountConfig};
         use tokio::sync::Mutex;
 
         #[derive(Clone)]
@@ -90,6 +90,11 @@ pub mod http {
             pub account: String,
             pub target: ContractPositionTarget,
         }
+
+        #[derive(Default, serde::Serialize, serde::Deserialize, Debug)]
+        pub struct ReqFullQuery {
+            pub ta: TradingAccountConfig,
+        }
     }
 
     pub async fn serve(conf: base::ExecutorConfig, executor: Arc<Mutex<Executor>>) {
@@ -100,6 +105,7 @@ pub mod http {
             executor,
         };
         let app = Router::new()
+            .route("/api/full_query", any(full_query))
             .route("/api/query_position_detail", any(query_position_detail))
             .route("/api/query_trading_account", any(query_trading_account))
             .route("/api/set_contract_target", any(set_contract_target))
@@ -162,5 +168,46 @@ pub mod http {
             .query(&req.account, req_msg)
             .await??;
         Ok(XResponse::<String>::new(&resp))
+    }
+
+    async fn full_query(
+        State(_s): State<ShareState>,
+        Json(req): Json<ReqFullQuery>,
+    ) -> Result<XResponse<String>, Error> {
+        match req.ta.route_type.as_str() {
+            "ctp_futures" => {
+                match tokio::time::timeout(
+                    tokio::time::Duration::from_secs(30),
+                    ctp_futures::query::query(&req.ta),
+                )
+                .await
+                {
+                    Ok(result) => {
+                        let result = result?;
+                        let config = bincode::config::standard();
+                        let encoded: Vec<u8> = bincode::encode_to_vec(&result, config).unwrap();
+                        Ok(XResponse::<String>::new(&encoded))
+                    }
+                    Err(_) => Err(Error::BaseErr(base::error::Error::QueryTimeout)),
+                }
+            }
+            "tora_stock" => {
+                match tokio::time::timeout(
+                    tokio::time::Duration::from_secs(30),
+                    tora_stock::query::query(&req.ta),
+                )
+                .await
+                {
+                    Ok(result) => {
+                        let result = result?;
+                        let config = bincode::config::standard();
+                        let encoded: Vec<u8> = bincode::encode_to_vec(&result, config).unwrap();
+                        Ok(XResponse::<String>::new(&encoded))
+                    }
+                    Err(_) => Err(Error::BaseErr(base::error::Error::QueryTimeout)),
+                }
+            }
+            _ => return Err(Error::BaseErr(base::error::Error::InvalidRouteType)),
+        }
     }
 }

@@ -5,6 +5,7 @@ pub enum Error {
     DumplicateTrade,
     FrontDisconnected,
     CtpAuthFailed,
+    LoginFailed,
     MpscSendErr,
     InvalidCtpInstrumentId,
     CtpLastQueryIsProceeding,
@@ -15,4 +16,6 @@ pub enum Error {
     SimpleErr(simple_error::SimpleError),
     OrderNotFound,
     ShareholderAccountNotFound,
+    InvalidRouteType,
+    QueryTimeout
 }

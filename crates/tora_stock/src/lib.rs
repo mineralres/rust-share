@@ -462,15 +462,24 @@ pub mod route {
         // info!("要订阅的Symbol数量={}", v_instruments.len(),);
         let flow_path = format!(".cache/tora_md_flow_{}_{}//", ca.broker_id, ca.account);
         check_make_dir(&flow_path);
-        let md_sub_mode = Box::new(TORALEV1API_TORA_TSTP_MST_TCP);
-        let derive_sub_mode = Box::new(TORALEV1API_TORA_TSTP_MST_TCP);
+        let md_front = ca.md_fronts.first().expect("至少要配置一个md front");
+        let (md_sub_mode, derive_sub_mode) = if md_front.starts_with("udp") {
+            (
+                Box::new(TORALEV1API_TORA_TSTP_MST_MCAST),
+                Box::new(TORALEV1API_TORA_TSTP_MST_TCP),
+            )
+        } else {
+            (
+                Box::new(TORALEV1API_TORA_TSTP_MST_TCP),
+                Box::new(TORALEV1API_TORA_TSTP_MST_TCP),
+            )
+        };
         let mut mdapi = unsafe {
             Box::from_raw(TORALEV1API_CTORATstpXMdApi_CreateTstpXMdApi(
                 Box::into_raw(md_sub_mode) as *const TORALEV1API_TTORATstpMDSubModeType,
                 Box::into_raw(derive_sub_mode) as *const TORALEV1API_TTORATstpMDSubModeType,
             ))
         };
-        let md_front = ca.md_fronts.first().expect("至少要配置一个md front");
         if md_front.starts_with("udp") {
             // 格式形如此 udp://224.224.1.11:7880;10.188.82.150;10.188.82.8
             // split之后使用
@@ -483,14 +492,12 @@ pub mod route {
                 ca.account, arr[0], arr[1], arr[2]
             );
             mdapi.register_multicast(&arr[0], &arr[1], &arr[2]);
+        } else if ca.fens_md_fronts.len() > 0 {
+            mdapi.register_name_server(&ca.fens_md_fronts[0]);
         } else {
             mdapi.register_front(md_front);
         }
 
-        // let mut mdapi = if account.fens_md_front.is_some() {
-        //     mdapi.register_name_server(&account.fens_md_front.as_ref().unwrap());
-        //     mdapi
-        // }
         let mut stream = {
             let (stream, pp) = md_api::create_spi();
             mdapi.register_spi(pp);
@@ -1110,5 +1117,198 @@ pub mod route {
         api3.release();
         info!("{}:{} trader_deamon退出", ca.broker_id, ca.account);
         Ok(())
+    }
+}
+
+pub mod query {
+    use super::*;
+    use base::*;
+    use bincode::{Decode, Encode};
+    use futures::StreamExt;
+    use log::{error, info};
+
+    /// 查询结果
+    #[derive(Clone, Debug, Default, Encode, Decode)]
+    pub struct ToraStockQueryResult {
+        pub broker_id: String,
+        pub account: String,
+        pub trading_day: i32,
+        pub timestamp: i64,
+        // pub dmd_list: Vec<TORALEV1API_CTORATstpMarketDataField>,
+        // pub icr_list: Vec<CThostFtdcInstrumentCommissionRateField>,
+        pub instruments: Vec<TORASTOCKAPI_CTORATstpSecurityField>,
+        pub positions: Vec<TORASTOCKAPI_CTORATstpPositionField>,
+        // pub position_detail_list: Vec<CThostFtdcInvestorPositionDetailField>,
+        pub trading_account: TORASTOCKAPI_CTORATstpTradingAccountField,
+        // pub products: Vec<CThostFtdcProductField>,
+        pub orders: Vec<TORASTOCKAPI_CTORATstpOrderField>,
+        pub trades: Vec<TORASTOCKAPI_CTORATstpTradeField>,
+    }
+
+    pub async fn query(
+        ca: &TradingAccountConfig,
+    ) -> Result<ToraStockQueryResult, base::error::Error> {
+        let mut request_id: i32 = 0;
+        let mut get_request_id = || {
+            request_id += 1;
+            request_id
+        };
+
+        let flow_path = format!(
+            ".cache/tora_stock_trade_flow_{}_{}//",
+            ca.broker_id, ca.account
+        );
+        check_make_dir(&flow_path);
+        let mut api = trader_api::create_api(&flow_path, false);
+        let mut stream = {
+            let (stream, pp) = trader_api::create_spi();
+            api.register_spi(pp);
+            stream
+        };
+        if let Some(f) = ca.fens_trade_fronts.first() {
+            api.register_name_server(f);
+            info!("Tora stock register name server {f}");
+        } else if let Some(f) = ca.trade_fronts.first() {
+            api.register_front(f);
+            info!("Tora stock register front {f}");
+        }
+        api.subscribe_public_topic(TORALEV1API_TORA_TE_RESUME_TYPE_TORA_TERT_QUICK);
+        api.subscribe_private_topic(TORALEV1API_TORA_TE_RESUME_TYPE_TORA_TERT_QUICK);
+        api.init();
+        let mut result = ToraStockQueryResult::default();
+        result.broker_id = ca.broker_id.clone();
+        result.account = ca.account.clone();
+
+        while let Some(spi_msg) = stream.next().await {
+            use trader_api::TORASTOCKAPI_CTORATstpTraderSpiOutput::*;
+            match spi_msg {
+                OnFrontConnected(_p) => {
+                    let account = &ca;
+                    let mut req = TORASTOCKAPI_CTORATstpReqUserLoginField::default();
+                    req.LogInAccountType = TORALEV1API_TORA_TSTP_LACT_UserID as i8;
+                    set_cstr_from_str_truncate_i8(&mut req.LogInAccount, &account.account);
+                    set_cstr_from_str_truncate_i8(&mut req.Password, &account.password);
+                    set_cstr_from_str_truncate_i8(
+                        &mut req.UserProductInfo,
+                        &account.user_product_info,
+                    );
+                    set_cstr_from_str_truncate_i8(
+                        &mut req.InnerIPAddress,
+                        account.inner_ip_address.as_str(),
+                    );
+                    set_cstr_from_str_truncate_i8(
+                        &mut req.TerminalInfo,
+                        account.terminal_info.as_str(),
+                    );
+                    set_cstr_from_str_truncate_i8(
+                        &mut req.MacAddress,
+                        account.mac_address.as_str(),
+                    );
+                    api.req_user_login(&mut req, get_request_id());
+                }
+                OnFrontDisconnected(p) => {
+                    info!("tora stock on front disconnected {:?} 直接Exit ", p);
+                    return Err(base::error::Error::FrontDisconnected);
+                }
+                OnRspUserLogin(ref p) => {
+                    if p.p_rsp_info_field.as_ref().unwrap().ErrorID == 0 {
+                        let u = p.p_rsp_user_login_field.as_ref().unwrap();
+                        result.trading_day = get_ascii_str(&u.TradingDay)
+                            .unwrap()
+                            .parse::<i32>()
+                            .unwrap();
+                        info!(
+                            "{}:{} tora stock trader 登陆成功 trading_day={} front_id={} session_id={}",
+                            result.broker_id,
+                            result.account,
+                            result.trading_day,
+                            u.FrontID,
+                            u.SessionID
+                        );
+                    } else {
+                        error!(
+                            "Trade RspUserLogin = {:?}",
+                            print_rsp_info!(&p.p_rsp_info_field)
+                        );
+                        return Err(base::error::Error::LoginFailed);
+                    }
+                    let mut req = TORASTOCKAPI_CTORATstpQrySecurityField::default();
+                    let ret = api.req_qry_security(&mut req, get_request_id());
+                    if ret != 0 {
+                        error!("tora stock req_qry_security = {ret}");
+                    }
+                }
+                OnRspQrySecurity(ref p) => {
+                    if let Some(i) = p.p_security_field {
+                        result.instruments.push(i);
+                    }
+                    if p.b_is_last {
+                        let mut req = TORASTOCKAPI_CTORATstpQryPositionField::default();
+                        let ret = api.req_qry_position(&mut req, get_request_id());
+                        if ret != 0 {
+                            error!("tora stock req_qry_position={}", ret);
+                        }
+                    }
+                }
+                OnRspQryPosition(ref p) => {
+                    if let Some(p) = p.p_position_field {
+                        result.positions.push(p);
+                    }
+                    if p.b_is_last {
+                        // 流控
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                        let mut req = TORASTOCKAPI_CTORATstpQryOrderField::default();
+                        let ret = api.req_qry_order(&mut req, get_request_id());
+                        if ret != 0 {
+                            error!("Tora stock req_qry_order={}", ret);
+                        }
+                    }
+                }
+                OnRspQryOrder(ref p) => {
+                    if let Some(p) = p.p_order_field {
+                        result.orders.push(p);
+                    }
+                    if p.b_is_last {
+                        let mut req = TORASTOCKAPI_CTORATstpQryTradeField::default();
+                        let ret = api.req_qry_trade(&mut req, get_request_id());
+                        if ret != 0 {
+                            error!("Tora stock req_qry_trade={}", ret);
+                        }
+                    }
+                }
+                OnRspQryTrade(p) => {
+                    if let Some(p) = p.p_trade_field {
+                        result.trades.push(p);
+                    }
+                    if p.b_is_last {
+                        let mut req = TORASTOCKAPI_CTORATstpQryTradingAccountField::default();
+                        set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                        let ret = api.req_qry_trading_account(&mut req, get_request_id());
+                        if ret != 0 {
+                            error!("tora stock req_qry_trading_account {}", ret);
+                        }
+                    }
+                }
+                OnRspQryTradingAccount(p) => {
+                    if let Some(p) = p.p_trading_account_field {
+                        result.trading_account = p;
+                    }
+                    if p.b_is_last {
+                        break;
+                    }
+                }
+                OnRspQryShareholderAccount(_p) => {}
+                OnRtnOrder(_p) => {}
+                OnRtnTrade(_p) => {}
+                OnRtnTradingNotice(ref p) => {
+                    info!("RtnTradingNotice = {:?}", p);
+                }
+                _ => {}
+            }
+        }
+        info!("{} 查询完成.", ca.account);
+        api.join();
+        api.release();
+        Ok(result)
     }
 }
