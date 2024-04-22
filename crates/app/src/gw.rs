@@ -1,7 +1,7 @@
 use base::state::{ReqMessage, RspMessage};
 use base::*;
 use clap::Parser;
-use log::info;
+use log::{error, info};
 use rust_share::gateway::executor;
 use rust_share::gateway::fronts;
 use std::sync::Arc;
@@ -38,7 +38,11 @@ async fn main() {
                         account: ca.account.clone(),
                         tx,
                     });
-                    tokio::spawn(ctp_futures::route::run_trader(ca, cmc, rx));
+                    tokio::spawn(async move {
+                        if let Err(e) = ctp_futures::route::run_trader(ca, cmc, rx).await {
+                            error!("ctp_futures trader exit {e}");
+                        }
+                    });
                 }
             }
             if e.r#type == "tora_stock" {
@@ -54,7 +58,11 @@ async fn main() {
                         account: ca.account.clone(),
                         tx,
                     });
-                    tokio::spawn(tora_stock::route::run_trader(ca, cmc, rx));
+                    tokio::spawn(async move {
+                        if let Err(e) = tora_stock::route::run_trader(ca, cmc, rx).await {
+                            error!("tora_stock trader exit {e}");
+                        }
+                    });
                 }
             }
             fronts::http::serve(e.clone(), Arc::new(Mutex::new(ex))).await;

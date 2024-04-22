@@ -5,6 +5,9 @@
 			"type": "ctp_futures",
 			"http_port": 10111,
 			"https_port": 0,
+			"lock_check": true,
+			"locak_credential_ttl": 10,
+			"token": "xxx123",
 			"accounts": [
 				{
 					"broker_id": "9999",

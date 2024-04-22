@@ -5,6 +5,7 @@ pub enum Error {
     DumplicateTrade,
     FrontDisconnected,
     CtpAuthFailed,
+    InitTraderFailed,
     LoginFailed,
     MpscSendErr,
     InvalidCtpInstrumentId,
@@ -17,5 +18,7 @@ pub enum Error {
     OrderNotFound,
     ShareholderAccountNotFound,
     InvalidRouteType,
-    QueryTimeout
+    QueryTimeout,
+    MdNotValid,
+    TraderNotValid
 }

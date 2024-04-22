@@ -3,10 +3,16 @@ pub mod state;
 pub mod util;
 
 pub fn init_logger() {
+    use time::{macros::format_description, UtcOffset};
+    use tracing_subscriber::fmt::time::OffsetTime;
+    let local_time = OffsetTime::new(
+        UtcOffset::from_hms(8, 0, 0).unwrap(),
+        format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:3]"),
+    );
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info")
     }
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt().with_timer(local_time).init();
 }
 
 #[derive(Debug, Default, Clone, Hash, Eq, PartialEq, PartialOrd, Ord)]
@@ -58,6 +64,9 @@ pub struct ExecutorConfig {
     pub r#type: String,
     pub accounts: Vec<TradingAccountConfig>,
     pub md_account: TradingAccountConfig,
+    pub lock_check: bool,
+    pub lock_credential_ttl: i64,
+    pub token: String,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Default)]

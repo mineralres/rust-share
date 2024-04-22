@@ -154,6 +154,8 @@ pub struct PendingOrder {
     pub volume_traded: i32,
     pub volume_total_original: i32,
     pub volume_canceled: i32,
+    pub price: f64,
+    pub direction: DirectionType,
     pub status: PendingOrderStatus,
     pub trades: Vec<PendingOrderTradeItem>,
 }
@@ -654,6 +656,9 @@ impl<
         let md = cmc.get_md(&us);
         match md {
             Some(md) => {
+                if md.ask1 == 0.0 && md.bid1 == 0.0 && md.ask1_volume1 == 0 && md.bid1_volume == 0 {
+                    return Err(Error::MdNotValid);
+                }
                 let i = self.contract_detail_entry(us)?;
                 let op = {
                     if target.is_some() {
@@ -708,6 +713,8 @@ impl<
                                     volume_total_original: iof.volume,
                                     volume_canceled: 0,
                                     volume_traded: 0,
+                                    price: iof.price,
+                                    direction: iof.direction,
                                     trades: vec![],
                                     status: PendingOrderStatus::Pending,
                                 };
@@ -960,7 +967,18 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
             Some(target) => {
                 // pol 是活跃订单，只要有活跃订单就先撤再重发. pol 会由Spi返回的相关事件进行更新
                 // 如果要求撤单同时就发新单，则需要另外写处理逻辑
-                for o in self.pol.iter() {
+                for o in self.pol.iter().filter(|po| {
+                    let price =
+                        md.get_counterparty_price(&po.direction, self.price_tick, target.shift);
+                    if (price - po.price).abs() < self.price_tick {
+                        info!(
+                            "价格未变不撤单: po={:?} md={:?} price_tick={} shift={}",
+                            po, md, self.price_tick, target.shift
+                        );
+                        return false;
+                    }
+                    return true;
+                }) {
                     info!("po={:?}", o);
                     let ioaf = InputOrderActionField {
                         front_id: o.front_id,

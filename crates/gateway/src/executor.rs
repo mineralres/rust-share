@@ -31,7 +31,7 @@ impl Executor {
                 th.tx
                     .send((msg, tx))
                     .await
-                    .map_err(|_e| Error::MpscSendErr)?;
+                    .map_err(|_e| Error::TraderNotValid)?;
                 match tokio::time::timeout(tokio::time::Duration::from_secs(5), rx).await {
                     Ok(res) => match res {
                         Ok(v) => Ok(v),
@@ -40,10 +40,7 @@ impl Executor {
                             Err(Error::CtpQueryTimeout)
                         }
                     },
-                    Err(_) => {
-                        error!("did not receive value within 5 seconds");
-                        Err(Error::CtpQueryTimeout)
-                    }
+                    Err(_) => Err(Error::CtpQueryTimeout),
                 }
             }
             None => Err(Error::AccountNotFound),

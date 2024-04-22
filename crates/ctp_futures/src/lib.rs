@@ -221,6 +221,8 @@ pub mod route {
                 volume_canceled: self.volume_canceled(),
                 volume_total_original: self.VolumeTotalOriginal,
                 status: self.pending_status(),
+                direction: to_direction_type(self.Direction),
+                price: self.LimitPrice,
                 trades: vec![],
             }
         }
@@ -577,39 +579,54 @@ pub mod route {
         let mut cached_orders: Vec<CThostFtdcOrderField> = vec![];
         let mut cached_trades: Vec<CThostFtdcTradeField> = vec![];
 
-        while let Some(spi_msg) = stream.next().await {
-            use trader_api::CThostFtdcTraderSpiOutput::*;
-            match spi_msg {
-                OnFrontConnected(_p) => {
-                    let mut req = CThostFtdcReqAuthenticateField::default();
-                    set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                    set_cstr_from_str_truncate_i8(&mut req.UserID, &ca.account);
-                    set_cstr_from_str_truncate_i8(&mut req.AuthCode, &ca.auth_code);
-                    set_cstr_from_str_truncate_i8(&mut req.UserProductInfo, &ca.user_product_info);
-                    set_cstr_from_str_truncate_i8(&mut req.AppID, &ca.app_id);
-                    api.req_authenticate(&mut req, state.get_request_id());
-                }
-                OnFrontDisconnected(p) => {
-                    info!("on front disconnected {:?} 直接Exit ", p);
-                    return Err(Error::FrontDisconnected);
-                }
-                OnRspAuthenticate(ref p) => {
-                    if p.p_rsp_info.as_ref().unwrap().ErrorID == 0 {
-                        let mut req = CThostFtdcReqUserLoginField::default();
-                        set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                        set_cstr_from_str_truncate_i8(&mut req.UserID, &ca.account);
-                        set_cstr_from_str_truncate_i8(&mut req.Password, &ca.password);
-                        api.req_user_login(&mut req, state.get_request_id());
-                    } else {
-                        info!("RspAuthenticate={:?}", p);
-                        return Err(Error::CtpAuthFailed);
-                    }
-                }
-                OnRspUserLogin(ref p) => {
-                    if p.p_rsp_info.as_ref().unwrap().ErrorID == 0 {
-                        let u = p.p_rsp_user_login.as_ref().unwrap();
-                        state.on_login(u.FrontID, u.SessionID, &u.MaxOrderRef, &u.TradingDay);
-                        info!(
+        loop {
+            match tokio::time::timeout(tokio::time::Duration::from_secs(10), stream.next()).await {
+                Ok(Some(spi_msg)) => {
+                    use trader_api::CThostFtdcTraderSpiOutput::*;
+                    match spi_msg {
+                        OnFrontConnected(_p) => {
+                            let mut req = CThostFtdcReqAuthenticateField::default();
+                            set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                            set_cstr_from_str_truncate_i8(&mut req.UserID, &ca.account);
+                            set_cstr_from_str_truncate_i8(&mut req.AuthCode, &ca.auth_code);
+                            set_cstr_from_str_truncate_i8(
+                                &mut req.UserProductInfo,
+                                &ca.user_product_info,
+                            );
+                            set_cstr_from_str_truncate_i8(&mut req.AppID, &ca.app_id);
+                            api.req_authenticate(&mut req, state.get_request_id());
+                        }
+                        OnFrontDisconnected(p) => {
+                            info!("on front disconnected {:?} 直接Exit ", p);
+                            return Err(Error::FrontDisconnected);
+                        }
+                        OnRspAuthenticate(ref p) => {
+                            if p.p_rsp_info.as_ref().unwrap().ErrorID == 0 {
+                                let mut req = CThostFtdcReqUserLoginField::default();
+                                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                                set_cstr_from_str_truncate_i8(&mut req.UserID, &ca.account);
+                                set_cstr_from_str_truncate_i8(&mut req.Password, &ca.password);
+                                api.req_user_login(&mut req, state.get_request_id());
+                            } else {
+                                error!(
+                                    "{}:{} ctp trade RspAuthenticate={:?}",
+                                    ca.broker_id,
+                                    ca.account,
+                                    print_rsp_info!(&p.p_rsp_info)
+                                );
+                                return Err(Error::CtpAuthFailed);
+                            }
+                        }
+                        OnRspUserLogin(ref p) => {
+                            if p.p_rsp_info.as_ref().unwrap().ErrorID == 0 {
+                                let u = p.p_rsp_user_login.as_ref().unwrap();
+                                state.on_login(
+                                    u.FrontID,
+                                    u.SessionID,
+                                    &u.MaxOrderRef,
+                                    &u.TradingDay,
+                                );
+                                info!(
                             "{}:{} Ctp trade 登陆成功 trading_day={} front_id={} session_id={}",
                             state.broker_id,
                             state.account,
@@ -617,137 +634,150 @@ pub mod route {
                             state.front_id,
                             state.session_id
                         );
-                    } else {
-                        info!("Trade RspUserLogin = {:?}", print_rsp_info!(&p.p_rsp_info));
-                    }
-                    let mut req = CThostFtdcSettlementInfoConfirmField::default();
-                    set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                    set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
-                    let result = api.req_settlement_info_confirm(&mut req, state.get_request_id());
-                    if result != 0 {
-                        info!("ReqSettlementInfoConfirm={}", result);
-                    }
-                }
-                OnRspSettlementInfoConfirm(ref _p) => {
-                    let mut req = CThostFtdcQryInstrumentField::default();
-                    let result = api.req_qry_instrument(&mut req, state.get_request_id());
-                    if result != 0 {
-                        info!("ReqQryInstrument = {:?}", result);
-                    }
-                }
-                OnRspQryInvestorPositionDetail(detail) => {
-                    if let Some(pd) = detail.p_investor_position_detail {
-                        if pd.Volume > 0 {
-                            // info!(
-                            //     "pd {} Volume={} CloseVolume={} OpenDate={} TradingDay={}",
-                            //     get_ascii_str(&pd.InstrumentID).unwrap(),
-                            //     pd.Volume,
-                            //     pd.CloseVolume,
-                            //     get_ascii_str(&pd.OpenDate).unwrap(),
-                            //     get_ascii_str(&pd.TradingDay).unwrap(),
-                            // );
-                            cached_pdl.push(PositionDetail::from(&pd));
+                            } else {
+                                error!(
+                                    "ctp trade RspUserLogin = {:?}",
+                                    print_rsp_info!(&p.p_rsp_info)
+                                );
+                            }
+                            let mut req = CThostFtdcSettlementInfoConfirmField::default();
+                            set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                            set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                            let result =
+                                api.req_settlement_info_confirm(&mut req, state.get_request_id());
+                            if result != 0 {
+                                error!("ReqSettlementInfoConfirm={}", result);
+                            }
                         }
-                    }
-                    if detail.b_is_last {
-                        let mut req = CThostFtdcQryOrderField::default();
-                        set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                        set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
-                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                        let result = api.req_qry_order(&mut req, state.get_request_id());
-                        if result != 0 {
-                            info!("ReqQryOrder = {:?}", result);
+                        OnRspSettlementInfoConfirm(ref _p) => {
+                            let mut req = CThostFtdcQryInstrumentField::default();
+                            let result = api.req_qry_instrument(&mut req, state.get_request_id());
+                            if result != 0 {
+                                error!("ReqQryInstrument = {:?}", result);
+                            }
                         }
-                    }
-                }
-                OnRspQryOrder(p) => {
-                    if let Some(o) = p.p_order {
-                        cached_orders.push(o);
-                    }
-                    if p.b_is_last {
-                        let mut req = CThostFtdcQryTradeField::default();
-                        set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                        set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
-                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                        let ret = api.req_qry_trade(&mut req, state.get_request_id());
-                        if ret != 0 {
-                            error!("ReqQryTrade = {}", ret);
+                        OnRspQryInvestorPositionDetail(detail) => {
+                            if let Some(pd) = detail.p_investor_position_detail {
+                                if pd.Volume > 0 {
+                                    // info!(
+                                    //     "pd {} Volume={} CloseVolume={} OpenDate={} TradingDay={}",
+                                    //     get_ascii_str(&pd.InstrumentID).unwrap(),
+                                    //     pd.Volume,
+                                    //     pd.CloseVolume,
+                                    //     get_ascii_str(&pd.OpenDate).unwrap(),
+                                    //     get_ascii_str(&pd.TradingDay).unwrap(),
+                                    // );
+                                    cached_pdl.push(PositionDetail::from(&pd));
+                                }
+                            }
+                            if detail.b_is_last {
+                                let mut req = CThostFtdcQryOrderField::default();
+                                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                                let result = api.req_qry_order(&mut req, state.get_request_id());
+                                if result != 0 {
+                                    error!("ReqQryOrder = {:?}", result);
+                                }
+                            }
                         }
-                    }
-                }
-                OnRtnOrder(p) => {
-                    if let Some(o) = p.p_order {
-                        cached_orders.push(o);
-                    }
-                }
-                OnRspQryTrade(p) => {
-                    if let Some(p) = p.p_trade {
-                        cached_trades.push(p);
-                    }
-                    if p.b_is_last {
-                        break;
-                    }
-                }
-                OnRtnTrade(p) => {
-                    if let Some(mut trade) = p.p_trade {
-                        trade.TradeDate = trade.TradingDay.clone();
-                        cached_trades.push(trade);
-                    }
-                }
-                OnRspQryInstrument(ref p) => {
-                    if let Some(i) = &p.p_instrument {
-                        let xif = InstrumentField {
-                            price_tick: i.PriceTick,
-                        };
-                        let us = UniqueSymbol::new(
-                            get_ascii_str(&i.ExchangeID).unwrap(),
-                            get_ascii_str(&i.InstrumentID).unwrap(),
-                        );
-                        state.hm_inst.insert(us, xif);
-                    }
-                    if p.b_is_last {
-                        // let trading_day = &state.trading_day_ctp;
-                        // 登陆成功之后从redis开始拉取消息
-                        let mut req = CThostFtdcQryInvestorPositionDetailField::default();
-                        set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
-                        set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
-                        let result =
-                            api.req_qry_investor_position_detail(&mut req, state.get_request_id());
-                        if result != 0 {
-                            info!("ReqQryInvestorPositionDetail = {:?}", result);
+                        OnRspQryOrder(p) => {
+                            if let Some(o) = p.p_order {
+                                cached_orders.push(o);
+                            }
+                            if p.b_is_last {
+                                let mut req = CThostFtdcQryTradeField::default();
+                                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                                let ret = api.req_qry_trade(&mut req, state.get_request_id());
+                                if ret != 0 {
+                                    error!("ReqQryTrade = {}", ret);
+                                }
+                            }
                         }
+                        OnRtnOrder(p) => {
+                            if let Some(o) = p.p_order {
+                                cached_orders.push(o);
+                            }
+                        }
+                        OnRspQryTrade(p) => {
+                            if let Some(p) = p.p_trade {
+                                cached_trades.push(p);
+                            }
+                            if p.b_is_last {
+                                break;
+                            }
+                        }
+                        OnRtnTrade(p) => {
+                            if let Some(mut trade) = p.p_trade {
+                                trade.TradeDate = trade.TradingDay.clone();
+                                cached_trades.push(trade);
+                            }
+                        }
+                        OnRspQryInstrument(ref p) => {
+                            if let Some(i) = &p.p_instrument {
+                                let xif = InstrumentField {
+                                    price_tick: i.PriceTick,
+                                };
+                                let us = UniqueSymbol::new(
+                                    get_ascii_str(&i.ExchangeID).unwrap(),
+                                    get_ascii_str(&i.InstrumentID).unwrap(),
+                                );
+                                state.hm_inst.insert(us, xif);
+                            }
+                            if p.b_is_last {
+                                // let trading_day = &state.trading_day_ctp;
+                                // 登陆成功之后从redis开始拉取消息
+                                let mut req = CThostFtdcQryInvestorPositionDetailField::default();
+                                set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
+                                set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
+                                let result = api.req_qry_investor_position_detail(
+                                    &mut req,
+                                    state.get_request_id(),
+                                );
+                                if result != 0 {
+                                    error!("ctp ReqQryInvestorPositionDetail = {:?}", result);
+                                }
+                            }
+                        }
+                        OnRtnInstrumentStatus(ref p) => match p.p_instrument_status {
+                            Some(status) => {
+                                let s = match status.InstrumentStatus as u8 as char {
+                                    '0' => "THOST_FTDC_IS_BeforeTrading",
+                                    '1' => "THOST_FTDC_IS_NoTrading",
+                                    '2' => "THOST_FTDC_IS_Continous",
+                                    '3' => "THOST_FTDC_IS_AuctionOrdering",
+                                    '4' => "THOST_FTDC_IS_AuctionBalance",
+                                    '5' => "THOST_FTDC_IS_AuctionMatch",
+                                    '6' => "THOST_FTDC_IS_Closed",
+                                    _ => "UnkownInstrumentStatus",
+                                };
+                                info!(
+                                    "RtnInstrumentStatus = {}:{} {}",
+                                    get_ascii_str(&status.ExchangeID).unwrap().to_string(),
+                                    get_ascii_str(&status.InstrumentID).unwrap().to_string(),
+                                    s
+                                );
+                            }
+                            None => (),
+                        },
+                        OnRtnTradingNotice(ref p) => {
+                            info!("RtnTradingNotice = {:?}", p);
+                        }
+                        _ => {}
                     }
                 }
-                OnRtnInstrumentStatus(ref p) => match p.p_instrument_status {
-                    Some(status) => {
-                        let s = match status.InstrumentStatus as u8 as char {
-                            '0' => "THOST_FTDC_IS_BeforeTrading",
-                            '1' => "THOST_FTDC_IS_NoTrading",
-                            '2' => "THOST_FTDC_IS_Continous",
-                            '3' => "THOST_FTDC_IS_AuctionOrdering",
-                            '4' => "THOST_FTDC_IS_AuctionBalance",
-                            '5' => "THOST_FTDC_IS_AuctionMatch",
-                            '6' => "THOST_FTDC_IS_Closed",
-                            _ => "UnkownInstrumentStatus",
-                        };
-                        info!(
-                            "RtnInstrumentStatus = {}:{} {}",
-                            get_ascii_str(&status.ExchangeID).unwrap().to_string(),
-                            get_ascii_str(&status.InstrumentID).unwrap().to_string(),
-                            s
-                        );
-                    }
-                    None => (),
-                },
-                OnRtnTradingNotice(ref p) => {
-                    info!("RtnTradingNotice = {:?}", p);
+                Ok(None) => {}
+                Err(_e) => {
+                    return Err(Error::InitTraderFailed);
                 }
-                _ => {}
             }
         }
+
         // 初始化查询过程中推送的成交
         if let Err(e) = state.update_on_initialized(cached_pdl, cached_orders, cached_trades) {
-            error!("Cached orders update {e}");
+            error!("update_on_initialized {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
         let (api, _api2) = trader_api::unsafe_clone_api(api);
@@ -801,9 +831,6 @@ pub mod route {
                     if let ReqMessage::SetContractTarget(target) = req_msg {
                         let us = UniqueSymbol::new(&target.exchange, &target.symbol);
                         let res = state.set_check_target(us, Some(target), &cmc, &mut api).await.map(|_|vec![]);
-                        if let Err(e) = &res {
-                            error!("req set contract target {e}");
-                        }
                         let _ = rsp_tx.send(res);
                     } else {
                         if query_req.is_some() {
