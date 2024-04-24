@@ -7,7 +7,7 @@ pub mod http {
         Router,
     };
     use base::state::ReqMessage;
-    use log::{error, info};
+    use log::{error, info, warn};
     use std::net::SocketAddr;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -21,6 +21,9 @@ pub mod http {
         TraderOcupied,
         TraderIsNotLocked,
         InvalidToken,
+        TraderNotFound,
+        CredentialExpired,
+        AcquireLockFirst,
     }
 
     impl axum::response::IntoResponse for Error {
@@ -127,6 +130,7 @@ pub mod http {
         #[derive(Default, serde::Serialize, serde::Deserialize, Debug)]
         pub struct ReqFullQuery {
             pub ta: TradingAccountConfig,
+            // pub timeout: i32,
         }
         #[derive(Default, serde::Serialize, serde::Deserialize, Debug)]
         pub struct ReqExitProcess {
@@ -237,7 +241,10 @@ pub mod http {
             let credential_valid = v
                 .iter()
                 .find(|x| x.broker_id == req.broker_id && x.account == req.account)
-                .map(|x| x.credential == req.credential && now - x.timestamp < 10)
+                .map(|x| {
+                    x.credential == req.credential
+                        && now - x.timestamp < s.config.lock_credential_ttl
+                })
                 .unwrap_or(false);
             if !credential_valid {
                 return Err(Error::TraderIsNotLocked);
@@ -253,14 +260,16 @@ pub mod http {
         Ok(XResponse::<String>::from(&resp))
     }
 
+    #[axum_macros::debug_handler]
     async fn full_query(
         State(_s): State<ShareState>,
         Json(req): Json<ReqFullQuery>,
     ) -> Result<XResponse<String>, Error> {
+        let timeout = 50;
         match req.ta.route_type.as_str() {
             "ctp_futures" => {
                 match tokio::time::timeout(
-                    tokio::time::Duration::from_secs(30),
+                    tokio::time::Duration::from_secs(timeout),
                     ctp_futures::query::query(&req.ta),
                 )
                 .await
@@ -276,7 +285,7 @@ pub mod http {
             }
             "tora_stock" => {
                 match tokio::time::timeout(
-                    tokio::time::Duration::from_secs(30),
+                    tokio::time::Duration::from_secs(timeout),
                     tora_stock::query::query(&req.ta),
                 )
                 .await
@@ -298,6 +307,7 @@ pub mod http {
         State(_s): State<ShareState>,
         Json(req): Json<ReqExitProcess>,
     ) -> Result<XResponse<()>, Error> {
+        warn!("req exit process {:?}", req);
         if req.delay > 0 {
             let delay = std::cmp::min(req.delay, 2000);
             tokio::spawn(async move {
@@ -369,18 +379,27 @@ pub mod http {
     async fn refresh_lock_trading_account(
         State(s): State<ShareState>,
         Json(req): Json<ReqRefreshLockTradingAccount>,
-    ) -> Result<XResponse<()>, Error> {
+    ) -> Result<XResponse<String>, Error> {
         let mut v = s.locked_client.lock().await;
         let now = chrono::Local::now().timestamp();
-        match v
-            .iter_mut()
-            .find(|x| x.broker_id == req.broker_id && x.account == req.account)
-        {
+        match v.iter_mut().find(|x| {
+            x.broker_id == req.broker_id
+                && x.account == req.account
+                && req.credential == req.credential
+        }) {
             Some(i) => {
-                i.timestamp = now;
-                Ok(XResponse::new(()))
+                if now - i.timestamp > s.config.lock_credential_ttl {
+                    Err(Error::CredentialExpired)
+                } else {
+                    if req.credential == i.credential {
+                        i.timestamp = now;
+                        Ok(XResponse::new("".into()))
+                    } else {
+                        Err(Error::TraderOcupied)
+                    }
+                }
             }
-            None => Err(Error::TraderOcupied),
+            None => Err(Error::AcquireLockFirst),
         }
     }
 }

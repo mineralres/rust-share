@@ -62,6 +62,44 @@ pub mod md_api {
     use crate::*;
     // use share::trader::StringArray;
     include!("md_impl.rs");
+
+    unsafe impl Send for MdApi {}
+
+    pub struct MdApi {
+        pub api: *mut TORALEV1API_CTORATstpXMdApi,
+    }
+
+    impl Drop for MdApi {
+        fn drop(&mut self) {
+            let spi: *const TORALEV1API_CTORATstpXMdSpiStream = std::ptr::null();
+            let api = unsafe { &mut (*self.api) };
+            api.register_spi(spi);
+            api.release();
+        }
+    }
+
+    impl std::ops::Deref for MdApi {
+        type Target = TORALEV1API_CTORATstpXMdApi;
+        fn deref(&self) -> &Self::Target {
+            unsafe { &(*self.api) }
+        }
+    }
+
+    impl std::ops::DerefMut for MdApi {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            unsafe { &mut (*self.api) }
+        }
+    }
+
+    pub fn create_api(md_sub_mode: Box<i8>, derive_sub_mode: Box<i8>) -> MdApi {
+        let p = unsafe {
+            TORALEV1API_CTORATstpXMdApi_CreateTstpXMdApi(
+                Box::into_raw(md_sub_mode) as *const TORALEV1API_TTORATstpMDSubModeType,
+                Box::into_raw(derive_sub_mode) as *const TORALEV1API_TTORATstpMDSubModeType,
+            )
+        };
+        MdApi { api: p }
+    }
 }
 
 pub mod trader_api {
@@ -74,26 +112,41 @@ pub mod trader_api {
     use crate::*;
     // use share::trader::StringArray;
     include!("trade_impl.rs");
-    pub fn create_api(flow_path: &str, b_encrypt: bool) -> Box<TORASTOCKAPI_CTORATstpTraderApi> {
-        let trade_flow_path = std::ffi::CString::new(flow_path).unwrap();
-        unsafe {
-            Box::from_raw(TORASTOCKAPI_CTORATstpTraderApi_CreateTstpTraderApi(
-                trade_flow_path.as_ptr(),
-                b_encrypt,
-            ))
+
+    unsafe impl Send for TraderApi {}
+
+    pub struct TraderApi {
+        pub api: *mut TORASTOCKAPI_CTORATstpTraderApi,
+    }
+
+    impl Drop for TraderApi {
+        fn drop(&mut self) {
+            let spi: *const TORASTOCKAPI_CTORATstpTraderSpiStream = std::ptr::null();
+            let api = unsafe { &mut (*self.api) };
+            api.register_spi(spi);
+            api.release();
         }
     }
-    pub fn unsafe_clone_api(
-        source: Box<TORASTOCKAPI_CTORATstpTraderApi>,
-    ) -> (
-        Box<TORASTOCKAPI_CTORATstpTraderApi>,
-        Box<TORASTOCKAPI_CTORATstpTraderApi>,
-    ) {
-        let p = Box::into_raw(source);
-        unsafe {
-            let p2 = p.clone();
-            (Box::from_raw(p), Box::from_raw(p2))
+
+    impl std::ops::Deref for TraderApi {
+        type Target = TORASTOCKAPI_CTORATstpTraderApi;
+        fn deref(&self) -> &Self::Target {
+            unsafe { &(*self.api) }
         }
+    }
+
+    impl std::ops::DerefMut for TraderApi {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            unsafe { &mut (*self.api) }
+        }
+    }
+
+    pub fn create_api(flow_path: &str, b_encrypt: bool) -> TraderApi {
+        let trade_flow_path = std::ffi::CString::new(flow_path).unwrap();
+        let p = unsafe {
+            TORASTOCKAPI_CTORATstpTraderApi_CreateTstpTraderApi(trade_flow_path.as_ptr(), b_encrypt)
+        };
+        TraderApi { api: p }
     }
 }
 
@@ -287,7 +340,7 @@ pub mod route {
         } else if d == TORASTOCKAPI_TORA_TSTP_D_Sell {
             DirectionType::Short
         } else {
-            panic!("unkown ctp direction={}", d);
+            panic!("unkown tora direction={}", d);
         }
     }
 
@@ -332,7 +385,10 @@ pub mod route {
         // #define TORA_TSTP_EXD_HK '3'
     }
 
-    impl TraderApiType for TORASTOCKAPI_CTORATstpTraderApi {
+    impl TraderApiType for trader_api::TraderApi {
+        fn as_any(&mut self) -> &mut dyn std::any::Any {
+            self
+        }
         fn req_order_insert(
             &mut self,
             _broker_id: &str,
@@ -420,7 +476,7 @@ pub mod route {
                 .find(|x| x.exchange_id == exchange)
                 .ok_or(base::error::Error::ShareholderAccountNotFound)?;
             set_cstr_from_str_truncate_i8(&mut input.ShareholderID, &sa.shareholder_id);
-            let ret = self.req_order_insert(&mut input, n_request_id);
+            let ret = unsafe { (*self.api).req_order_insert(&mut input, n_request_id) };
             if ret != 0 {
                 return Err(base::error::Error::TraderApiErr(ret));
             }
@@ -444,7 +500,7 @@ pub mod route {
             r.OrderRef = get_ascii_str(&i.order_ref).unwrap().parse::<i32>().unwrap();
             r.ActionFlag = TORASTOCKAPI_TORA_TSTP_AF_Delete as i8;
             r.OrderActionRef = order_action_ref;
-            let ret = self.req_order_action(&mut r, n_request_id);
+            let ret = unsafe { (*self.api).req_order_action(&mut r, n_request_id) };
             if ret != 0 {
                 return Err(base::error::Error::TraderApiErr(ret));
             }
@@ -476,12 +532,7 @@ pub mod route {
                 Box::new(TORALEV1API_TORA_TSTP_MST_TCP),
             )
         };
-        let mut mdapi = unsafe {
-            Box::from_raw(TORALEV1API_CTORATstpXMdApi_CreateTstpXMdApi(
-                Box::into_raw(md_sub_mode) as *const TORALEV1API_TTORATstpMDSubModeType,
-                Box::into_raw(derive_sub_mode) as *const TORALEV1API_TTORATstpMDSubModeType,
-            ))
-        };
+        let mut mdapi = md_api::create_api(md_sub_mode, derive_sub_mode);
         if md_front.starts_with("udp") {
             // 格式形如此 udp://224.224.1.11:7880;10.188.82.150;10.188.82.8
             // split之后使用
@@ -810,7 +861,7 @@ pub mod route {
     pub async fn handle_request_msg(
         req_msg: &ReqMessage,
         state: &mut AccountStateType,
-        api: &mut Box<TORASTOCKAPI_CTORATstpTraderApi>,
+        api: &mut trader_api::TraderApi,
     ) -> Result<(), base::error::Error> {
         use ReqMessage::*;
         match req_msg {
@@ -840,15 +891,21 @@ pub mod route {
         ca: TradingAccountConfig,
         cmc: Arc<Mutex<MdCache>>,
         mut rx: mpsc::Receiver<(ReqMessage, oneshot::Sender<RspMessage>)>,
+        logger: Box<dyn TradingLoger + Send>,
     ) -> Result<(), base::error::Error> {
         info!("Run tora stock trader [{}]", ca.account);
+        logger.info(
+            "ToraStock trader startup",
+            &format!("{}:{} run tora stock trader", ca.broker_id, ca.account),
+        );
         let mut state = AccountStateType::new(&ca.broker_id, &ca.account);
+        state.trading_logger = Some(logger);
         let flow_path = format!(
             ".cache/tora_stock_trade_flow_{}_{}//",
             ca.broker_id, ca.account
         );
         check_make_dir(&flow_path);
-        let mut api = trader_api::create_api(&flow_path, false);
+        let mut api = Box::new(trader_api::create_api(&flow_path, false));
         let mut stream = {
             let (stream, pp) = trader_api::create_spi();
             api.register_spi(pp);
@@ -1065,8 +1122,6 @@ pub mod route {
             error!("Cached orders update {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
-        let (api, _api2) = trader_api::unsafe_clone_api(api);
-        let (api, mut api3) = trader_api::unsafe_clone_api(api);
         let mut api = api as Box<dyn TraderApiType + Send>;
 
         {
@@ -1121,16 +1176,14 @@ pub mod route {
                             let _ = rsp_tx.send(Err(base::error::Error::CtpLastQueryIsProceeding));
                         } else {
                             query_req = Some((req_msg, rsp_tx, vec![]));
-                            handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, &mut api3).await?;
+                            let api = api.as_any().downcast_mut::<trader_api::TraderApi>().unwrap();
+                            handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, api).await?;
                         }
                     }
                 },
                 else => break,
             }
         }
-
-        api3.join();
-        api3.release();
         info!("{}:{} trader_deamon退出", ca.broker_id, ca.account);
         Ok(())
     }

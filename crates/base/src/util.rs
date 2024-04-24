@@ -136,3 +136,35 @@ macro_rules! print_rsp_info {
         }
     };
 }
+
+pub trait PtrRelease {
+    fn release(&mut self);
+}
+
+unsafe impl<T: PtrRelease> Send for UndeletablePtr<T> {}
+
+/// 一些c 的ptr, 只能使用release, 不能delete的封装
+pub struct UndeletablePtr<T: PtrRelease> {
+    pub api: std::ptr::NonNull<T>,
+}
+
+impl<T: PtrRelease> Drop for UndeletablePtr<T> {
+    fn drop(&mut self) {
+        unsafe {
+            self.api.as_mut().release();
+        }
+    }
+}
+
+impl<T: PtrRelease> std::ops::Deref for UndeletablePtr<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        unsafe { self.api.as_ref() }
+    }
+}
+
+impl<T: PtrRelease> std::ops::DerefMut for UndeletablePtr<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { self.api.as_mut() }
+    }
+}

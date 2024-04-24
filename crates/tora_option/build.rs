@@ -1,21 +1,16 @@
 #![allow(dead_code)]
-use bindgen::callbacks::{DeriveInfo, ParseCallbacks};
-use clang::*;
-use inflector::Inflector;
-use std::env::var;
-use std::{
-    env,
-    fs::File,
-    io::Write,
-    path::{Path, PathBuf},
-};
+extern crate bindgen;
 
+use inflector::Inflector;
+
+use std::{env, fs::File, io::Write, path::PathBuf};
+
+use clang::*;
 fn get_full_name_of_entity(e: &Entity) -> String {
     let mut v = vec![e.get_name().expect("")];
     let mut xe = Box::new(e.clone());
     while let Some(e) = xe.get_lexical_parent() {
-        if e.get_kind() == EntityKind::TranslationUnit || e.get_kind() == EntityKind::NotImplemented
-        {
+        if e.get_kind() == EntityKind::TranslationUnit {
             break;
         }
         v.push(e.get_name().expect(""));
@@ -41,6 +36,7 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                     }
                     let mut rust_code = format!("");
                     let mut c_code = format!("");
+                    let mut cstring_trans_code = format!("");
                     let arguments = e.get_arguments();
                     if let Some(arguments) = arguments {
                         for p in &arguments {
@@ -56,10 +52,10 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                                         )
                                     } else {
                                         match tp.get_kind() {
-                                            // 这个是char*, register_front() 会有这样的参数
+                                            // 这个是char*
                                             TypeKind::CharS => (
-                                                "std::ffi::CString".to_string(),
-                                                ".into_raw()".to_string(),
+                                                "&str".to_string(),
+                                                ".as_ptr() as *mut c_char".to_string(),
                                             ),
                                             TypeKind::Pointer => {
                                                 // 这是char**
@@ -67,7 +63,7 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                                                 let tp = tp.get_pointee_type().unwrap();
                                                 match tp.get_kind() {
                                                     TypeKind::CharS => (
-                                                        "Vec<std::ffi::CString>".to_string(),
+                                                        "&mut StringArray".to_string(),
                                                         ".to_char_pp()".to_string(),
                                                     ),
                                                     _ => panic!(""),
@@ -102,9 +98,6 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                                     let d = tp.get_declaration().unwrap();
                                     (get_full_name_of_entity(&d), "".to_string())
                                 }
-                                TypeKind::IncompleteArray => {
-                                    ("Vec<std::ffi::CString>".to_string(), ".iter().map(|cs| cs.as_ptr()).collect::<Vec<_>>().as_mut_ptr() as *mut *mut i8".to_string())
-                                }
                                 _ => {
                                     // (tp.get_display_name(), "".to_string())
                                     println!("tp={:?}", tp);
@@ -114,6 +107,13 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                             if rust_type == "int" {
                                 // 或者要转为 std::os::raw::c_int
                                 rust_type = "std::os::raw::c_int".to_string();
+                            }
+                            if rust_type == "&str" {
+                                cstring_trans_code.push_str(&format!(
+                                    "let {} = CString::new({}).unwrap();\n",
+                                    Inflector::to_snake_case(&p.get_name().unwrap()),
+                                    Inflector::to_snake_case(&p.get_name().unwrap())
+                                ));
                             }
                             rust_code.push_str(&format!(
                                 ", {}: {}",
@@ -128,21 +128,28 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                             ))
                         }
                     }
-                    let result_type = e.get_result_type().unwrap().get_display_name();
-                    let result_type = match result_type.as_str() {
-                        "void" => "()",
-                        "int" => "std::os::raw::c_int",
-                        "const char *" => "*const std::os::raw::c_char",
-                        _ => panic!("没处理的result_type={}", result_type),
-                    };
+                    let mut result_type = e.get_result_type().unwrap().get_display_name();
+                    if result_type == "void" {
+                        result_type = "()".to_string();
+                    }
+                    if result_type == "int" {
+                        result_type = "std::os::raw::c_int".to_string();
+                    }
                     let mut code = format!(
                         r#"
                             pub fn {}(&mut self{}) -> {} {{
+                                    {}
                                     unsafe {{
                                            ((*(*self).vtable_).{})(self as *mut {}{})
                                         }}
                             }}"#,
-                        snake_fn_name, rust_code, result_type, full_fn_name, full_api_name, c_code
+                        snake_fn_name,
+                        rust_code,
+                        result_type,
+                        cstring_trans_code,
+                        full_fn_name,
+                        full_api_name,
+                        c_code
                     );
                     if snake_fn_name == "register_spi" {
                         let static_vtable_var_name = Inflector::to_snake_case(&full_api_name)
@@ -177,7 +184,12 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
         }
         EntityVisitResult::Recurse
     });
-    v_code.join("")
+    let code = v_code.join("");
+    let code = code.replace(
+        "psz_source_ip.as_ptr() as *mut c_char)",
+        "std::ptr::null::<*mut c_char>() as *mut c_char)",
+    );
+    code
 }
 
 fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
@@ -219,7 +231,7 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
         ));
         spi_output_enum_lines.push(format!(
             r#"
-        #[derive(Clone, Debug, Decode, Encode)]
+        #[derive(Clone, Debug)]
         pub enum {full_spi_output_enum_name} {{"#
         ));
         impl_spi_fn_line.push(format!(
@@ -325,7 +337,7 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
             spi_output_enum_lines.push(format!(r#"{fn_name}({full_spi_name}{fn_name}Packet),"#,));
             spi_output_enum_struct_lines.push(format!(
                 r#"
-            #[derive(Clone, Debug, Encode, Decode)]
+            #[derive(Clone, Debug)]
             pub struct {full_spi_name}{fn_name}Packet {{
                 {}
             }}"#,
@@ -393,8 +405,8 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
         impl {full_spi_name}Inner {{
             fn push(&mut self, msg: {full_spi_output_enum_name}) {{
                 self.buf.push_back(msg);
-                if let Some(waker) = self.waker.take() {{
-                    waker.wake()
+                if let Some(ref waker) = &self.waker {{
+                    waker.clone().wake()
                 }}
             }}
         }}
@@ -467,23 +479,6 @@ fn parse_spi(tu: &TranslationUnit, spi_name: &str) -> String {
     )
 }
 
-#[derive(Debug)]
-struct MyCallback {}
-
-impl ParseCallbacks for MyCallback {
-    // Test the "custom derives" capability by adding `PartialEq` to the `Test` struct.
-    fn add_derives(&self, info: &DeriveInfo<'_>) -> Vec<String> {
-        if info.name.starts_with("CThost")
-            && !info.name.contains("Api")
-            && !info.name.contains("Spi")
-        {
-            vec!["Decode".into(), "Encode".into()]
-        } else {
-            vec![]
-        }
-    }
-}
-
 fn main() {
     println!("cargo:rerun-if-changed=./v_current");
     println!("cargo:rerun-if-changed=./wrapper.hpp");
@@ -492,40 +487,16 @@ fn main() {
     let index = Index::new(&clang, false, false);
     let tu = index.parser("wrapper.hpp").parse().unwrap();
 
-    let mut f = File::create("./src/md_impl.rs").expect("unable to create file");
-    let code = parse_api(&tu, "CThostFtdcMdApi");
-    f.write(code.as_bytes()).unwrap();
-    let code = parse_spi(&tu, "CThostFtdcMdSpi");
-    f.write(code.as_bytes()).unwrap();
-
+    // 开着这个的话会导致每次重新编译
     let mut f = File::create("./src/trade_impl.rs").expect("unable to create file");
-    let code = parse_api(&tu, "CThostFtdcTraderApi");
+    let code = parse_api(&tu, "CTORATstpSPTraderApi");
     f.write(code.as_bytes()).unwrap();
-    let code = parse_spi(&tu, "CThostFtdcTraderSpi");
+    let code = parse_spi(&tu, "CTORATstpSPTraderSpi");
     f.write(code.as_bytes()).unwrap();
 
-    println!("cargo:rustc-link-search=./crates/ctp_futures/v_current");
-    let dir = var("CARGO_MANIFEST_DIR").unwrap();
-    
-    let library_path = Path::new(&dir).join("v_current");
-    println!("cargo:rustc-link-search=native={}", library_path.display());
-    let output = var("OUT_DIR").unwrap();
-    let v_libs = if cfg!(windows) {
-        vec!["thostmduserapi_se.dll", "thosttraderapi_se.dll"]
-    } else if cfg!(unix) {
-        vec!["libthostmduserapi_se.so", "libthosttraderapi_se.so"]
-    } else {
-        vec![]
-    };
-    v_libs.iter().for_each(|p| {
-        std::fs::copy(
-            library_path.join(p),
-            Path::new(&output).join("..").join("..").join("..").join(p),
-        )
-        .unwrap();
-    });
-    println!("cargo:rustc-link-lib=thosttraderapi_se");
-    println!("cargo:rustc-link-lib=thostmduserapi_se");
+    println!("cargo:rustc-link-search=./crates/tora_option/v_current");
+    println!("cargo:rustc-link-lib=xfastmdapi");
+    println!("cargo:rustc-link-lib=sptraderapi");
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.hpp")
@@ -539,7 +510,6 @@ fn main() {
         .generate_comments(false) //不需注释,默认true
         .derive_copy(true)
         .derive_hash(false) //不要实现hash
-        .parse_callbacks(Box::new(MyCallback {}))
         .generate()
         .expect("Unable to generate bindings");
 

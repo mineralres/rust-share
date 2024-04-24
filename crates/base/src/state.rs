@@ -299,6 +299,7 @@ impl Operation {
 
 /// 交易接口
 pub trait TraderApiType {
+    fn as_any(&mut self) -> &mut dyn std::any::Any;
     fn req_order_insert(
         &mut self,
         broker_id: &str,
@@ -358,6 +359,12 @@ pub struct ShareholderAccount {
     pub market_id: i8,
 }
 
+/// 日志通知器
+/// 比如交易通知可以发送短信或推到dingding
+pub trait TradingLoger {
+    fn info(&self, title: &str, l: &str);
+}
+
 /// 内存中维护一个交易账户的最新镜像
 /// 可用于更新委托，成交等
 /// 有些品种需要区分平今平昨
@@ -374,6 +381,7 @@ pub struct AccountState<OT: OrderType + std::fmt::Debug, TT: TradeType + std::fm
     pub request_id: atomic::AtomicI32,
     pub order_ref: atomic::AtomicI32,
     pub shareholder_accounts: Vec<ShareholderAccount>,
+    pub trading_logger: Option<Box<dyn TradingLoger + Send>>,
 }
 
 impl<
@@ -394,6 +402,7 @@ impl<
             request_id: atomic::AtomicI32::new(0),
             hm_inst: std::collections::HashMap::new(),
             shareholder_accounts: vec![],
+            trading_logger: None,
         }
     }
 
@@ -635,8 +644,8 @@ impl<
         let po = &mut cd.pol[index];
         po.trades.push(PendingOrderTradeItem { volume: t.volume() });
         if !po.is_still_pending() {
+            info!("update_by_trade remove none pending po={:?}", po);
             cd.pol.swap_remove(index);
-            info!("update_by_trade remove none pending");
             Ok(true)
         } else {
             Ok(false)
@@ -672,10 +681,11 @@ impl<
                         let cd = &self.sorted_cds[i];
                         let nowts = chrono::Local::now().timestamp_millis();
                         info!(
-                            "Input {}:{} Direction={:?} Volume={} Price={} time_diff={} md={:?}",
+                            "Input {}:{} Direction={:?} offset={:?} Volume={} Price={} time_diff={} md={:?}",
                             &cd.us.exchange,
                             &cd.us.symbol,
                             iof.direction,
+                            iof.offset,
                             iof.volume,
                             iof.price,
                             nowts - cd.last_open_timestamp_milli,
@@ -704,6 +714,20 @@ impl<
                                     &mut x_order_ref,
                                     format!("{order_ref}").as_str(),
                                 );
+                                if let Some(logger) = &self.trading_logger {
+                                    logger.info(
+                                        "InputOrder",
+                                        &format!(
+                                            "[{}:{}] [{:?}] [{:?}] [{}] [{}]",
+                                            cd.us.exchange,
+                                            cd.us.symbol,
+                                            iof.direction,
+                                            iof.offset,
+                                            iof.price,
+                                            iof.volume
+                                        ),
+                                    );
+                                }
                                 let po = PendingOrder {
                                     front_id: self.front_id,
                                     session_id: self.session_id,
@@ -719,7 +743,10 @@ impl<
                                     status: PendingOrderStatus::Pending,
                                 };
                                 self.sorted_cds[i].pol.push(po);
-                                self.sorted_cds[i].last_open_timestamp_milli = nowts;
+                                if iof.offset == OffsetFlag::Open {
+                                    self.sorted_cds[i].last_open_timestamp_milli = nowts;
+                                }
+
                                 Ok(())
                             }
                             Err(e) => Err(e),

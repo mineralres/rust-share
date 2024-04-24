@@ -70,9 +70,16 @@ pub struct ExecutorConfig {
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Default)]
+pub struct LoggerConfig {
+    pub host: String,
+    pub token: String,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct GatewayConfig {
     pub executors: Vec<ExecutorConfig>,
+    pub logger: LoggerConfig,
 }
 
 impl GatewayConfig {

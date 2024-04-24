@@ -10,41 +10,80 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 pub mod md_api {
     use crate::*;
     include!("md_impl.rs");
-    pub fn create_api(
-        flow_path: &str,
-        b_is_using_udp: bool,
-        b_is_multicast: bool,
-    ) -> Box<CThostFtdcMdApi> {
-        let md_flow_path = std::ffi::CString::new(flow_path).unwrap();
-        unsafe {
-            Box::from_raw(CThostFtdcMdApi_CreateFtdcMdApi(
-                md_flow_path.as_ptr(),
-                b_is_using_udp,
-                b_is_multicast,
-            ))
+
+    unsafe impl Send for MdApi {}
+
+    pub struct MdApi {
+        pub api: *mut CThostFtdcMdApi,
+    }
+
+    impl Drop for MdApi {
+        fn drop(&mut self) {
+            let spi: *const CThostFtdcMdSpiStream = std::ptr::null();
+            let api = unsafe { &mut (*self.api) };
+            api.register_spi(spi);
+            api.release();
         }
+    }
+
+    impl std::ops::Deref for MdApi {
+        type Target = CThostFtdcMdApi;
+        fn deref(&self) -> &Self::Target {
+            unsafe { &(*self.api) }
+        }
+    }
+
+    impl std::ops::DerefMut for MdApi {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            unsafe { &mut (*self.api) }
+        }
+    }
+
+    pub fn create_api(flow_path: &str, b_is_using_udp: bool, b_is_multicast: bool) -> MdApi {
+        let md_flow_path = std::ffi::CString::new(flow_path).unwrap();
+        let p = unsafe {
+            CThostFtdcMdApi_CreateFtdcMdApi(md_flow_path.as_ptr(), b_is_using_udp, b_is_multicast)
+        };
+        MdApi { api: p }
     }
 }
 
 pub mod trader_api {
     use crate::*;
     include!("trade_impl.rs");
-    pub fn create_api(flow_path: &str, b_encrypt: bool) -> Box<CThostFtdcTraderApi> {
-        let trade_flow_path = std::ffi::CString::new(flow_path).unwrap();
-        unsafe {
-            Box::from_raw(CThostFtdcTraderApi_CreateFtdcTraderApi(
-                trade_flow_path.as_ptr(),
-            ))
+
+    unsafe impl Send for TraderApi {}
+
+    pub struct TraderApi {
+        pub api: *mut CThostFtdcTraderApi,
+    }
+
+    impl Drop for TraderApi {
+        fn drop(&mut self) {
+            let spi: *const CThostFtdcTraderSpiStream = std::ptr::null();
+            let api = unsafe { &mut (*self.api) };
+            api.register_spi(spi);
+            api.release();
         }
     }
-    pub fn unsafe_clone_api(
-        source: Box<CThostFtdcTraderApi>,
-    ) -> (Box<CThostFtdcTraderApi>, Box<CThostFtdcTraderApi>) {
-        let p = Box::into_raw(source);
-        unsafe {
-            let p2 = p.clone();
-            (Box::from_raw(p), Box::from_raw(p2))
+
+    impl std::ops::Deref for TraderApi {
+        type Target = CThostFtdcTraderApi;
+        fn deref(&self) -> &Self::Target {
+            unsafe { &(*self.api) }
         }
+    }
+
+    impl std::ops::DerefMut for TraderApi {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            unsafe { &mut (*self.api) }
+        }
+    }
+
+    pub fn create_api(flow_path: &str, b_encrypt: bool) -> TraderApi {
+        let trade_flow_path = std::ffi::CString::new(flow_path).unwrap();
+        let p = unsafe { CThostFtdcTraderApi_CreateFtdcTraderApi(trade_flow_path.as_ptr()) };
+        TraderApi { api: p }
     }
 
     pub fn get_api_version() -> *const std::os::raw::c_char {
@@ -58,6 +97,7 @@ pub enum Error {
 }
 
 pub mod route {
+    use crate::trader_api::TraderApi;
     use crate::*;
     use base::error::Error;
     use base::state::md_cache::MdCache;
@@ -278,7 +318,11 @@ pub mod route {
         }
     }
 
-    impl TraderApiType for CThostFtdcTraderApi {
+    // impl TraderApiType for CThostFtdcTraderApi {
+    impl TraderApiType for trader_api::TraderApi {
+        fn as_any(&mut self) -> &mut dyn std::any::Any {
+            self
+        }
         fn req_order_insert(
             &mut self,
             broker_id: &str,
@@ -322,7 +366,7 @@ pub mod route {
             input.IsAutoSuspend = 0;
             input.UserForceClose = 0;
             set_cstr_from_str_truncate_i8(&mut input.OrderRef, &format!("{order_ref}"));
-            let ret = self.req_order_insert(&mut input, n_request_id);
+            let ret = unsafe { (*self.api).req_order_insert(&mut input, n_request_id) };
             if ret != 0 {
                 return Err(base::error::Error::TraderApiErr(ret));
             }
@@ -349,7 +393,7 @@ pub mod route {
             r.SessionID = i.session_id;
             r.OrderRef = i.order_ref.clone();
             r.ActionFlag = THOST_FTDC_AF_Delete as i8;
-            let ret = self.req_order_action(&mut r, n_request_id);
+            let ret = unsafe { (*self.api).req_order_action(&mut r, n_request_id) };
             if ret != 0 {
                 return Err(base::error::Error::TraderApiErr(ret));
             }
@@ -517,7 +561,7 @@ pub mod route {
     pub async fn handle_request_msg(
         req_msg: &ReqMessage,
         state: &mut AccountStateType,
-        api: &mut Box<CThostFtdcTraderApi>,
+        api: &mut TraderApi,
     ) -> Result<(), Error> {
         use ReqMessage::*;
         match req_msg {
@@ -549,15 +593,21 @@ pub mod route {
         ca: TradingAccountConfig,
         cmc: Arc<Mutex<MdCache>>,
         mut rx: mpsc::Receiver<(ReqMessage, oneshot::Sender<RspMessage>)>,
+        logger: Box<dyn TradingLoger + Send>,
     ) -> Result<(), Error> {
         info!("Run ctp trader [{}]", ca.account);
+        logger.info(
+            "Ctp futures trader startup",
+            &format!("{}:{} run ctp_futures trader", ca.broker_id, ca.account),
+        );
         let mut state = AccountStateType::new(&ca.broker_id, &ca.account);
+        state.trading_logger = Some(logger);
         let flow_path = format!(
             ".cache/ctp_trade_daemon_flow_{}_{}//",
             ca.broker_id, ca.account
         );
         check_make_dir(&flow_path);
-        let mut api = trader_api::create_api(&flow_path, false);
+        let mut api = Box::new(trader_api::create_api(&flow_path, false));
         let mut stream = {
             let (stream, pp) = trader_api::create_spi();
             api.register_spi(pp);
@@ -780,8 +830,6 @@ pub mod route {
             error!("update_on_initialized {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
-        let (api, _api2) = trader_api::unsafe_clone_api(api);
-        let (api, mut api3) = trader_api::unsafe_clone_api(api);
         let mut api = api as Box<dyn TraderApiType + Send>;
 
         info!("{}:{} Trader initialized.", ca.broker_id, ca.account);
@@ -837,16 +885,14 @@ pub mod route {
                             let _ = rsp_tx.send(Err(Error::CtpLastQueryIsProceeding));
                         } else {
                             query_req = Some((req_msg, rsp_tx, vec![]));
-                            handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, &mut api3).await?;
+                            let api = api.as_any().downcast_mut::<TraderApi>().unwrap();
+                            handle_request_msg(&query_req.as_ref().unwrap().0, &mut state, api).await?;
                         }
                     }
                 },
                 else => break,
             }
         }
-
-        api3.join();
-        api3.release();
         info!("{}:{} trader_deamon退出", ca.broker_id, ca.account);
         Ok(())
     }
@@ -1061,6 +1107,7 @@ pub mod query {
     }
 
     pub async fn query(ca: &TradingAccountConfig) -> Result<CtpQueryResult, base::error::Error> {
+        info!("start query");
         use trader_api::*;
         let broker_id = ca.broker_id.as_str();
         let account = ca.account.as_str();
@@ -1081,6 +1128,7 @@ pub mod query {
         let mut api = create_api(&flow_path, false);
         let mut stream = {
             let (stream, pp) = trader_api::create_spi();
+            // api::<*const CThostFtdcTraderApi>::as_ref()
             api.register_spi(pp);
             stream
         };
@@ -1275,8 +1323,11 @@ pub mod query {
             }
         }
         result.timestamp = chrono::Local::now().timestamp();
-        api.release();
-        Box::leak(api);
+        // info!("release on end");
+        // api.release();
+        // info!("leak on end");
+        // Box::leak(api);
+        // info!("after leak on end");
         Ok(result)
     }
 }

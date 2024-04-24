@@ -525,6 +525,7 @@ fn main() {
 
     let dir = var("CARGO_MANIFEST_DIR").unwrap();
     let library_path = Path::new(&dir).join("v_current");
+    println!("cargo:rustc-link-search=native={}", library_path.display());
     let output = var("OUT_DIR").unwrap();
     let v_libs = if cfg!(windows) {
         vec!["fasttraderapi.dll", "traderapi.dll", "xfastmdapi.dll"]

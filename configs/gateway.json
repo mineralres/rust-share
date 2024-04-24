@@ -1,4 +1,8 @@
 {
+	"logger": {
+		"host": "",
+		"token": ""
+	},
 	"executors": [
 		{
 			"enabled": true,
@@ -6,19 +10,17 @@
 			"http_port": 10111,
 			"https_port": 0,
 			"lock_check": true,
-			"locak_credential_ttl": 10,
+			"lock_credential_ttl": 10,
 			"token": "xxx123",
 			"accounts": [
 				{
 					"broker_id": "9999",
 					"account": "143650",
 					"trade_fronts": [
-						"tcp://180.168.146.187:10130",
-						"#tcp://180.168.146.187:10201"
+						"tcp://180.168.146.187:10201"
 					],
 					"md_fronts": [
-						"tcp://180.168.146.187:10131",
-						"#tcp://180.168.146.187:10211"
+						"tcp://180.168.146.187:10211"
 					],
 					"name_servers": [],
 					"auth_code": "0000000000000000",
@@ -35,7 +37,6 @@
 					"tcp://180.168.146.187:10201"
 				],
 				"md_fronts": [
-					"tcp://180.168.146.187:10131",
 					"tcp://180.168.146.187:10211"
 				],
 				"name_servers": [],
