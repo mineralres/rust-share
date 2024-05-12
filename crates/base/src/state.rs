@@ -51,9 +51,165 @@ pub enum ReqMessage {
 
 pub type RspMessage = Result<Vec<u8>, crate::error::Error>;
 
+/// 证券类型
+pub enum InstrumentType {
+    /*
+    const char TORA_TSTP_STP_COMMON = '0';
+    ///上海A股
+    const char TORA_TSTP_STP_SHAShares = 'a';
+    ///上海单市场股票ETF
+    const char TORA_TSTP_STP_SHSingleMarketStockETF = 'b';
+    ///上海单市场实物债券ETF
+    const char TORA_TSTP_STP_SHSingleMarketBondETF = 'c';
+    ///上海黄金ETF
+    const char TORA_TSTP_STP_SHGoldETF = 'd';
+    ///上海货币ETF
+    const char TORA_TSTP_STP_SHTradableMonetaryFund = 'e';
+    ///上海国债地方债
+    const char TORA_TSTP_STP_SHBondNation = 'f';
+    ///上海企业债
+    const char TORA_TSTP_STP_SHBondCorporation = 'g';
+    ///上海公司债
+    const char TORA_TSTP_STP_SHBondCompany = 'h';
+    ///上海可转债
+    const char TORA_TSTP_STP_SHBondConversion = 'i';
+    ///上海分离债
+    const char TORA_TSTP_STP_SHBondSeparation = 'j';
+    ///上海标准券
+    const char TORA_TSTP_STP_SHStandard = 'o';
+    ///上海质押式回购
+    const char TORA_TSTP_STP_SHRepo = 'p';
+    ///上海封闭式基金
+    const char TORA_TSTP_STP_SHCEFund = 'q';
+    ///上海开放式基金
+    const char TORA_TSTP_STP_SHOEFund = 'r';
+    ///上海跨市场ETF
+    const char TORA_TSTP_STP_SHCrossMarketStockETF = 's';
+    ///上海跨境ETF
+    const char TORA_TSTP_STP_SHCrossBorderETF = 't';
+    ///上海分级母基金
+    const char TORA_TSTP_STP_SHMontherStructFund = 'u';
+    ///上海分级子基金
+    const char TORA_TSTP_STP_SHSubStructFund = 'v';
+    ///上海实时申赎货币基金
+    const char TORA_TSTP_STP_SHRealTimeMonetaryFund = 'w';
+    ///上海可交换债
+    const char TORA_TSTP_STP_SHExchangeableBond = 'x';
+    ///上海标准LOF基金
+    const char TORA_TSTP_STP_SHLOF = 'A';
+    ///深圳主板A股
+    const char TORA_TSTP_STP_SZMainAShares = 'B';
+    ///深圳中小企业板
+    const char TORA_TSTP_STP_SZSME = 'C';
+    ///深圳国债、地方债
+    const char TORA_TSTP_STP_SZBondNation = 'D';
+    ///深圳企业债
+    const char TORA_TSTP_STP_SZBondCorporation = 'E';
+    ///深圳公司债
+    const char TORA_TSTP_STP_SZBondCompany = 'F';
+    ///深圳可转债
+    const char TORA_TSTP_STP_SZBondConversion = 'G';
+    ///深圳分离债
+    const char TORA_TSTP_STP_SZBondSeparation = 'H';
+    ///深圳创业板(注册制)
+    const char TORA_TSTP_STP_SZGEMReg = 'I';
+    ///深圳创业板可转债(注册制)
+    const char TORA_TSTP_STP_SZGEMBondConversionReg = 'J';
+    ///深圳跨境ETF
+    const char TORA_TSTP_STP_SZCrossBorderETF = 'K';
+    ///深圳黄金ETF
+    const char TORA_TSTP_STP_SZGoldETF = 'L';
+    ///深圳现金债券ETF
+    const char TORA_TSTP_STP_SZCashBondETF = 'M';
+    ///深圳单市场股票ETF
+    const char TORA_TSTP_STP_SZSingleMarketStockETF = 'N';
+    ///深圳单市场实物债券ETF
+    const char TORA_TSTP_STP_SZSingleMarketBondETF = 'O';
+    ///深圳货币ETF
+    const char TORA_TSTP_STP_SZMonetaryFundETF = 'P';
+    ///深圳创业板
+    const char TORA_TSTP_STP_SZGEM = 'Q';
+    ///深圳创业板可交换债
+    const char TORA_TSTP_STP_SZGEMExchangeableBond = 'R';
+    ///深圳创业板可交换债(注册制)
+    const char TORA_TSTP_STP_SZGEMExchangeableBondReg = 'S';
+    ///深圳标准券
+    const char TORA_TSTP_STP_SZStandard = 'T';
+    ///深圳质押式回购
+    const char TORA_TSTP_STP_SZRepo = 'U';
+    ///深圳封闭式基金
+    const char TORA_TSTP_STP_SZCEFund = 'V';
+    ///深圳开放式基金
+    const char TORA_TSTP_STP_SZOEFund = 'W';
+    ///深圳跨境开放式基金
+    const char TORA_TSTP_STP_SZCrossBorderOEFund = 'X';
+    ///深圳跨市场股票ETF
+    const char TORA_TSTP_STP_SZCrossMarketStockETF = 'Y';
+    ///深圳标准LOF基金
+    const char TORA_TSTP_STP_SZLOF = 'Z';
+    ///深圳跨境LOF基金
+    const char TORA_TSTP_STP_SZCrossBorderLOF = '1';
+    ///深圳传统分级母基金
+    const char TORA_TSTP_STP_SZMontherStructFund = '2';
+    ///深圳传统分级子基金
+    const char TORA_TSTP_STP_SZSubStructFund = '3';
+    ///深圳跨境分级母基金
+    const char TORA_TSTP_STP_SZMontherCrossBorderStructFund = '4';
+    ///深圳跨境分级子基金
+    const char TORA_TSTP_STP_SZSubCrossBorderStructFund = '5';
+    ///深圳可交换债
+    const char TORA_TSTP_STP_SZExchangeableBond = '6';
+    ///深圳创业板可转债
+    const char TORA_TSTP_STP_SZGEMBondConversion = '7';
+    ///深港通港股债券
+    const char TORA_TSTP_STP_SZSEHKBond = '8';
+    ///深港通港股一篮子权证
+    const char TORA_TSTP_STP_SZSEHKBasketWarrant = '9';
+    ///深港通港股股本
+    const char TORA_TSTP_STP_SZSEHKEquity = 'y';
+    ///深港通港股信托
+    const char TORA_TSTP_STP_SZSEHKTrust = 'z';
+    ///深港通港股权证
+    const char TORA_TSTP_STP_SZSEHKWarrant = '#';
+    ///上海存托凭证
+    const char TORA_TSTP_STP_SHCDR = '+';
+    ///上海科创板股票
+    const char TORA_TSTP_STP_SHKC = '*';
+    ///科创板产品（上市后前5个交易日）
+    const char TORA_TSTP_STP_SHKC1 = '^';
+    ///上海科创板存托凭证
+    const char TORA_TSTP_STP_SHKCCDR = '-';
+    ///深圳主板、中小板创新企业股票或存托凭证
+    const char TORA_TSTP_STP_SZCDR = 'k';
+    ///深圳创业板创新企业股票或存托凭证
+    const char TORA_TSTP_STP_SZGEMCDR = 'l';
+    ///深圳创业板创新企业股票或存托凭证(注册制)
+    const char TORA_TSTP_STP_SZGEMCDRReg = 'm';
+    ///深圳商品期货ETF
+    const char TORA_TSTP_STP_SZCommFuturesETF = 'n';
+    ///深圳基础设施基金
+    const char TORA_TSTP_STP_SZInfrastructureFund = '=';
+    ///上海科创板ETF
+    const char TORA_TSTP_STP_SHKCETF = '@';
+    ///上海科创板LOF
+    const char TORA_TSTP_STP_SHKCLOF = '%';
+    ///上海科创板可转债
+    const char TORA_TSTP_STP_SHKCBondConversion = '$';
+    ///上海定向可转债
+    const char TORA_TSTP_STP_SHOrientedConversionBond = '<';
+    ///深圳定向可转债
+    const char TORA_TSTP_STP_SZOrientedConversionBond = '>';
+    ///上海基础设施基金
+    const char TORA_TSTP_STP_SHInfrastructureFund = '~';
+    ///北京股票
+    const char TORA_TSTP_STP_BJStock = '[';
+     */
+}
+
 #[derive(Debug, Clone)]
 pub struct InstrumentField {
     pub price_tick: f64,
+    pub is_close_today_allowed: bool,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -260,8 +416,8 @@ pub struct ContractDetail<OT: OrderType, TT: TradeType> {
     pub hol: Vec<OT>,                           // 历史委托
     pub htl: Vec<TT>,                           // 历史成交明细
     pub target: Option<ContractPositionTarget>, // 目标仓位
-    pub price_tick: f64,                        // 最小变动价位
     pub last_open_timestamp_milli: i64,         // 上次发送开仓单时间, 用作简单风控
+    pub instrument: InstrumentField,
 }
 
 /// 发送委托
@@ -447,13 +603,13 @@ impl<
         let i = match self.sorted_cds.binary_search_by(|probe| probe.us.cmp(&us)) {
             Ok(i) => i,
             Err(i) => {
-                let price_tick = self
+                let instrument = self
                     .hm_inst
                     .get(&us)
                     .ok_or(Error::InstrumentNotFound)?
-                    .price_tick;
+                    .clone();
                 self.sorted_cds
-                    .insert(i, ContractDetail::new(us, price_tick));
+                    .insert(i, ContractDetail::new(us, instrument));
                 i
             }
         };
@@ -668,6 +824,9 @@ impl<
                 if md.ask1 == 0.0 && md.bid1 == 0.0 && md.ask1_volume1 == 0 && md.bid1_volume == 0 {
                     return Err(Error::MdNotValid);
                 }
+                if md.ask1 > 9999999f64 || md.bid1 > 9999999f64 {
+                    return Err(Error::MdNotValid);
+                }
                 let i = self.contract_detail_entry(us)?;
                 let op = {
                     if target.is_some() {
@@ -679,77 +838,84 @@ impl<
                     Operation::NOP => Ok(()),
                     Operation::Input(iof) => {
                         let cd = &self.sorted_cds[i];
-                        let nowts = chrono::Local::now().timestamp_millis();
-                        info!(
-                            "Input {}:{} Direction={:?} offset={:?} Volume={} Price={} time_diff={} md={:?}",
-                            &cd.us.exchange,
-                            &cd.us.symbol,
-                            iof.direction,
-                            iof.offset,
-                            iof.volume,
-                            iof.price,
-                            nowts - cd.last_open_timestamp_milli,
-                            md,
-                        );
-                        if iof.offset == OffsetFlag::Open
-                            && nowts - cd.last_open_timestamp_milli < 1000
+                        if !cd.instrument.is_close_today_allowed
+                            && iof.offset == OffsetFlag::CloseToday
                         {
-                            error!("距上次开仓发单时间间隔小于1秒");
-                            panic!("");
-                        }
-                        let order_ref = self.get_order_ref();
-                        match api.req_order_insert(
-                            &self.broker_id,
-                            &self.account,
-                            &cd.us.exchange,
-                            &cd.us.symbol,
-                            &iof,
-                            order_ref,
-                            self.get_request_id(),
-                            &self.shareholder_accounts,
-                        ) {
-                            Ok(()) => {
-                                let mut x_order_ref = [0i8; 13];
-                                set_cstr_from_str_truncate_i8(
-                                    &mut x_order_ref,
-                                    format!("{order_ref}").as_str(),
-                                );
-                                if let Some(logger) = &self.trading_logger {
-                                    logger.info(
-                                        "InputOrder",
-                                        &format!(
-                                            "[{}:{}] [{:?}] [{:?}] [{}] [{}]",
-                                            cd.us.exchange,
-                                            cd.us.symbol,
-                                            iof.direction,
-                                            iof.offset,
-                                            iof.price,
-                                            iof.volume
-                                        ),
-                                    );
-                                }
-                                let po = PendingOrder {
-                                    front_id: self.front_id,
-                                    session_id: self.session_id,
-                                    order_ref: x_order_ref,
-                                    order_ref_i32: order_ref,
-                                    order_sys_id: [0; 21],
-                                    volume_total_original: iof.volume,
-                                    volume_canceled: 0,
-                                    volume_traded: 0,
-                                    price: iof.price,
-                                    direction: iof.direction,
-                                    trades: vec![],
-                                    status: PendingOrderStatus::Pending,
-                                };
-                                self.sorted_cds[i].pol.push(po);
-                                if iof.offset == OffsetFlag::Open {
-                                    self.sorted_cds[i].last_open_timestamp_milli = nowts;
-                                }
-
-                                Ok(())
+                            info!("Input 禁止平今 {}:{}", cd.us.exchange, cd.us.symbol);
+                            Ok(())
+                        } else {
+                            let nowts = chrono::Local::now().timestamp_millis();
+                            info!(
+                                "Input {}:{} Direction={:?} offset={:?} Volume={} Price={:?} time_diff={} md={:?}",
+                                &cd.us.exchange,
+                                &cd.us.symbol,
+                                iof.direction,
+                                iof.offset,
+                                iof.volume,
+                                iof.price,
+                                nowts - cd.last_open_timestamp_milli,
+                                md,
+                            );
+                            if iof.offset == OffsetFlag::Open
+                                && nowts - cd.last_open_timestamp_milli < 1000
+                            {
+                                error!("距上次开仓发单时间间隔小于1秒");
+                                panic!("");
                             }
-                            Err(e) => Err(e),
+                            let order_ref = self.get_order_ref();
+                            match api.req_order_insert(
+                                &self.broker_id,
+                                &self.account,
+                                &cd.us.exchange,
+                                &cd.us.symbol,
+                                &iof,
+                                order_ref,
+                                self.get_request_id(),
+                                &self.shareholder_accounts,
+                            ) {
+                                Ok(()) => {
+                                    let mut x_order_ref = [0i8; 13];
+                                    set_cstr_from_str_truncate_i8(
+                                        &mut x_order_ref,
+                                        format!("{order_ref}").as_str(),
+                                    );
+                                    if let Some(logger) = &self.trading_logger {
+                                        logger.info(
+                                            "InputOrder",
+                                            &format!(
+                                                "[{}:{}] [{:?}] [{:?}] [{}] [{}]",
+                                                cd.us.exchange,
+                                                cd.us.symbol,
+                                                iof.direction,
+                                                iof.offset,
+                                                iof.price,
+                                                iof.volume
+                                            ),
+                                        );
+                                    }
+                                    let po = PendingOrder {
+                                        front_id: self.front_id,
+                                        session_id: self.session_id,
+                                        order_ref: x_order_ref,
+                                        order_ref_i32: order_ref,
+                                        order_sys_id: [0; 21],
+                                        volume_total_original: iof.volume,
+                                        volume_canceled: 0,
+                                        volume_traded: 0,
+                                        price: iof.price,
+                                        direction: iof.direction,
+                                        trades: vec![],
+                                        status: PendingOrderStatus::Pending,
+                                    };
+                                    self.sorted_cds[i].pol.push(po);
+                                    if iof.offset == OffsetFlag::Open {
+                                        self.sorted_cds[i].last_open_timestamp_milli = nowts;
+                                    }
+
+                                    Ok(())
+                                }
+                                Err(e) => Err(e),
+                            }
                         }
                     }
                     Operation::Cancel(ioaf) => {
@@ -781,10 +947,10 @@ impl<
 }
 
 impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
-    pub fn new(us: UniqueSymbol, price_tick: f64) -> Self {
+    pub fn new(us: UniqueSymbol, instrument: InstrumentField) -> Self {
         let cd = ContractDetail {
             us,
-            price_tick,
+            instrument,
             pl: vec![],
             pol: vec![],
             hol: vec![],
@@ -994,29 +1160,39 @@ impl<OT: OrderType, TT: TradeType> ContractDetail<OT, TT> {
             Some(target) => {
                 // pol 是活跃订单，只要有活跃订单就先撤再重发. pol 会由Spi返回的相关事件进行更新
                 // 如果要求撤单同时就发新单，则需要另外写处理逻辑
-                for o in self.pol.iter().filter(|po| {
-                    let price =
-                        md.get_counterparty_price(&po.direction, self.price_tick, target.shift);
-                    if (price - po.price).abs() < self.price_tick {
-                        info!(
-                            "价格未变不撤单: po={:?} md={:?} price_tick={} shift={}",
-                            po, md, self.price_tick, target.shift
+                if self.pol.len() > 0 {
+                    for o in self.pol.iter().filter(|po| {
+                        let price = md.get_counterparty_price(
+                            &po.direction,
+                            self.instrument.price_tick,
+                            target.shift,
                         );
-                        return false;
+                        let should_cancel = match po.direction {
+                            DirectionType::Long => price - po.price > self.instrument.price_tick,
+                            DirectionType::Short => po.price - price > self.instrument.price_tick,
+                        };
+                        if !should_cancel {
+                            info!(
+                                "价格未变不撤单: po={:?} md={:?} price_tick={} shift={}",
+                                po, md, self.instrument.price_tick, target.shift
+                            );
+                            return false;
+                        }
+                        should_cancel
+                    }) {
+                        info!("Cancel po={:?}", o);
+                        let ioaf = InputOrderActionField {
+                            front_id: o.front_id,
+                            session_id: o.session_id,
+                            order_ref: o.order_ref.clone(),
+                        };
+                        return Operation::Cancel(ioaf);
                     }
-                    return true;
-                }) {
-                    info!("po={:?}", o);
-                    let ioaf = InputOrderActionField {
-                        front_id: o.front_id,
-                        session_id: o.session_id,
-                        order_ref: o.order_ref.clone(),
-                    };
-                    return Operation::Cancel(ioaf);
+                    return Operation::NOP;
                 }
                 // 先平仓，再开仓
-                self.close_position(target, md, self.price_tick, trading_day)
-                    .or(self.open_position(target, md, self.price_tick, trading_day))
+                self.close_position(target, md, self.instrument.price_tick, trading_day)
+                    .or(self.open_position(target, md, self.instrument.price_tick, trading_day))
                 // 考虑到股票的情况，既不分平今平昨，同时还有最小交易量的限制，导致平仓的时候可能出现如昨仓还剩下2股，今仓8股，但最小交易量为10股/手，
                 // 这时平不出去，如果先平今的话，8股也不够一手
             }

@@ -411,7 +411,7 @@ pub mod route {
         match spi_msg {
             OnFrontDisconnected(p) => {
                 info!(
-                    "{}:{} on front disconnected {:?} 直接Exit ",
+                    "{}:{} {:?}",
                     state.broker_id, state.account, p
                 );
                 return Err(Error::FrontDisconnected);
@@ -551,6 +551,7 @@ pub mod route {
                 };
             }
             OnRtnInstrumentStatus(_p) => {}
+            OnHeartBeatWarning(_p) => {}
             other => {
                 info!("Un handled spi msg = {:?}", other);
             }
@@ -769,6 +770,7 @@ pub mod route {
                             if let Some(i) = &p.p_instrument {
                                 let xif = InstrumentField {
                                     price_tick: i.PriceTick,
+                                    is_close_today_allowed: true,
                                 };
                                 let us = UniqueSymbol::new(
                                     get_ascii_str(&i.ExchangeID).unwrap(),
@@ -777,8 +779,6 @@ pub mod route {
                                 state.hm_inst.insert(us, xif);
                             }
                             if p.b_is_last {
-                                // let trading_day = &state.trading_day_ctp;
-                                // 登陆成功之后从redis开始拉取消息
                                 let mut req = CThostFtdcQryInvestorPositionDetailField::default();
                                 set_cstr_from_str_truncate_i8(&mut req.BrokerID, &ca.broker_id);
                                 set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
@@ -908,13 +908,7 @@ pub mod route {
         }
         let flow_path = format!(".cache/ctp_md_flow_{}_{}//", ca.broker_id, ca.account);
         check_make_dir(&flow_path);
-        let mut mdapi = unsafe {
-            Box::from_raw(CThostFtdcMdApi_CreateFtdcMdApi(
-                flow_path.as_ptr() as *const i8,
-                false,
-                false,
-            ))
-        };
+        let mut mdapi = md_api::create_api(&flow_path, false, false);
         for front in ca.md_fronts.iter().filter(|f| !f.starts_with("#")) {
             info!("Md RegisterFront {}", front);
             mdapi.register_front(CString::new(front.as_str()).unwrap());

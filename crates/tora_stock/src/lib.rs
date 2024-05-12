@@ -238,7 +238,9 @@ pub mod route {
         }
         fn offset_flag(&self) -> OffsetFlag {
             match self.Direction {
-                TORASTOCKAPI_TORA_TSTP_D_Buy => OffsetFlag::Open,
+                TORASTOCKAPI_TORA_TSTP_D_Buy
+                | TORASTOCKAPI_TORA_TSTP_D_ReverseRepur
+                | TORASTOCKAPI_TORA_TSTP_D_IPO => OffsetFlag::Open,
                 TORASTOCKAPI_TORA_TSTP_D_Sell => OffsetFlag::Close,
                 _ => OffsetFlag::OfOther,
             }
@@ -335,12 +337,77 @@ pub mod route {
     }
 
     fn to_direction_type(d: TORASTOCKAPI_TTORATstpDirectionType) -> DirectionType {
-        if d == TORASTOCKAPI_TORA_TSTP_D_Buy {
-            DirectionType::Long
-        } else if d == TORASTOCKAPI_TORA_TSTP_D_Sell {
-            DirectionType::Short
-        } else {
-            panic!("unkown tora direction={}", d);
+        //     	///买入
+        // const char TORA_TSTP_D_Buy = '0';
+        // ///卖出
+        // const char TORA_TSTP_D_Sell = '1';
+        // ///ETF申购
+        // const char TORA_TSTP_D_ETFPur = '2';
+        // ///ETF赎回
+        // const char TORA_TSTP_D_ETFRed = '3';
+        // ///新股申购
+        // const char TORA_TSTP_D_IPO = '4';
+        // ///正回购
+        // const char TORA_TSTP_D_Repurchase = '5';
+        // ///逆回购
+        // const char TORA_TSTP_D_ReverseRepur = '6';
+        // ///开放式基金申购
+        // const char TORA_TSTP_D_OeFundPur = '8';
+        // ///开放式基金赎回
+        // const char TORA_TSTP_D_OeFundRed = '9';
+        // ///担保品划入
+        // const char TORA_TSTP_D_CollateralIn = 'a';
+        // ///担保品划出
+        // const char TORA_TSTP_D_CollateralOut = 'b';
+        // ///质押入库
+        // const char TORA_TSTP_D_PledgeIn = 'd';
+        // ///质押出库
+        // const char TORA_TSTP_D_PledgeOut = 'e';
+        // ///配股配债
+        // const char TORA_TSTP_D_Rationed = 'f';
+        // ///基金拆分
+        // const char TORA_TSTP_D_Split = 'g';
+        // ///基金合并
+        // const char TORA_TSTP_D_Merge = 'h';
+        // ///融资买入
+        // const char TORA_TSTP_D_CreditBuy = 'i';
+        // ///融券卖出
+        // const char TORA_TSTP_D_CreditSell = 'j';
+        // ///卖券还款
+        // const char TORA_TSTP_D_SellRepay = 'k';
+        // ///买券还券
+        // const char TORA_TSTP_D_BuyRepay = 'l';
+        // ///还券划转
+        // const char TORA_TSTP_D_RepayTransfer = 'm';
+        // ///余券划转
+        // const char TORA_TSTP_D_SurplusTransfer = 'n';
+        // ///源券划转
+        // const char TORA_TSTP_D_SourceTransfer = 'o';
+        // ///债券转股
+        // const char TORA_TSTP_D_BondConvertStock = 't';
+        // ///债券回售
+        // const char TORA_TSTP_D_BondPutback = 'u';
+        // ///ETF实物申购
+        // const char TORA_TSTP_D_ETFOtPur = 'v';
+        // ///ETF实物赎回
+        // const char TORA_TSTP_D_ETFOtRed = 'w';
+        // ///回售撤销
+        // const char TORA_TSTP_D_PutbackRelieve = 'x';
+        // ///意向买入
+        // const char TORA_TSTP_D_IOIBuy = 'A';
+        // ///意向卖出
+        // const char TORA_TSTP_D_IOISell = 'B';
+        // ///成交确认买入
+        // const char TORA_TSTP_D_TCRBuy = 'C';
+        // ///成交确认卖出
+        // const char TORA_TSTP_D_TCRSell = 'D';
+
+        match d {
+            TORASTOCKAPI_TORA_TSTP_D_Buy | TORASTOCKAPI_TORA_TSTP_D_IPO => DirectionType::Long,
+            TORASTOCKAPI_TORA_TSTP_D_Sell | TORASTOCKAPI_TORA_TSTP_D_ReverseRepur => {
+                DirectionType::Short
+            }
+            _ => panic!("unkown tora direction={}", d),
         }
     }
 
@@ -734,12 +801,16 @@ pub mod route {
             }
             OnRspOrderInsert(ref p) => {
                 // 需要构建order通知撤单
-                info!(
-                    "{}:{} RspOrderInsert={:?}",
-                    state.broker_id,
-                    state.account,
-                    print_rsp_info!(&p.p_rsp_info_field)
-                );
+                if let Some(rsp_info) = p.p_rsp_info_field {
+                    if rsp_info.ErrorID != 0 {
+                        error!(
+                            "{}:{} RspOrderInsert={:?}",
+                            state.broker_id,
+                            state.account,
+                            print_rsp_info!(&p.p_rsp_info_field)
+                        );
+                    }
+                }
             }
             OnRspOrderAction(ref p) => {
                 info!(
@@ -781,10 +852,11 @@ pub mod route {
             OnRtnOrder(ref rtn) => {
                 if let Some(o) = rtn.p_order_field {
                     info!(
-                        "OnRtnOrder o.sys_id={} status={} VolumeCanceled={}",
+                        "OnRtnOrder o.sys_id={} status={} VolumeCanceled={} Direction={}",
                         ascii_cstr_to_str_i8(&o.OrderSysID).unwrap(),
                         o.OrderStatus,
-                        o.VolumeCanceled
+                        o.VolumeCanceled,
+                        o.Direction,
                     );
                     let submit_status = o.OrderSubmitStatus;
                     state.update_by_order(o).unwrap();
@@ -851,6 +923,11 @@ pub mod route {
                 }
             }
             OnRtnMarketStatus(_p) => {}
+            OnRtnTransferFund(p) => {
+                if let Some(p) = p.p_transfer_fund_field {
+                    info!("转账{}", p.Amount);
+                }
+            }
             other => {
                 info!("tora stock unhandled spi msg = {:?}", other);
             }
@@ -997,6 +1074,7 @@ pub mod route {
                             if let Some(i) = &p.p_security_field {
                                 let xif = InstrumentField {
                                     price_tick: i.PriceTick,
+                                    is_close_today_allowed: false,
                                 };
                                 let us = UniqueSymbol::new(
                                     exchange_from_tora_stock_exchange_id(i.ExchangeID),
@@ -1236,10 +1314,10 @@ pub mod query {
         };
         if let Some(f) = ca.fens_trade_fronts.first() {
             api.register_name_server(f);
-            info!("Tora stock register name server {f}");
+            info!("Tora stock query register name server {f}");
         } else if let Some(f) = ca.trade_fronts.first() {
             api.register_front(f);
-            info!("Tora stock register front {f}");
+            info!("Tora stock query register front {f}");
         }
         api.subscribe_public_topic(TORALEV1API_TORA_TE_RESUME_TYPE_TORA_TERT_QUICK);
         api.subscribe_private_topic(TORALEV1API_TORA_TE_RESUME_TYPE_TORA_TERT_QUICK);
@@ -1252,6 +1330,7 @@ pub mod query {
             use trader_api::TORASTOCKAPI_CTORATstpTraderSpiOutput::*;
             match spi_msg {
                 OnFrontConnected(_p) => {
+                    info!("OnFrontConnected");
                     let account = &ca;
                     let mut req = TORASTOCKAPI_CTORATstpReqUserLoginField::default();
                     req.LogInAccountType = TORALEV1API_TORA_TSTP_LACT_UserID as i8;
@@ -1280,6 +1359,7 @@ pub mod query {
                     return Err(base::error::Error::FrontDisconnected);
                 }
                 OnRspUserLogin(ref p) => {
+                    info!("OnRspUserLogin");
                     if p.p_rsp_info_field.as_ref().unwrap().ErrorID == 0 {
                         let u = p.p_rsp_user_login_field.as_ref().unwrap();
                         result.trading_day = get_ascii_str(&u.TradingDay)
@@ -1312,6 +1392,7 @@ pub mod query {
                         result.instruments.push(i);
                     }
                     if p.b_is_last {
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                         let mut req = TORASTOCKAPI_CTORATstpQryPositionField::default();
                         let ret = api.req_qry_position(&mut req, get_request_id());
                         if ret != 0 {
@@ -1338,6 +1419,7 @@ pub mod query {
                         result.orders.push(p);
                     }
                     if p.b_is_last {
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                         let mut req = TORASTOCKAPI_CTORATstpQryTradeField::default();
                         let ret = api.req_qry_trade(&mut req, get_request_id());
                         if ret != 0 {
@@ -1350,6 +1432,7 @@ pub mod query {
                         result.trades.push(p);
                     }
                     if p.b_is_last {
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                         let mut req = TORASTOCKAPI_CTORATstpQryTradingAccountField::default();
                         set_cstr_from_str_truncate_i8(&mut req.InvestorID, &ca.account);
                         let ret = api.req_qry_trading_account(&mut req, get_request_id());
@@ -1363,6 +1446,7 @@ pub mod query {
                         result.trading_account = p;
                     }
                     if p.b_is_last {
+                        info!("break");
                         break;
                     }
                 }
@@ -1375,9 +1459,11 @@ pub mod query {
                 _ => {}
             }
         }
-        info!("{} 查询完成.", ca.account);
-        api.join();
-        api.release();
+        info!(
+            "{} 查询完成. instruments.len={}",
+            ca.account,
+            result.instruments.len()
+        );
         Ok(result)
     }
 }

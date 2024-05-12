@@ -27,6 +27,9 @@ impl MyHttpLogger {
         let buffer = Arc::new(std::sync::Mutex::new(VecDeque::new()));
         let buffer2 = Arc::clone(&buffer);
         tokio::spawn(async move {
+            if host == "" {
+                return;
+            }
             let url = format!("{host}/log/info");
             loop {
                 notify2.notified().await;
@@ -41,7 +44,12 @@ impl MyHttpLogger {
                     }
                     let req = ReqLogInfo {
                         title: title,
-                        content: format!("[{}:{}] {content}", broker_id, account),
+                        content: format!(
+                            "[{}] [{}:{}] {content}",
+                            broker_id,
+                            account,
+                            chrono::Local::now().format("%Y-%m-%d %H:%M:%S")
+                        ),
                         token: token.clone(),
                     };
 

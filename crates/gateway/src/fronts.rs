@@ -226,10 +226,6 @@ pub mod http {
         State(s): State<ShareState>,
         Json(req): Json<ReqSetContractTarget>,
     ) -> Result<XResponse<String>, Error> {
-        // info!(
-        //     "set_contract_target [{}:{}] position={} shift={}",
-        //     req.target.exchange, req.target.symbol, req.target.position, req.target.shift
-        // );
         if req.target.symbol == "" {
             return Err(Error::SimpleErr(simple_error::SimpleError::new(
                 "Symbol can't be null",
@@ -254,18 +250,21 @@ pub mod http {
         let req_msg = ReqMessage::SetContractTarget(req.target);
         let resp = s.executor.lock().await.query(&req.account, req_msg).await?;
         if let Err(e) = &resp {
-            error!("set_contract_target {e} , target={:?}", target);
+            match e {
+                base::error::Error::MdNotValid => (),
+                _ => error!("set_contract_target {e} , target={:?}", target),
+            }
         }
         let resp = resp?;
         Ok(XResponse::<String>::from(&resp))
     }
 
-    #[axum_macros::debug_handler]
     async fn full_query(
         State(_s): State<ShareState>,
         Json(req): Json<ReqFullQuery>,
     ) -> Result<XResponse<String>, Error> {
-        let timeout = 50;
+        info!("full_query={:?}", req);
+        let timeout = 30;
         match req.ta.route_type.as_str() {
             "ctp_futures" => {
                 match tokio::time::timeout(
@@ -294,6 +293,7 @@ pub mod http {
                         let result = result?;
                         let config = bincode::config::standard();
                         let encoded: Vec<u8> = bincode::encode_to_vec(&result, config).unwrap();
+                        info!("tora_stock full_query encoded.len={}", encoded.len());
                         Ok(XResponse::<String>::from(&encoded))
                     }
                     Err(_) => Err(Error::BaseErr(base::error::Error::QueryTimeout)),
