@@ -21,6 +21,37 @@ cargo build
 cargo run --example ctp-query
 ```
 
+### gateway
+* 运行网关
+```
+sh scripts/run_gateway.sh
+```
+
+
+* 网关处理账号登陆，重连，查询，下单的细节
+* 网关默认提供一个http api供远程调用
+* 网关提供一个持仓对齐功能，比如发送请求设定合约 SHFE:ru2409为3手多头持仓，那么post发送以下请求到网关即可:
+```
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+	"broker_id": "9999",
+	"account": "143650", 
+  	target:{
+		"exchange":"SHFE",
+		"symbol": "ru2409",
+		"position": 3, 
+		"shift": 1,
+		"close_priority": "YesterdayFirt"
+	}, 
+	credential:""}' \
+  http://localhost:10111/api/set_contract_target
+
+```
+* 网关会自动订阅合约行情，根据最新报价偏移shift * price_tick作为发单价
+* close_priority 用于指定优先平仓顺序，因为某些情况下平昨和平今的手续费不一样
+
+
 ### 交流
 
 * 微信号 string_io
