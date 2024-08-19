@@ -210,6 +210,8 @@ pub enum InstrumentType {
 pub struct InstrumentField {
     pub price_tick: f64,
     pub is_close_today_allowed: bool,
+    pub ctp_product_class: i8,
+    pub tora_instrument_type: i8,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -231,6 +233,8 @@ pub enum OffsetFlag {
     CloseToday,
     CloseYesterday,
     OfOther,
+    // 逆回购
+    ReverseRepur,
 }
 
 impl DirectionType {
@@ -606,7 +610,10 @@ impl<
                 let instrument = self
                     .hm_inst
                     .get(&us)
-                    .ok_or(Error::InstrumentNotFound)?
+                    .ok_or(Error::InstrumentNotFound {
+                        exchange: us.exchange.clone(),
+                        symbol: us.symbol.clone(),
+                    })?
                     .clone();
                 self.sorted_cds
                     .insert(i, ContractDetail::new(us, instrument));
@@ -636,7 +643,7 @@ impl<
         for pd in pdl.into_iter() {
             pd.check_open_date();
             let us = UniqueSymbol::new(&pd.exchange, &pd.symbol);
-            let i = self.contract_detail_entry(us)?;
+            let i = self.contract_detail_entry(us).expect("严重错误:");
             self.sorted_cds[i].pl.push(pd);
         }
         let mut v: Vec<OT> = vec![];
@@ -673,6 +680,22 @@ impl<
             self.sorted_cds[i].pol.push(po);
         }
         Ok(())
+    }
+
+    pub fn print_position_info(&self) {
+        for cd in self.sorted_cds.iter() {
+            info!(
+                "-------------------------[{}]-------------------------",
+                cd.us.symbol
+            );
+            for p in cd.pl.iter() {
+                info!("{:?} {}", p.direction, p.volume);
+            }
+            info!(
+                "-------------------------[{}]-------------------------",
+                cd.us.symbol
+            );
+        }
     }
 
     /// 委托更新
@@ -836,7 +859,7 @@ impl<
                 };
                 match op {
                     Operation::NOP => Ok(()),
-                    Operation::Input(iof) => {
+                    Operation::Input(mut iof) => {
                         let cd = &self.sorted_cds[i];
                         if !cd.instrument.is_close_today_allowed
                             && iof.offset == OffsetFlag::CloseToday
@@ -863,6 +886,9 @@ impl<
                                 panic!("");
                             }
                             let order_ref = self.get_order_ref();
+                            if cd.instrument.tora_instrument_type == 'p' || cd.instrument.tora_instrument_type == 'U' {
+                                iof.offset = OffsetFlag::ReverseRepur;
+                            }
                             match api.req_order_insert(
                                 &self.broker_id,
                                 &self.account,

@@ -42,7 +42,7 @@ curl -X POST \
 		"symbol": "ru2409",
 		"position": 3, 
 		"shift": 1,
-		"close_priority": "YesterdayFirt"
+		"close_priority": "YesterdayFirst"
 	}, 
 	"credential":""}' \
   http://localhost:10111/api/set_contract_target

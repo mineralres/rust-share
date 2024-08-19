@@ -157,6 +157,7 @@ pub mod route {
     use base::*;
     use chrono::Local;
     use futures::StreamExt;
+    use itertools::Itertools;
     use log::{error, info};
     use std::collections::HashMap;
     use std::sync::Arc;
@@ -528,11 +529,14 @@ pub mod route {
                 // ///回售撤销
                 // #define TORA_TSTP_D_PutbackRelieve 'x'
             }
-
             input.Direction = match i.direction {
                 DirectionType::Long => TORASTOCKAPI_TORA_TSTP_D_Buy,
                 DirectionType::Short => TORASTOCKAPI_TORA_TSTP_D_Sell,
             } as i8;
+            match i.offset {
+                OffsetFlag::ReverseRepur => input.Direction = TORA_TSTP_D_ReverseRepur,
+                _ => (),
+            };
             input.VolumeTotalOriginal = i.volume;
             input.LimitPrice = i.price;
             input.OrderPriceType = TORASTOCKAPI_TORA_TSTP_OPT_LimitPrice as i8;
@@ -1075,6 +1079,8 @@ pub mod route {
                                 let xif = InstrumentField {
                                     price_tick: i.PriceTick,
                                     is_close_today_allowed: false,
+                                    ctp_product_class: 0,
+                                    tora_instrument_type: i.SecurityType,
                                 };
                                 let us = UniqueSymbol::new(
                                     exchange_from_tora_stock_exchange_id(i.ExchangeID),
@@ -1092,12 +1098,12 @@ pub mod route {
                         }
                         OnRspQryPosition(ref p) => {
                             if let Some(p) = p.p_position_field {
-                                // info!(
-                                //     "{} TodayBSPos={} HistoryPos={}",
-                                //     get_ascii_str(&p.SecurityID).unwrap(),
-                                //     p.TodayBSPos,
-                                //     p.HistoryPos
-                                // );
+                                info!(
+                                    "{} TodayBSPos={} HistoryPos={}",
+                                    get_ascii_str(&p.SecurityID).unwrap(),
+                                    p.TodayBSPos,
+                                    p.HistoryPos
+                                );
                                 let (tpd, ypd) = make_position_detail(&p);
                                 cached_pdl.push(tpd);
                                 cached_pdl.push(ypd);
@@ -1196,10 +1202,21 @@ pub mod route {
             cached_orders.len(),
             cached_trades.len()
         );
+        let cached_pdl = cached_pdl
+            .iter()
+            .filter(|pd| {
+                // 新股，新债 申购会导致找不到合约
+                let us = UniqueSymbol::new(&pd.exchange, &pd.symbol);
+                state.hm_inst.get(&us).is_some()
+            })
+            .cloned()
+            .collect_vec();
         if let Err(e) = state.update_on_initialized(cached_pdl, cached_orders, cached_trades) {
-            error!("Cached orders update {e}");
+            // 如果前面一个合约的更新失败，可能导致后面的持仓不正确，所以要panic
+            panic!("Cached orders update {e}");
         }
         info!("{} 初始化查询完成.", ca.account);
+        state.print_position_info();
         let mut api = api as Box<dyn TraderApiType + Send>;
 
         {

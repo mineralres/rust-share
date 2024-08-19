@@ -1,7 +1,8 @@
 #[derive(Debug, derive_more::Display, derive_more::From)]
 pub enum Error {
     AccountNotFound,
-    InstrumentNotFound,
+    #[display(fmt = "{}:{}", exchange, symbol)]
+    InstrumentNotFound { exchange: String, symbol: String },
     DumplicateTrade,
     FrontDisconnected,
     CtpAuthFailed,
@@ -20,5 +21,5 @@ pub enum Error {
     InvalidRouteType,
     QueryTimeout,
     MdNotValid,
-    TraderNotValid
+    TraderNotValid,
 }

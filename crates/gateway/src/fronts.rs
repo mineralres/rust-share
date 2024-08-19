@@ -95,18 +95,6 @@ pub mod http {
             }
         }
 
-        // impl XResponse<String> {
-        //     pub fn new(v: &Vec<u8>) -> Self {
-        //         use base64::prelude::*;
-        //         let data = BASE64_STANDARD.encode(v);
-        //         Self {
-        //             code: 0,
-        //             msg: "".into(),
-        //             data,
-        //         }
-        //     }
-        // }
-
         #[derive(Default, serde::Serialize, serde::Deserialize)]
         pub struct ReqQueryTradingAccount {
             pub broker_id: String,

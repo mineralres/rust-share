@@ -410,10 +410,7 @@ pub mod route {
         use trader_api::CThostFtdcTraderSpiOutput::*;
         match spi_msg {
             OnFrontDisconnected(p) => {
-                info!(
-                    "{}:{} {:?}",
-                    state.broker_id, state.account, p
-                );
+                info!("{}:{} {:?}", state.broker_id, state.account, p);
                 return Err(Error::FrontDisconnected);
             }
             OnRtnTradingNotice(ref p) => {
@@ -771,6 +768,8 @@ pub mod route {
                                 let xif = InstrumentField {
                                     price_tick: i.PriceTick,
                                     is_close_today_allowed: true,
+                                    ctp_product_class: i.ProductClass,
+                                    tora_instrument_type: 0,
                                 };
                                 let us = UniqueSymbol::new(
                                     get_ascii_str(&i.ExchangeID).unwrap(),
