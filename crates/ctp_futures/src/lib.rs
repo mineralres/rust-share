@@ -349,6 +349,7 @@ pub mod route {
                 OffsetFlag::Close => THOST_FTDC_OF_Close,
                 OffsetFlag::CloseToday => THOST_FTDC_OF_CloseToday,
                 OffsetFlag::CloseYesterday => THOST_FTDC_OF_CloseYesterday,
+                OffsetFlag::ReverseRepur => panic!("CTP接口不支持回购"),
                 OffsetFlag::OfOther => panic!("Invalid offset"),
             } as i8;
             input.CombHedgeFlag[0] = THOST_FTDC_HF_Speculation as i8;

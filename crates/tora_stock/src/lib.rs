@@ -534,7 +534,7 @@ pub mod route {
                 DirectionType::Short => TORASTOCKAPI_TORA_TSTP_D_Sell,
             } as i8;
             match i.offset {
-                OffsetFlag::ReverseRepur => input.Direction = TORA_TSTP_D_ReverseRepur,
+                OffsetFlag::ReverseRepur => input.Direction = TORASTOCKAPI_TORA_TSTP_D_ReverseRepur,
                 _ => (),
             };
             input.VolumeTotalOriginal = i.volume;
@@ -1034,6 +1034,12 @@ pub mod route {
                                 &mut req.MacAddress,
                                 account.mac_address.as_str(),
                             );
+                            if let Some(dp) = &account.dynamic_password {
+                                set_cstr_from_str_truncate_i8(
+                                    &mut req.DynamicPassword,
+                                    dp.as_str(),
+                                );
+                            }
                             api.req_user_login(&mut req, state.get_request_id());
                         }
                         OnFrontDisconnected(p) => {
@@ -1203,14 +1209,42 @@ pub mod route {
             cached_trades.len()
         );
         let cached_pdl = cached_pdl
-            .iter()
+            .into_iter()
             .filter(|pd| {
                 // 新股，新债 申购会导致找不到合约
                 let us = UniqueSymbol::new(&pd.exchange, &pd.symbol);
                 state.hm_inst.get(&us).is_some()
             })
-            .cloned()
             .collect_vec();
+        let cached_orders = cached_orders
+            .into_iter()
+            .filter(|o| {
+                let exchange = exchange_from_tora_stock_exchange_id(o.ExchangeID);
+                let symbol = get_ascii_str(&o.SecurityID).unwrap();
+                state
+                    .hm_inst
+                    .get(&UniqueSymbol::new(&exchange, &symbol))
+                    .is_some()
+            })
+            .collect_vec();
+
+        let cached_trades = cached_trades
+            .into_iter()
+            .filter(|t| {
+                let exchange = exchange_from_tora_stock_exchange_id(t.ExchangeID);
+                let symbol = get_ascii_str(&t.SecurityID).unwrap();
+                state
+                    .hm_inst
+                    .get(&UniqueSymbol::new(&exchange, &symbol))
+                    .is_some()
+            })
+            .collect_vec();
+
+        info!(
+            "After filter cached_orders={} cached_trades={}",
+            cached_orders.len(),
+            cached_trades.len()
+        );
         if let Err(e) = state.update_on_initialized(cached_pdl, cached_orders, cached_trades) {
             // 如果前面一个合约的更新失败，可能导致后面的持仓不正确，所以要panic
             panic!("Cached orders update {e}");

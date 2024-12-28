@@ -886,7 +886,9 @@ impl<
                                 panic!("");
                             }
                             let order_ref = self.get_order_ref();
-                            if cd.instrument.tora_instrument_type == 'p' || cd.instrument.tora_instrument_type == 'U' {
+                            if cd.instrument.tora_instrument_type == 'p' as i8
+                                || cd.instrument.tora_instrument_type == 'U' as i8
+                            {
                                 iof.offset = OffsetFlag::ReverseRepur;
                             }
                             match api.req_order_insert(

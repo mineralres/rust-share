@@ -53,19 +53,29 @@ pub struct TradingAccountConfig {
     pub query_fronts: Vec<String>,
     pub fens_trade_fronts: Vec<String>,
     pub fens_md_fronts: Vec<String>,
+    pub dynamic_password: Option<String>,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, Clone, Default)]
 #[serde(default)]
 pub struct ExecutorConfig {
+    // 开启
     pub enabled: bool,
+    // 端口
     pub http_port: u16,
+    // https端口
     pub https_port: u16,
+    // 类型 ctp_futures, tora_stock
     pub r#type: String,
+    // 账户
     pub accounts: Vec<TradingAccountConfig>,
+    // 行情源
     pub md_account: TradingAccountConfig,
+    // 开启后只允许一个下单源锁定，排他性下单
     pub lock_check: bool,
+    // 排他性锁定的ttl
     pub lock_credential_ttl: i64,
+    // 锁定时用的token
     pub token: String,
 }
 

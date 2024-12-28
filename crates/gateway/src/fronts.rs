@@ -330,6 +330,7 @@ pub mod http {
         key
     }
 
+    /// 锁住账户以防止多个渠道下单
     async fn lock_trading_account(
         State(s): State<ShareState>,
         Json(req): Json<ReqLockTradingAccount>,
@@ -364,6 +365,7 @@ pub mod http {
         }
     }
 
+    /// 持续锁住账户
     async fn refresh_lock_trading_account(
         State(s): State<ShareState>,
         Json(req): Json<ReqRefreshLockTradingAccount>,

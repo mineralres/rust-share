@@ -1,7 +1,7 @@
 #[derive(Debug, derive_more::Display, derive_more::From)]
 pub enum Error {
     AccountNotFound,
-    #[display(fmt = "{}:{}", exchange, symbol)]
+    #[display(fmt = "InstrumentNotFound {}:{}", exchange, symbol)]
     InstrumentNotFound { exchange: String, symbol: String },
     DumplicateTrade,
     FrontDisconnected,
