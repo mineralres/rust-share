@@ -18,7 +18,10 @@ fn get_full_name_of_entity(e: &Entity) -> String {
         {
             break;
         }
-        v.push(e.get_name().expect(""));
+        let name = e.get_name().expect("");
+        if name != "wrapper.hpp" {
+            v.push(name);
+        }
         xe = Box::new(e);
     }
     v.reverse();
@@ -105,9 +108,18 @@ fn parse_api(tu: &TranslationUnit, api_name: &str) -> String {
                                 TypeKind::IncompleteArray => {
                                     ("Vec<std::ffi::CString>".to_string(), ".iter().map(|cs| cs.as_ptr()).collect::<Vec<_>>().as_mut_ptr() as *mut *mut i8".to_string())
                                 }
+                                TypeKind::Elaborated => {
+                                    println!("tp={:?}", tp);
+                                    println!("tp={:?}", tp.get_declaration());
+                                    println!("tp={:?}", get_full_name_of_entity(&tp.get_declaration().unwrap()));
+                                    let d = tp.get_declaration().unwrap();
+                                    (get_full_name_of_entity(&d), "".to_string())
+                                }
                                 _ => {
                                     // (tp.get_display_name(), "".to_string())
                                     println!("tp={:?}", tp);
+                                    println!("tp={:?}", tp.get_declaration());
+                                    println!("tp={:?}", get_full_name_of_entity(&tp.get_declaration().unwrap()));
                                     panic!("");
                                 }
                             };

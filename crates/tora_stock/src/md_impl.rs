@@ -95,7 +95,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              n_request_id)
                                         }
                             }
-                            pub fn subscribe_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -104,7 +104,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -113,7 +113,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_ph_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_ph_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribePHMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -122,7 +122,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_ph_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_ph_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribePHMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -131,7 +131,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_special_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_special_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSpecialMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -140,7 +140,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_special_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_special_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSpecialMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -149,7 +149,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSimplifyMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -158,7 +158,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSimplifyMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -167,7 +167,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSecurityStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -176,7 +176,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSecurityStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -185,28 +185,28 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_market_status(&mut self, market_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_market_status(&mut self, market_id: TORALEV1API_TTORATstpMarketIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeMarketStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
                                              market_id)
                                         }
                             }
-                            pub fn un_subscribe_market_status(&mut self, market_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_market_status(&mut self, market_id: TORALEV1API_TTORATstpMarketIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeMarketStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
                                              market_id)
                                         }
                             }
-                            pub fn subscribe_imc_params(&mut self, market_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_imc_params(&mut self, market_id: TORALEV1API_TTORATstpMarketIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeImcParams)(self as *mut TORALEV1API_CTORATstpXMdApi,
                                              market_id)
                                         }
                             }
-                            pub fn un_subscribe_imc_params(&mut self, market_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_imc_params(&mut self, market_id: TORALEV1API_TTORATstpMarketIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeImcParams)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -237,7 +237,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              n_request_id)
                                         }
                             }
-                            pub fn subscribe_sp_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_sp_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSPMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -246,7 +246,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_sp_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_sp_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSPMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -255,7 +255,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_sp_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_sp_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSPSimplifyMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -264,7 +264,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_sp_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_sp_simplify_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSPSimplifyMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -273,7 +273,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_sp_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_sp_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSPSecurityStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -282,7 +282,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_sp_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_sp_security_status(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSPSecurityStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -291,14 +291,14 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_sp_market_status(&mut self, market_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_sp_market_status(&mut self, market_id: TORALEV1API_TTORATstpMarketIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeSPMarketStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
                                              market_id)
                                         }
                             }
-                            pub fn un_subscribe_sp_market_status(&mut self, market_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_sp_market_status(&mut self, market_id: TORALEV1API_TTORATstpMarketIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeSPMarketStatus)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -313,7 +313,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              n_request_id)
                                         }
                             }
-                            pub fn subscribe_rapid_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_rapid_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeRapidMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -322,7 +322,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_rapid_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_rapid_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeRapidMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -331,7 +331,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn subscribe_funds_flow_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn subscribe_funds_flow_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_SubscribeFundsFlowMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
@@ -340,7 +340,7 @@ let psz_source_ip = CString::new(psz_source_ip).unwrap();
                                              exchange_id)
                                         }
                             }
-                            pub fn un_subscribe_funds_flow_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: std::os::raw::c_char) -> std::os::raw::c_int {
+                            pub fn un_subscribe_funds_flow_market_data(&mut self, pp_security_id: &mut StringArray, n_count: std::os::raw::c_int, exchange_id: TORALEV1API_TTORATstpExchangeIDType) -> std::os::raw::c_int {
                                     
                                     unsafe {
                                            ((*(*self).vtable_).TORALEV1API_CTORATstpXMdApi_UnSubscribeFundsFlowMarketData)(self as *mut TORALEV1API_CTORATstpXMdApi,
