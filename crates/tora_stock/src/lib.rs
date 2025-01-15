@@ -862,37 +862,45 @@ pub mod route {
                         o.VolumeCanceled,
                         o.Direction,
                     );
-                    let submit_status = o.OrderSubmitStatus;
-                    state.update_by_order(o).unwrap();
-                    if o.pending_status() == PendingOrderStatus::Canceled {
-                        let submit_status_msg = match submit_status as u8 as char {
-                            '0' => "THOST_FTDC_OSS_InsertSubmitted 已经提交",
-                            '1' => "THOST_FTDC_OSS_CancelSubmitted 撤单已提交",
-                            '2' => "THOST_FTDC_OSS_ModifySubmitted 修改提交",
-                            '3' => "THOST_FTDC_OSS_Accepted 已经接受",
-                            '4' => "THOST_FTDC_OSS_InsertRejected 报单已被拒绝",
-                            '5' => "THOST_FTDC_OSS_CancelRejected 撤单已经被拒绝",
-                            '6' => "THOST_FTDC_OSS_ModifyRejected 改单已经被拒绝",
-                            _ => panic!(
-                                "OrderSubmitStatus={} submit_status={}",
-                                submit_status, submit_status
-                            ),
-                        };
-                        info!("已撤单 OrderSubmitStatus={}", submit_status_msg);
-                        let status_msg = gb18030_cstr_to_str_i8(&o.StatusMsg).to_string();
-                        if submit_status == TORASTOCKAPI_TORA_TSTP_OSS_CancelRejected as i8
-                            || status_msg.contains("当前状态禁止")
-                            || status_msg.contains("废单")
-                        {
-                            info!("非交易时间不发单, OrderSubmitStatus={}", submit_status);
-                        } else {
-                            // 价格变化导致的撤单，要及时重新发单
-                            let us = UniqueSymbol::new(
-                                exchange_from_tora_stock_exchange_id(o.ExchangeID),
-                                get_ascii_str(&o.SecurityID).expect("OnRtnOrder get_ascii_str"),
-                            );
-                            if let Err(e) = state.set_check_target(us, None, &cmc, api).await {
-                                error!("OnRtnOrder set_check_target {e}");
+                    if o.Direction == '4' as i8 {
+                        info!(
+                            "新股申购委托不需要update_by_order {} VolumeTraded={}",
+                            gb18030_cstr_to_str_i8(&o.SecurityID),
+                            o.VolumeTraded
+                        );
+                    } else {
+                        let submit_status = o.OrderSubmitStatus;
+                        state.update_by_order(o).unwrap();
+                        if o.pending_status() == PendingOrderStatus::Canceled {
+                            let submit_status_msg = match submit_status as u8 as char {
+                                '0' => "THOST_FTDC_OSS_InsertSubmitted 已经提交",
+                                '1' => "THOST_FTDC_OSS_CancelSubmitted 撤单已提交",
+                                '2' => "THOST_FTDC_OSS_ModifySubmitted 修改提交",
+                                '3' => "THOST_FTDC_OSS_Accepted 已经接受",
+                                '4' => "THOST_FTDC_OSS_InsertRejected 报单已被拒绝",
+                                '5' => "THOST_FTDC_OSS_CancelRejected 撤单已经被拒绝",
+                                '6' => "THOST_FTDC_OSS_ModifyRejected 改单已经被拒绝",
+                                _ => panic!(
+                                    "OrderSubmitStatus={} submit_status={}",
+                                    submit_status, submit_status
+                                ),
+                            };
+                            info!("已撤单 OrderSubmitStatus={}", submit_status_msg);
+                            let status_msg = gb18030_cstr_to_str_i8(&o.StatusMsg).to_string();
+                            if submit_status == TORASTOCKAPI_TORA_TSTP_OSS_CancelRejected as i8
+                                || status_msg.contains("当前状态禁止")
+                                || status_msg.contains("废单")
+                            {
+                                info!("非交易时间不发单, OrderSubmitStatus={}", submit_status);
+                            } else {
+                                // 价格变化导致的撤单，要及时重新发单
+                                let us = UniqueSymbol::new(
+                                    exchange_from_tora_stock_exchange_id(o.ExchangeID),
+                                    get_ascii_str(&o.SecurityID).expect("OnRtnOrder get_ascii_str"),
+                                );
+                                if let Err(e) = state.set_check_target(us, None, &cmc, api).await {
+                                    error!("OnRtnOrder set_check_target {e}");
+                                }
                             }
                         }
                     }
@@ -1035,6 +1043,7 @@ pub mod route {
                                 account.mac_address.as_str(),
                             );
                             if let Some(dp) = &account.dynamic_password {
+                                info!("Input dynamic password {}", dp);
                                 set_cstr_from_str_truncate_i8(
                                     &mut req.DynamicPassword,
                                     dp.as_str(),
