@@ -18,7 +18,7 @@ cargo build
 
 ### 示例
 ```
-cargo run --example ctp-query
+cargo run --example ctp_query
 ```
 
 ### gateway
