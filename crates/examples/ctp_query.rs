@@ -28,6 +28,7 @@ async fn main() {
         user_product_info: "".to_string(),
         app_id: "simnow_client_test".to_string(),
         password: "198612".to_string(),
+        dynamic_password: Some("your_dynamic_password".to_string()), // 修正这里
         remark: "".into(),
         fens_md_fronts: vec![],
         fens_trade_fronts: vec![],
